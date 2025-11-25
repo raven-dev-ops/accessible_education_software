@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useUser, withPageAuthRequired } from "@auth0/nextjs-auth0/client";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { Layout } from "../../components/Layout";
 import { getRoleFromUser } from "../../lib/roleUtils";
 
@@ -149,5 +149,4 @@ function TeacherPage() {
   );
 }
 
-export default withPageAuthRequired(TeacherPage);
-
+export default TeacherPage;

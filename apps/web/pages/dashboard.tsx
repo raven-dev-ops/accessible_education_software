@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser, withPageAuthRequired } from "@auth0/nextjs-auth0/client";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { getRoleFromUser } from "../lib/roleUtils";
 
-function DashboardRedirect() {
+export default function DashboardRedirect() {
   const router = useRouter();
   const { user, isLoading } = useUser();
 
@@ -24,6 +24,4 @@ function DashboardRedirect() {
     </main>
   );
 }
-
-export default withPageAuthRequired(DashboardRedirect);
 
