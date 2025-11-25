@@ -20,5 +20,13 @@
   ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "overrides": {
+    "@next/eslint-plugin-next": {
+      "glob": "10.5.0"
+    }
+  },
+  "devDependencies": {
+    "glob": "^10.5.0"
   }
 }

@@ -28,6 +28,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
   - [Run the apps](#run-the-apps)
 - [Mock Data (Day 2)](#mock-data-day-2)
 - [APIs & Database](#apis--database)
+- [Security & Code Scanning](#security--code-scanning)
 - [Accessibility](#accessibility)
 - [Roadmap](#roadmap)
 - [Project Workflow](#project-workflow)
@@ -59,7 +60,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
     - Listen to OCR output (planned)
   - **Teacher dashboard**
     - Upload materials (images/PDFs)
-    - Attach detailed notes (up to **2000 words**
+    - Attach detailed notes (up to **2000 words**)
     - Schedule auto-release or manual release of content
     - Review student uploads (planned)
   - **Admin dashboard**
@@ -303,8 +304,8 @@ These will be replaced with real database and OCR-service-backed implementations
 ---
 
 ## APIs & Database
-
-Several Next.js API routes power the dashboards:
+  
+  Several Next.js API routes power the dashboards:
 
 - `GET /api/students` – returns a list of students for the admin dashboard. Uses the `User` table when the database is configured; otherwise falls back to `apps/web/data/sampleStudents.json`.
 - `GET /api/modules` – returns a list of modules for the teacher dashboard. Uses the `Module` and `Course` tables when available; otherwise falls back to `apps/web/data/sampleModules.json`.
@@ -318,15 +319,15 @@ The Next.js app uses Prisma to talk to PostgreSQL (see `apps/web/prisma/schema.p
 
 Configure the database connection in `apps/web/.env.local`:
 
-```bash
-DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/accessible_education?schema=public
-```
+  ```bash
+  DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/accessible_education?schema=public
+  ```
 
-Generate the Prisma client:
-
-```bash
-npm run prisma:generate
-```
+  Generate the Prisma client:
+  
+  ```bash
+  npm run prisma:generate
+  ```
 
 Run the development seed script once your database and migrations are in place:
 
@@ -334,15 +335,29 @@ Run the development seed script once your database and migrations are in place:
 npm run seed:dev
 ```
 
-This creates:
+  This creates:
 
 - A `Course` for “Calculus I” with a few `Module` entries.
 - A teacher user (`teacher@example.com`) and a few sample student users.
-- One sample `Note` attached to the first Calculus I module, which surfaces through `/api/notes` and the student “Released materials” section.
-
+  - One sample `Note` attached to the first Calculus I module, which surfaces through `/api/notes` and the student "Released materials" section.
+  
 ---
 
-## Accessibility
+## Security & Code Scanning
+
+Security is treated as a first-class concern even during the MVP phase:
+
+- A dedicated security policy lives in `SECURITY.md`, including how to report vulnerabilities and the current MVP security posture.
+- GitHub CodeQL is configured via `.github/workflows/codeql.yml` to automatically scan the JavaScript/TypeScript (Next.js) and Python (OCR service) code for common vulnerabilities and coding errors on pushes, pull requests, and a weekly schedule.
+- Dependencies are monitored with `npm audit`; production dependencies are currently free of known vulnerabilities, and the `glob` advisory affecting a dev-only ESLint toolchain is mitigated by a top-level override in `package.json`.
+- Secrets such as Auth0 credentials, database URLs, and OCR service endpoints are injected only via environment variables and are never committed to the repository.
+- The `NEXT_PUBLIC_AUTH_ENABLED` flag controls whether the deployed Netlify frontend uses the real Auth0 login flow (`true`/`1`) or shows the "Login – Coming Soon" placeholder (`false`/unset), which should be used for public staging until Auth0 wiring is ready.
+
+Before any real student data is processed in production, the plan is to harden API-level authorization, tighten file upload limits and validation, and perform a focused configuration/dependency review as described in `SECURITY.md`.
+
+  ---
+  
+  ## Accessibility
 
 Accessibility is a core requirement, not an afterthought:
 

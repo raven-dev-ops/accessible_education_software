@@ -1,6 +1,27 @@
+import { useEffect } from "react";
 import Link from "next/link";
 
+const authEnabled =
+  process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
+  process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
+
 export default function Login() {
+  // When auth is enabled (e.g. on a staging Netlify site with a configured
+  // Auth0 tenant), this page immediately forwards to Auth0 Universal Login.
+  useEffect(() => {
+    if (authEnabled) {
+      window.location.href = "/api/auth/login";
+    }
+  }, []);
+
+  if (authEnabled) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-6">
+        <p>Redirecting to secure login…</p>
+      </main>
+    );
+  }
+
   const showDevLogin = process.env.NODE_ENV !== "production";
 
   return (

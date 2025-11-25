@@ -1,9 +1,13 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useUser, withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 import { getRoleFromUser } from "../lib/roleUtils";
 
-export default function DashboardRedirect() {
+const authEnabled =
+  process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
+  process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
+
+function DashboardRedirect() {
   const router = useRouter();
   const { user, isLoading } = useUser();
 
@@ -24,4 +28,8 @@ export default function DashboardRedirect() {
     </main>
   );
 }
+
+export default authEnabled
+  ? withPageAuthRequired(DashboardRedirect)
+  : DashboardRedirect;
 
