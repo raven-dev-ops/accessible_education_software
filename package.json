@@ -7,8 +7,12 @@
     "dev:web": "npm --workspace apps/web run dev",
     "build:web": "npm --workspace apps/web run build",
     "lint:web": "npm --workspace apps/web run lint",
+    "test:web": "npm --workspace apps/web run test",
     "dev:ocr": "npm --workspace apps/ocr_service run dev || python apps/ocr_service/main.py",
-    "test:ocr": "python apps/ocr_service/sample_ocr_test.py"
+    "test:ocr": "python apps/ocr_service/sample_ocr_test.py",
+    "test": "npm run lint:web",
+    "prisma:generate": "npm --workspace apps/web run prisma generate",
+    "seed:dev": "node apps/web/prisma/seed.cjs"
   },
   "workspaces": [
     "apps/*",
@@ -18,4 +22,3 @@
     "node": ">=18.0.0"
   }
 }
-

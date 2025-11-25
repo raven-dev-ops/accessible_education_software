@@ -1,15 +1,15 @@
-# accessible_education_systems
+# accessible-education-software
 
-> AI‑powered, accessible STEM note system that turns handwritten calculus notes into readable, listenable content for blind and low‑vision students.
+> AI-powered, accessible STEM note system that turns handwritten calculus notes into readable, listenable content for blind and low-vision students.
 
-`accessible_education_systems` is an AI‑assisted accessibility platform focused on college‑level STEM courses, starting with **Calculus I** (repo here: https://github.com/raven-dev-ops/ocr_calculus_1)
+`accessible-education-software` is an AI-assisted accessibility platform focused on college-level STEM courses, starting with **Calculus I** (see the content repo at https://github.com/raven-dev-ops/ocr_calculus_1).
 
 The system helps **students**, **teachers**, and **site admins** work with handwritten notes and course materials by:
 
-- Converting images/PDFs of handwritten notes into machine‑readable text
+- Converting images/PDFs of handwritten notes into machine-readable text
 - Using AI to verify and improve OCR output (especially math notation)
-- Providing a path to audio/text‑to‑speech for blind and low‑vision students
-- Supporting role‑based workflows and scheduling of course content
+- Providing a path to audio/text-to-speech for blind and low-vision students
+- Supporting role-based workflows and scheduling of course content
 
 ---
 
@@ -27,8 +27,10 @@ The system helps **students**, **teachers**, and **site admins** work with handw
   - [Environment variables](#environment-variables)
   - [Run the apps](#run-the-apps)
 - [Mock Data (Day 2)](#mock-data-day-2)
+- [APIs & Database](#apis--database)
 - [Accessibility](#accessibility)
 - [Roadmap](#roadmap)
+- [Project Workflow](#project-workflow)
 - [Contributing](#contributing)
 - [License](#license)
 - [Legal & Privacy](#legal--privacy)
@@ -39,46 +41,46 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 ### Current & Planned (MVP)
 
-- 🧮 **Calculus I OCR module**
+- **Calculus I OCR module**
   - Upload handwritten calculus notes (images/PDFs)
   - Convert to text (via OCR), with future support for LaTeX/MathML
-  - Read output via text‑to‑speech (planned)
+  - Read output via text-to-speech (planned)
 
-- 🧠 **AI‑assisted OCR verification (planned)**
+- **AI-assisted OCR verification (planned)**
   - Compare OCR output to the original image
   - Suggest corrections, especially for math notation and symbols
-  - Allow professor‑specific tuning based on handwriting samples
+  - Allow professor-specific tuning based on handwriting samples
 
-- 👩‍🏫 **Role‑based dashboards**
+- **Role-based dashboards**
   - **Student dashboard**
     - Upload handwritten notes
     - Attach short notes (up to **500 words**)
-    - Access teacher‑released course materials
+    - Access teacher-released course materials
     - Listen to OCR output (planned)
   - **Teacher dashboard**
     - Upload materials (images/PDFs)
-    - Attach detailed notes (up to **2000 words**)
-    - Schedule auto‑release or manual release of content
+    - Attach detailed notes (up to **2000 words**
+    - Schedule auto-release or manual release of content
     - Review student uploads (planned)
   - **Admin dashboard**
     - View student information
     - Monitor system logs and analytics (planned)
 
-- 🔐 **Authentication with Auth0**
-  - Auth0‑backed login
-  - Role‑based routing (Student / Teacher / Admin)
+- **Authentication with Auth0**
+  - Auth0-backed login
+  - Role-based routing (Student / Teacher / Admin)
 
-- 🗂 **Monorepo architecture**
-  - **Next.js** frontend: lightweight, accessible UI (deployed to Netlify)
+- **Monorepo architecture**
+  - **Next.js** frontend: lightweight, accessible UI (target deployment on Netlify)
   - **Backend OCR service**: Python + Tesseract (planned deployment on Google Cloud / Heroku)
   - **PostgreSQL** database: hosted on Google Cloud
   - Shared utilities and types for consistency
 
-- 🎨 **Accessibility‑first UI**
+- **Accessibility-first UI**
   - Light and dark mode with **pastel** color palette
-  - Screen‑reader friendly layout
-  - Keyboard‑navigable flows
-  - Designed with blind and low‑vision users in mind
+  - Screen-reader friendly layout
+  - Keyboard-navigable flows
+  - Designed with blind and low-vision users in mind
 
 ---
 
@@ -97,7 +99,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 - Log in securely
 - Upload handwritten or typed course materials
 - Attach up to 2000 words of explanatory notes
-- Choose auto‑release schedules or manual release
+- Choose auto-release schedules or manual release
 - Review and respond to student submissions (planned)
 
 ### Site Admins
@@ -114,12 +116,12 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 - Next.js (React)
 - Auth0 (authentication)
-- Tailwind CSS or similar (utility‑first styling)
+- Tailwind CSS or similar (utility-first styling, to be wired in)
 - Light/Dark mode with pastel theming
 
 **Backend**
 
-- Python service (FastAPI/Flask or similar) for OCR
+- Python service (FastAPI/Flask-style) for OCR
 - PyTesseract (Tesseract OCR)
 - Optionally Node/Express for additional APIs or orchestration
 
@@ -129,8 +131,8 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 **Infrastructure / Deployment**
 
-- Frontend: Netlify
-- Backend: Google Cloud (Cloud Run / App Engine) or Heroku
+- Frontend: Netlify (planned)
+- Backend: Google Cloud (Cloud Run / App Engine) or Heroku (planned)
 - Auth: Auth0 (Google Cloud integration)
 
 ---
@@ -166,27 +168,235 @@ At a high level:
 
 ## Project Structure
 
-*(You can adjust this to match your actual structure as you implement.)*
-
 ```text
-accessible_education_systems/
+accessible-education-software/
   apps/
-    frontend/           # Next.js app (Student/Teacher/Admin UI)
-      pages/
-      components/
-      styles/
-      public/
-      ...
-    backend/            # OCR + API service (Python/Node)
-      app/              # FastAPI/Flask or Express routes
-      ocr/              # OCR-related code (PyTesseract, pre/post-processing)
-      ...
+    web/                # Next.js app (Student/Teacher/Admin UI)
+      pages/            # /, /login, /dashboard, /admin, /teacher, /student
+      components/       # Shared layout and UI components
+      data/             # Mock data for Day 2 (e.g. sampleStudents.json)
+      lib/              # Frontend utilities (e.g. role helpers)
+    ocr_service/        # Python FastAPI OCR skeleton (PyTesseract)
+      main.py           # FastAPI app with /health and /ocr endpoints
+      sample_ocr_test.py
+      requirements.txt
   packages/
-    shared/             # Shared types, utilities, constants
+    shared/             # Shared utilities and future types
+      package.json      # Published to GitHub Packages on tagged releases
   docs/
     PRIVACY_POLICY.md
     TERMS_OF_SERVICE.md
-    LICENSE_NOTES.md    # additional legal notes if needed
+  .github/
+    workflows/          # CodeQL and release/package workflows
+  CHANGELOG.md
+  CONTRIBUTING.md
   .gitignore
   README.md
   LICENSE               # All rights reserved
+  package.json          # Root workspace and scripts
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js **18+**
+- npm **9+** (or recent that ships with Node 18)
+- Python **3.9+** for the OCR service
+- (For OCR testing) Tesseract installed on your system
+
+### Clone the repo
+
+```bash
+git clone https://github.com/raven-dev-ops/accessible_education_software.git
+cd accessible_education_software
+```
+
+### Install dependencies
+
+At the monorepo root:
+
+```bash
+npm install
+```
+
+For the OCR service, install Python deps:
+
+```bash
+pip install -r apps/ocr_service/requirements.txt
+```
+
+### Environment variables
+
+Frontend (`apps/web/.env.local`, copy from `.env.local.example`):
+
+- `AUTH0_SECRET`
+- `AUTH0_BASE_URL`
+- `AUTH0_ISSUER_BASE_URL`
+- `AUTH0_CLIENT_ID`
+- `AUTH0_CLIENT_SECRET`
+
+OCR service:
+
+- Future iterations will add env vars for OCR service URL, AI hooks, and DB.
+
+Database:
+
+- Future iterations will add `DATABASE_URL` and ORM configuration.
+
+### Run the apps
+
+Run the web app (Next.js dev server):
+
+```bash
+npm run dev:web
+```
+
+Run the OCR service locally:
+
+```bash
+npm run dev:ocr
+```
+
+Run a simple OCR smoke test:
+
+```bash
+npm run test:ocr
+```
+
+---
+
+## Mock Data (Day 2)
+
+For early development, the app uses mock data and stubbed APIs:
+
+- `apps/web/data/sampleStudents.json` – sample student records for the admin dashboard.
+- `apps/web/pages/api/students.ts` – returns the mock students.
+- `apps/web/pages/api/upload.ts` – accepts file uploads and logs metadata (no real OCR yet).
+- `apps/web/pages/api/test-ocr.ts` – stub endpoint to exercise the OCR pipeline and logs.
+
+These will be replaced with real database and OCR-service-backed implementations as the project progresses.
+
+---
+
+## APIs & Database
+
+Several Next.js API routes power the dashboards:
+
+- `GET /api/students` – returns a list of students for the admin dashboard. Uses the `User` table when the database is configured; otherwise falls back to `apps/web/data/sampleStudents.json`.
+- `GET /api/modules` – returns a list of modules for the teacher dashboard. Uses the `Module` and `Course` tables when available; otherwise falls back to `apps/web/data/sampleModules.json`.
+- `GET /api/notes` – returns “released materials” for the student dashboard. Uses the `Note`, `Module`, and `Course` tables when available; otherwise falls back to `apps/web/data/sampleNotes.json`.
+- `POST /api/upload` – accepts a file upload and, if `OCR_SERVICE_URL` is configured, forwards the file to the Python OCR service `/ocr` endpoint. Returns basic file metadata and any OCR text received.
+- `POST /api/test-ocr` – calls the OCR service `/health` endpoint (when `OCR_SERVICE_URL` is set) and reports whether OCR is available; otherwise returns a stub message.
+
+### Database & Prisma
+
+The Next.js app uses Prisma to talk to PostgreSQL (see `apps/web/prisma/schema.prisma`).
+
+Configure the database connection in `apps/web/.env.local`:
+
+```bash
+DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/accessible_education?schema=public
+```
+
+Generate the Prisma client:
+
+```bash
+npm run prisma:generate
+```
+
+Run the development seed script once your database and migrations are in place:
+
+```bash
+npm run seed:dev
+```
+
+This creates:
+
+- A `Course` for “Calculus I” with a few `Module` entries.
+- A teacher user (`teacher@example.com`) and a few sample student users.
+- One sample `Note` attached to the first Calculus I module, which surfaces through `/api/notes` and the student “Released materials” section.
+
+---
+
+## Accessibility
+
+Accessibility is a core requirement, not an afterthought:
+
+- Target users include blind and low-vision students using screen readers and Braille.
+- UI is designed for keyboard navigation and clear focus states.
+- Pages use semantic HTML and will be validated against WCAG 2.1 AA as the MVP stabilizes.
+- Text-to-speech (TTS) and Braille-friendly output are part of the MVP roadmap.
+
+See issues labeled `a11y` in GitHub for specific accessibility tasks and audits.
+
+---
+
+## Roadmap
+
+The project follows a milestone-based plan:
+
+- **M1–M2** – Foundation, repo hygiene, Auth0 integration, basic dashboards, theming.
+- **M3–M4** – Auth + OCR wiring, upload UX, student TTS, database foundation.
+- **M5–M7** – Persistence, CI hardening, accessibility polish, OCR robustness, Beta.
+- **M8–M10** – Testing, performance, packaging, deployment, and MVP client handover.
+
+The detailed day-by-day plan and milestone goals are reflected in GitHub milestones and issues.
+
+---
+
+## Project Workflow
+
+This project is managed through GitHub milestones and small, focused issues:
+
+- Milestones `M1`–`M10` map to major phases in the 30-day MVP plan
+  (foundation, auth, OCR wiring, TTS/DB, Alpha, Beta, hardening, packaging,
+  and MVP handover).
+- Each milestone has a handful of anchor issues with titles like
+  `M3: Wire upload to OCR service` that describe the key outcomes for that phase.
+- You can see the full roadmap and current status at the **Milestones** view:
+  https://github.com/raven-dev-ops/accessible_education_software/milestones
+- Labels indicate the main area of work:
+  - `frontend` – dashboards, theming, Next.js UI.
+  - `backend-ocr` – OCR service, Tesseract, AI hooks.
+  - `a11y` – accessibility, screen readers, WCAG, Braille.
+  - `devops` – CI/CD, Netlify, Docker, release automation.
+  - `docs` – README, guides, onboarding, legal docs.
+- Tagging a release like `v0.1.0` runs CI (tests + `npm run build:web`),
+  creates a GitHub Release, and publishes the shared package
+  `@raven-dev-ops/accessible-education-software-shared` to GitHub Packages.
+
+Even if you are not writing code, you can follow progress by watching which
+milestones and issues move toward completion over time.
+
+---
+
+## Contributing
+
+For implementation details, branching conventions, and testing expectations,
+see `CONTRIBUTING.md` in the repository root. It explains how to:
+
+- Pick a milestone and anchor issue to work on.
+- Create feature branches and open focused pull requests.
+- Run the basic checks for frontend and OCR service changes.
+- Keep accessibility and documentation front-of-mind as you contribute.
+
+---
+
+## License
+
+All rights reserved. See `LICENSE` for details.
+
+---
+
+## Legal & Privacy
+
+Draft legal and policy documents live under `docs/`:
+
+- `docs/PRIVACY_POLICY.md`
+- `docs/TERMS_OF_SERVICE.md`
+
+These will be expanded and finalized before any real student data is processed
+or the system is deployed in a production environment.

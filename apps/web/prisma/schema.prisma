@@ -1,0 +1,53 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   // logical role: admin/teacher/student
+  createdAt DateTime @default(now())
+  notes     Note[]
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  name      String
+  code      String?
+  createdAt DateTime @default(now())
+  modules   Module[]
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  title     String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+  createdAt DateTime @default(now())
+  notes     Note[]
+}
+
+model Note {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  module     Module?  @relation(fields: [moduleId], references: [id])
+  moduleId   String?
+  text       String
+  createdAt  DateTime @default(now())
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  level     String
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now())
+}
+

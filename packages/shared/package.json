@@ -1,0 +1,15 @@
+{
+  "name": "@raven-dev-ops/accessible-education-software-shared",
+  "version": "0.0.0-development",
+  "description": "Shared utilities and types for the Accessible Education Software monorepo.",
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raven-dev-ops/accessible_education_software.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

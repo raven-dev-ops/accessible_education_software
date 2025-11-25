@@ -1,0 +1,60 @@
+name: Release and Package
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node and npm registry
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Monorepo sanity checks
+        run: |
+          echo "Running monorepo sanity checks before release..."
+          npm test
+
+      - name: Build step placeholder
+        run: |
+          echo "Building Next.js web app..."
+          npm run build:web
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: |
+            Automated release for ${{ github.ref_name }}.
+
+            See CHANGELOG.md for details of changes.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish shared package to GitHub Packages
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Setting shared package version to ${VERSION}"
+          cd packages/shared
+          npm version "${VERSION}" --no-git-tag-version
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
