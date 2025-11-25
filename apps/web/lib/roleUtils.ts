@@ -43,16 +43,7 @@ export function getRoleFromUser(user: UserProfile | undefined): AppRole {
     return "student";
   }
 
-  const email = (user.email || "").toLowerCase();
-
-  if (email.startsWith("admin")) {
-    return "admin";
-  }
-
-  if (email.startsWith("teacher")) {
-    return "teacher";
-  }
-
+  // If no recognized roles are present, default to student.
   return "student";
 }
 
