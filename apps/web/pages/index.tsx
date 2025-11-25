@@ -23,12 +23,11 @@ export default function Home() {
         readable, listenable content for blind and low-vision students.
       </p>
       <Link
-        href="/api/auth/login"
+        href="/login"
         className="px-4 py-2 rounded bg-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
-        Log in with Auth0
+        Go to login
       </Link>
     </main>
   );
 }
-
