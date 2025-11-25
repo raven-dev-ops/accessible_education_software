@@ -232,19 +232,14 @@ pip install -r apps/ocr_service/requirements.txt
 
 Frontend (`apps/web/.env.local`, copy from `.env.local.example`):
 
-- `AUTH0_SECRET`
-- `AUTH0_BASE_URL`
-- `AUTH0_ISSUER_BASE_URL`
-- `AUTH0_CLIENT_ID`
-- `AUTH0_CLIENT_SECRET`
-
-OCR service:
-
-- Future iterations will add env vars for OCR service URL, AI hooks, and DB.
-
-Database:
-
-- Future iterations will add `DATABASE_URL` and ORM configuration.
+- `AUTH0_SECRET` – random long secret used by Auth0 SDK for session encryption.
+- `AUTH0_BASE_URL` – e.g. `http://localhost:3000` in development.
+- `AUTH0_ISSUER_BASE_URL` – your Auth0 tenant URL, e.g. `https://YOUR_DOMAIN.auth0.com`.
+- `AUTH0_CLIENT_ID` – Auth0 application Client ID.
+- `AUTH0_CLIENT_SECRET` – Auth0 application Client Secret.
+- `NEXT_PUBLIC_AUTH0_ROLES_CLAIM` – optional claim name where Auth0 places roles (e.g. `https://your-domain.com/roles`); falls back to `roles` if omitted.
+- `OCR_SERVICE_URL` – base URL for the Python OCR service (e.g. `http://localhost:8000`).
+- `DATABASE_URL` – PostgreSQL connection string used by Prisma (optional for Day 2; the app will fall back to mock data if not configured).
 
 ### Run the apps
 
@@ -265,6 +260,32 @@ Run a simple OCR smoke test:
 ```bash
 npm run test:ocr
 ```
+
+---
+
+### Auth0 setup (development)
+
+High-level steps to get Auth0 working with the Next.js app:
+
+1. **Create a tenant and application**
+   - In the Auth0 dashboard, create a Regular Web Application (or reuse an existing one).
+   - Note the **Domain**, **Client ID**, and **Client Secret**.
+2. **Configure allowed URLs**
+   - Allowed Callback URLs: `http://localhost:3000/api/auth/callback`
+   - Allowed Logout URLs: `http://localhost:3000/`
+   - Allowed Web Origins: `http://localhost:3000`
+3. **Configure roles**
+   - Enable Role-Based Access Control (RBAC) in Auth0.
+   - Create roles such as `admin`, `teacher`, and `student`.
+   - Assign roles to your test users.
+4. **Expose roles as a token claim**
+   - In the Auth0 Dashboard under API / Permissions or via an Action/Rule, configure roles to be added to ID tokens.
+   - Either:
+     - Use the built-in `roles` claim and leave `NEXT_PUBLIC_AUTH0_ROLES_CLAIM` empty, or
+     - Use a custom namespaced claim like `https://your-domain.com/roles` and set `NEXT_PUBLIC_AUTH0_ROLES_CLAIM` accordingly.
+5. **Set `apps/web/.env.local` values**
+   - Fill in the Auth0 values from step 1 and any custom roles claim from step 4.
+   - Restart `npm run dev:web` so the environment changes take effect.
 
 ---
 

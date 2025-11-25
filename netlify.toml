@@ -1,0 +1,21 @@
+[build]
+  # Run from the monorepo root so workspaces are available.
+  command = "npm run build:web"
+  publish = "apps/web/.next"
+  base = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+
+# Netlify environment variables to configure in the UI:
+# - AUTH0_SECRET
+# - AUTH0_BASE_URL (e.g. https://your-netlify-site.netlify.app)
+# - AUTH0_ISSUER_BASE_URL
+# - AUTH0_CLIENT_ID
+# - AUTH0_CLIENT_SECRET
+# - NEXT_PUBLIC_AUTH0_ROLES_CLAIM
+# - OCR_SERVICE_URL (pointing at deployed OCR service)
+# - DATABASE_URL (if using a managed Postgres instance)
+
