@@ -173,10 +173,10 @@ At a high level:
 accessible-education-software/
   apps/
     web/                # Next.js app (Student/Teacher/Admin UI)
-      pages/            # /, /login, /dashboard, /admin, /teacher, /student
+      pages/            # /, /login, /dashboard, /admin, /teacher, /student, /status
       components/       # Shared layout and UI components
       data/             # Mock data for Day 2 (e.g. sampleStudents.json)
-      lib/              # Frontend utilities (e.g. role helpers)
+      lib/              # Frontend utilities (e.g. role and API auth helpers, TTS)
     ocr_service/        # Python FastAPI OCR skeleton (PyTesseract)
       main.py           # FastAPI app with /health and /ocr endpoints
       sample_ocr_test.py
@@ -243,6 +243,12 @@ Frontend (`apps/web/.env.local`, copy from `.env.local.example`):
 - `DATABASE_URL` – PostgreSQL connection string used by Prisma (optional for Day 2; the app will fall back to mock data if not configured).
 
 ### Run the apps
+
+Additional frontend env flags (set in `apps/web/.env.local` for local development, and in Netlify environment variables for the deployed web app):
+
+- `NEXT_PUBLIC_AUTH_ENABLED` - controls whether the frontend uses the real Auth0 login flow (`true`/`1`) or shows the "Login – Coming Soon" placeholder (`false`/unset).
+- `NEXT_PUBLIC_SHOW_STAGING_BANNER` - when enabled, displays a visible "Staging environment – for testing only" banner (use this on the staging Netlify site).
+- `NEXT_PUBLIC_ENV_LABEL` - optional string used by `/status` to identify the environment (for example `staging`, `prod-coming-soon`, or `local`).
 
 Run the web app (Next.js dev server):
 
@@ -354,6 +360,11 @@ Security is treated as a first-class concern even during the MVP phase:
 - The `NEXT_PUBLIC_AUTH_ENABLED` flag controls whether the deployed Netlify frontend uses the real Auth0 login flow (`true`/`1`) or shows the "Login – Coming Soon" placeholder (`false`/unset), which should be used for public staging until Auth0 wiring is ready.
 
 Before any real student data is processed in production, the plan is to harden API-level authorization, tighten file upload limits and validation, and perform a focused configuration/dependency review as described in `SECURITY.md`.
+
+Additionally, in this repository:
+
+- The CodeQL workflow performs an explicit JavaScript/TypeScript build (`npm install` + `npm run build:web` from the monorepo root) so that analysis runs against the compiled Next.js app.
+- Key API routes such as `/api/students`, `/api/modules`, and `/api/notes` are also protected server-side using Auth0 session/roles (when `NEXT_PUBLIC_AUTH_ENABLED` is true), complementing the frontend page guards.
 
   ---
   
