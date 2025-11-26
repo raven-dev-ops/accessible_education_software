@@ -1,8 +1,9 @@
 [build]
-  # Run from the monorepo root so workspaces are available.
-  command = "npm run build:web"
-  publish = "apps/web/.next"
-  base = "."
+  # Build the Next.js app from the apps/web directory so Netlify's Next.js
+  # runtime can detect and wire routes correctly.
+  base = "apps/web"
+  command = "npm run build"
+  publish = ".next"
 
 [[headers]]
   for = "/*"
