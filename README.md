@@ -16,6 +16,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 ## Table of Contents
 
 - [Features](#features)
+- [Status (Day 3)](#status-day-3)
 - [Roles](#roles)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -24,9 +25,10 @@ The system helps **students**, **teachers**, and **site admins** work with handw
   - [Prerequisites](#prerequisites)
   - [Clone the repo](#clone-the-repo)
   - [Install dependencies](#install-dependencies)
-  - [Environment variables](#environment-variables)
-  - [Run the apps](#run-the-apps)
+- [Environment variables](#environment-variables)
+- [Run the apps](#run-the-apps)
 - [Mock Data (Day 2)](#mock-data-day-2)
+- [Math handling (Day 3)](#math-handling-day-3)
 - [APIs & Database](#apis--database)
 - [Security & Code Scanning](#security--code-scanning)
 - [Accessibility](#accessibility)
@@ -82,6 +84,14 @@ The system helps **students**, **teachers**, and **site admins** work with handw
   - Screen-reader friendly layout
   - Keyboard-navigable flows
   - Designed with blind and low-vision users in mind
+
+---
+
+## Status (Day 3)
+
+- Version **0.1.2** (Day 3): Admin uploads now forward to the OCR service when `OCR_SERVICE_URL` is set and show inline previews with accessible status messaging.
+- Upload API writes to a configurable temp directory and guards file types/size before relaying to OCR.
+- Math handling plan captured (MathML-first with plain-text fallbacks) for upcoming OCR/renderer work.
 
 ---
 
@@ -300,12 +310,23 @@ High-level steps to get Auth0 working with the Next.js app:
 
 For early development, the app uses mock data and stubbed APIs:
 
-- `apps/web/data/sampleStudents.json` – sample student records for the admin dashboard.
-- `apps/web/pages/api/students.ts` – returns the mock students.
-- `apps/web/pages/api/upload.ts` – accepts file uploads and logs metadata (no real OCR yet).
-- `apps/web/pages/api/test-ocr.ts` – stub endpoint to exercise the OCR pipeline and logs.
+- `apps/web/data/sampleStudents.json` - sample student records for the admin dashboard.
+- `apps/web/pages/api/students.ts` - returns the mock students.
+- `apps/web/pages/api/upload.ts` - accepts file uploads, forwards them to the OCR service when `OCR_SERVICE_URL` is configured, and falls back to a stub log-only response otherwise.
+- `apps/web/pages/api/test-ocr.ts` - stub endpoint to exercise the OCR pipeline and logs.
 
 These will be replaced with real database and OCR-service-backed implementations as the project progresses.
+
+---
+
+## Math handling (Day 3)
+
+Early plan for representing and rendering math from OCR output:
+
+- Prefer MathML as the canonical format, storing raw OCR text alongside a math-aware string that screen readers can read.
+- Keep OCR responses as plain text for now; a later pass will lift math into MathML/LaTeX and attach a spoken-text fallback.
+- Render math on the client with a lightweight MathJax setup (MathML-first) while keeping plain-text/ARIA fallbacks for Braille and TTS users.
+- Announce OCR success/error states with `aria-live` status messaging so screen readers pick up inline results.
 
 ---
 

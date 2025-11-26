@@ -1,7 +1,16 @@
 {
   "name": "@raven-dev-ops/accessible-education-web",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
+  "overrides": {
+    "glob": "11.1.0",
+    "@next/eslint-plugin-next": {
+      "glob": "11.1.0"
+    },
+    "rimraf": {
+      "glob": "11.1.0"
+    }
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

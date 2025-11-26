@@ -29,6 +29,10 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const UPLOAD_TMP_DIR =
   process.env.FILE_UPLOAD_TMP_DIR || os.tmpdir();
 
+async function ensureUploadDir(dir: string): Promise<void> {
+  await fs.promises.mkdir(dir, { recursive: true });
+}
+
 function getFirstFile(files: any): any | null {
   const value = files?.file ?? Object.values(files ?? {})[0];
   if (!value) return null;
@@ -38,7 +42,7 @@ function getFirstFile(files: any): any | null {
   return value;
 }
 
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<UploadResponse>
 ) {
@@ -49,9 +53,20 @@ export default function handler(
       .json({ ok: false, message: "Method Not Allowed. Use POST." });
   }
 
+  try {
+    await ensureUploadDir(UPLOAD_TMP_DIR);
+  } catch (dirError) {
+    console.error("Failed to prepare upload directory:", dirError);
+    return res.status(500).json({
+      ok: false,
+      message: "File upload directory is not available.",
+    });
+  }
+
   const form = formidableFactory({
     multiples: false,
     maxFileSize: MAX_FILE_SIZE_BYTES,
+    uploadDir: UPLOAD_TMP_DIR,
   });
 
   form.parse(req, async (err: unknown, _fields: any, files: any) => {
