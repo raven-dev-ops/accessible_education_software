@@ -42,6 +42,7 @@ At this stage:
 - **Database**
   - Prisma is used as an ORM for PostgreSQL.
   - API routes that touch the database handle errors gracefully and fall back to mock data; no stack traces are returned to clients.
+  - Runtime JavaScript/TypeScript dependencies are kept free of known vulnerabilities (`npm audit --omit=dev` reports 0 issues); any remaining advisories relate only to development tooling (for example, linting packages) and are tracked here and/or in Dependabot with appropriate dismissal reasons.
 
 Before any production deployment with real users or student data, we plan to:
 
@@ -49,4 +50,3 @@ Before any production deployment with real users or student data, we plan to:
 - Review file upload limits and content validation.
 - Harden the OCR service deployment (network boundaries, authentication, and rate limiting).
 - Conduct a targeted security review, including dependency and configuration auditing.
-
