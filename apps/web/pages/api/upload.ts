@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import type formidable from "formidable";
 import formidableFactory from "formidable";
 import fs from "fs";
+import os from "os";
+import path from "path";
 
 export const config = {
   api: {
@@ -24,6 +26,8 @@ type UploadResponse = {
 };
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const UPLOAD_TMP_DIR =
+  process.env.FILE_UPLOAD_TMP_DIR || os.tmpdir();
 
 function getFirstFile(files: any): any | null {
   const value = files?.file ?? Object.values(files ?? {})[0];
@@ -115,7 +119,21 @@ export default function handler(
     }
 
     try {
-      const filepath: string = file.filepath || file.path;
+      const rawPath: string = file.filepath || file.path;
+      const filepath = path.resolve(rawPath);
+      const safeBase = path.resolve(UPLOAD_TMP_DIR);
+
+      if (!filepath.startsWith(safeBase + path.sep)) {
+        console.error(
+          "Rejected upload file path outside allowed directory",
+          filepath
+        );
+        return res.status(400).json({
+          ok: false,
+          message: "Invalid upload path.",
+        });
+      }
+
       const buffer = await fs.promises.readFile(filepath);
       const blob = new Blob([buffer], {
         type: file.mimetype || "application/octet-stream",

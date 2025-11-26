@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 
@@ -7,6 +8,8 @@ try:
 except Exception:
     pytesseract = None  # type: ignore
     Image = None  # type: ignore
+
+logger = logging.getLogger("accessible_education_ocr")
 
 app = FastAPI(
     title="Accessible Education OCR Service",
@@ -53,18 +56,22 @@ async def run_ocr(file: UploadFile = File(...)) -> JSONResponse:
 
         image = Image.open(BytesIO(contents))
         text = pytesseract.image_to_string(image)
-    except Exception as exc:
+    except Exception:
+        logger.exception("OCR failed while processing uploaded file")
         return JSONResponse(
             status_code=500,
-            content={"ok": False, "message": f"OCR failed: {exc}"},
+            content={
+                "ok": False,
+                "message": "OCR failed while processing the uploaded file.",
+            },
         )
 
     return JSONResponse(
         status_code=200,
         content={
-          "ok": True,
-          "filename": file.filename,
-          "text": text,
+            "ok": True,
+            "filename": file.filename,
+            "text": text,
         },
     )
 
