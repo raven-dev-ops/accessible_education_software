@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/db";
+import { requireRole } from "../../lib/apiAuth";
 import fallbackNotes from "../../data/sampleNotes.json";
 
 type NoteSummary = {
@@ -12,33 +13,33 @@ type NoteSummary = {
 };
 
 export default async function handler(
-  _req: NextApiRequest,
-  res: NextApiResponse<NoteSummary[]>
+  req: NextApiRequest,
+  res: NextApiResponse<NoteSummary[] | { error: string }>
 ) {
+  const auth = await requireRole(req, res, ["student", "teacher", "admin"]);
+  if (!auth) return;
+
   try {
     const notes = await prisma.note.findMany({
       include: {
         module: {
           include: {
-            course: true
-          }
-        }
+            course: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
-      take: 20
+      take: 20,
     });
 
     if (!notes.length) {
-      return res
-        .status(200)
-        .json(fallbackNotes as NoteSummary[]);
+      return res.status(200).json(fallbackNotes as NoteSummary[]);
     }
 
     const mapped: NoteSummary[] = notes.map((note: any) => {
       const courseName = note.module?.course?.name;
       const moduleTitle = note.module?.title;
-      const title =
-        moduleTitle || courseName || "Lecture note";
+      const title = moduleTitle || courseName || "Lecture note";
 
       const text: string = note.text || "";
       const excerpt =
@@ -50,7 +51,7 @@ export default async function handler(
         course: courseName,
         module: moduleTitle,
         createdAt: note.createdAt?.toISOString?.() ?? undefined,
-        excerpt
+        excerpt,
       };
     });
 
@@ -60,9 +61,7 @@ export default async function handler(
       "Falling back to mock notes due to database error:",
       error
     );
-    return res
-      .status(200)
-      .json(fallbackNotes as NoteSummary[]);
+    return res.status(200).json(fallbackNotes as NoteSummary[]);
   }
 }
 

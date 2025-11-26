@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/db";
+import { requireRole } from "../../lib/apiAuth";
 import fallbackStudents from "../../data/sampleStudents.json";
 
 type StudentSummary = {
@@ -10,9 +11,12 @@ type StudentSummary = {
 };
 
 export default async function handler(
-  _req: NextApiRequest,
-  res: NextApiResponse<StudentSummary[]>
+  req: NextApiRequest,
+  res: NextApiResponse<StudentSummary[] | { error: string }>
 ) {
+  const auth = await requireRole(req, res, ["admin"]);
+  if (!auth) return;
+
   try {
     const users = await prisma.user.findMany({
       where: { role: "student" },

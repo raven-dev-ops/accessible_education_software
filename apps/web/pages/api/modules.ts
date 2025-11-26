@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/db";
+import { requireRole } from "../../lib/apiAuth";
 import fallbackModules from "../../data/sampleModules.json";
 
 type ModuleSummary = {
@@ -9,9 +10,12 @@ type ModuleSummary = {
 };
 
 export default async function handler(
-  _req: NextApiRequest,
-  res: NextApiResponse<ModuleSummary[]>
+  req: NextApiRequest,
+  res: NextApiResponse<ModuleSummary[] | { error: string }>
 ) {
+  const auth = await requireRole(req, res, ["teacher", "admin"]);
+  if (!auth) return;
+
   try {
     const modules = await prisma.module.findMany({
       include: { course: true },
@@ -42,4 +46,3 @@ export default async function handler(
       .json(fallbackModules as ModuleSummary[]);
   }
 }
-
