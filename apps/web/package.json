@@ -2,15 +2,6 @@
   "name": "@raven-dev-ops/accessible-education-web",
   "version": "0.1.2",
   "private": true,
-  "overrides": {
-    "glob": "11.1.0",
-    "@next/eslint-plugin-next": {
-      "glob": "11.1.0"
-    },
-    "rimraf": {
-      "glob": "11.1.0"
-    }
-  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -32,8 +23,8 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "autoprefixer": "^10.4.19",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "15.0.0-rc.1",
     "postcss": "^8.4.38",
     "prisma": "^5.20.0",
     "tailwindcss": "^3.4.13",
