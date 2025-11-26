@@ -93,6 +93,12 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 - Upload API writes to a configurable temp directory and guards file types/size before relaying to OCR.
 - Math handling plan captured (MathML-first with plain-text fallbacks) for upcoming OCR/renderer work.
 
+### Issue updates (Day 3)
+
+- [x] M3: Wire `/api/upload` to the OCR service with temp-dir safeguards (`apps/web/pages/api/upload.ts`).
+- [x] M3: Admin OCR upload UI shows inline preview and live status messaging (`apps/web/pages/admin/index.tsx`).
+- [x] M3: Document math handling approach for OCR output (`README.md#math-handling-day-3`).
+
 ---
 
 ## Roles
