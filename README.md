@@ -411,14 +411,18 @@ This project is managed through GitHub milestones and small, focused issues:
   - `a11y` – accessibility, screen readers, WCAG, Braille.
   - `devops` – CI/CD, Netlify, Docker, release automation.
   - `docs` – README, guides, onboarding, legal docs.
-- Tagging a release like `v0.1.0` runs CI (tests + `npm run build:web`),
-  creates a GitHub Release, and publishes the shared package
-  `@raven-dev-ops/accessible-education-software-shared` to GitHub Packages.
+  - Tagging a release like `v0.1.0` runs CI and publishes a tagged GitHub Release (see CI/CD overview below).
 
-Even if you are not writing code, you can follow progress by watching which
-milestones and issues move toward completion over time.
+### CI/CD overview
 
----
+- **CodeQL code scanning**: the `codeql.yml` workflow runs on pushes and pull requests targeting `main`, plus a weekly scheduled run. It analyzes the JavaScript/TypeScript (Next.js app) and Python (OCR service) code, installing dependencies first so the analyzers see the full project.
+- **Release & package**: the `release-and-package.yml` workflow runs when you push a tag matching `v*.*.*`. It runs `npm test` and `npm run build:web`, creates a GitHub Release for that tag, and publishes the shared package `@raven-dev-ops/accessible-education-software-shared` to GitHub Packages.
+- **Netlify deploys**: the web frontend is deployed via Netlify, which builds from `apps/web` using `npm run build` (as configured in `netlify.toml`). Updating `main` will typically trigger a new deploy for any Netlify site connected to this repository.
+
+  Even if you are not writing code, you can follow progress by watching which
+  milestones and issues move toward completion over time.
+  
+  ---
 
 ## Contributing
 
