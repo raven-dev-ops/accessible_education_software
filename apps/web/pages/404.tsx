@@ -12,11 +12,16 @@ export default function NotFoundPage() {
           Page not found
         </h2>
         <p>
-          We couldn&apos;t find this page in the Accessible Education Platform.
-          It may have been moved, or the URL might be incorrect.
+          Looks like you&apos;ve followed a broken link or entered a URL that
+          doesn&apos;t exist on this site.
+        </p>
+        <p className="text-sm text-gray-700">
+          This site hosts the Accessible Education Platform, an AI-powered
+          system for making STEM notes accessible to blind and low-vision
+          students. Use the links below to get back to a known page.
         </p>
         <div className="space-y-2">
-          <p className="font-medium">Try one of these options:</p>
+          <p className="font-medium">Where would you like to go?</p>
           <ul className="list-disc pl-5 space-y-1 text-sm">
             <li>
               <Link href="/" className="underline">
@@ -25,7 +30,7 @@ export default function NotFoundPage() {
             </li>
             <li>
               <Link href="/login" className="underline">
-                Go to the login / “Coming Soon” page
+                Go to the login / &quot;Coming Soon&quot; page
               </Link>
             </li>
             <li>
