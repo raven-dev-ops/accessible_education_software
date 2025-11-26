@@ -23,6 +23,8 @@ type UploadResponse = {
   source?: "stub" | "ocr_service";
 };
 
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
 function getFirstFile(files: any): any | null {
   const value = files?.file ?? Object.values(files ?? {})[0];
   if (!value) return null;
@@ -43,7 +45,10 @@ export default function handler(
       .json({ ok: false, message: "Method Not Allowed. Use POST." });
   }
 
-  const form = formidableFactory({ multiples: false });
+  const form = formidableFactory({
+    multiples: false,
+    maxFileSize: MAX_FILE_SIZE_BYTES,
+  });
 
   form.parse(req, async (err: unknown, _fields: any, files: any) => {
     if (err) {
@@ -83,6 +88,29 @@ export default function handler(
       return res.status(400).json({
         ok: false,
         message: "No file field found in upload.",
+      });
+    }
+
+    const size =
+      typeof file.size === "number" ? file.size : undefined;
+    if (size && size > MAX_FILE_SIZE_BYTES) {
+      return res.status(413).json({
+        ok: false,
+        message: "File too large. Maximum allowed size is 10MB.",
+      });
+    }
+
+    const mimetype: string = file.mimetype || "";
+    if (
+      !(
+        mimetype === "application/pdf" ||
+        mimetype.startsWith("image/")
+      )
+    ) {
+      return res.status(400).json({
+        ok: false,
+        message:
+          "Unsupported file type. Please upload a PDF or image file.",
       });
     }
 

@@ -14,6 +14,8 @@ app = FastAPI(
     version="0.1.0",
 )
 
+MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
 
 @app.get("/health")
 async def health() -> dict:
@@ -36,6 +38,15 @@ async def run_ocr(file: UploadFile = File(...)) -> JSONResponse:
         )
 
     contents = await file.read()
+
+    if len(contents) > MAX_FILE_SIZE_BYTES:
+        return JSONResponse(
+            status_code=413,
+            content={
+                "ok": False,
+                "message": "Uploaded file is too large. Maximum allowed size is 10MB.",
+            },
+        )
 
     try:
         from io import BytesIO
@@ -62,4 +73,3 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-
