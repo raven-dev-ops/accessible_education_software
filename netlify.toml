@@ -16,6 +16,7 @@
 # - AUTH0_CLIENT_ID
 # - AUTH0_CLIENT_SECRET
 # - NEXT_PUBLIC_AUTH_ENABLED (set "false" for the public "Coming Soon" login placeholder; set "true" only when wired to a staging/production Auth0 tenant)
+# - NEXT_PUBLIC_SHOW_STAGING_BANNER (set "true" on the staging site to show a clear "Staging environment" banner in the UI)
 # - NEXT_PUBLIC_AUTH0_ROLES_CLAIM
 # - OCR_SERVICE_URL (pointing at deployed OCR service)
 # - DATABASE_URL (if using a managed Postgres instance)

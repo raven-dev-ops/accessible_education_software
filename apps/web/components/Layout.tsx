@@ -7,6 +7,10 @@ type LayoutProps = {
   children: ReactNode;
 };
 
+const showStagingBanner =
+  process.env.NEXT_PUBLIC_SHOW_STAGING_BANNER === "true" ||
+  process.env.NEXT_PUBLIC_SHOW_STAGING_BANNER === "1";
+
 export function Layout({ title, children }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-surface-light dark:bg-surface-dark transition-colors">
@@ -25,6 +29,16 @@ export function Layout({ title, children }: LayoutProps) {
           </Link>
         </nav>
       </header>
+      {showStagingBanner && (
+        <div
+          className="bg-yellow-100 border-b border-yellow-300 text-yellow-900 text-sm text-center px-4 py-2"
+          role="status"
+          aria-label="Staging environment notice"
+        >
+          Staging environment – for testing only. Do not use with real student
+          data.
+        </div>
+      )}
       <main className="flex-1 p-6">{children}</main>
     </div>
   );
