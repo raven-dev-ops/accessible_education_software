@@ -363,7 +363,7 @@ Before any real student data is processed in production, the plan is to harden A
 
 Additionally, in this repository:
 
-- The CodeQL workflow performs an explicit JavaScript/TypeScript build (`npm install` + `npm run build:web` from the monorepo root) so that analysis runs against the compiled Next.js app.
+- The CodeQL workflow installs JavaScript/TypeScript dependencies (`npm install` from the monorepo root) before analysis so that the Next.js app and its TypeScript configuration are available to the analyzer.
 - Key API routes such as `/api/students`, `/api/modules`, and `/api/notes` are also protected server-side using Auth0 session/roles (when `NEXT_PUBLIC_AUTH_ENABLED` is true), complementing the frontend page guards.
 
   ---
