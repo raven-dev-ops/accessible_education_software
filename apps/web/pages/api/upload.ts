@@ -4,6 +4,7 @@ import formidableFactory from "formidable";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { prisma } from "../../lib/db";
 
 export const config = {
   api: {
@@ -28,6 +29,7 @@ type UploadResponse = {
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const UPLOAD_TMP_DIR =
   process.env.FILE_UPLOAD_TMP_DIR || os.tmpdir();
+const DB_ENABLED = Boolean(process.env.DATABASE_URL);
 
 async function ensureUploadDir(dir: string): Promise<void> {
   await fs.promises.mkdir(dir, { recursive: true });
@@ -40,6 +42,31 @@ function getFirstFile(files: any): any | null {
     return value[0] ?? null;
   }
   return value;
+}
+
+type UploadStatus = "RECEIVED" | "PROCESSING" | "COMPLETE" | "FAILED";
+
+async function recordUpload(opts: {
+  filename?: string | null;
+  mimetype?: string | null;
+  size?: number;
+  status: UploadStatus;
+  ocrText?: string | null;
+}) {
+  if (!DB_ENABLED) return;
+  try {
+    await prisma.upload.create({
+      data: {
+        filename: opts.filename ?? null,
+        mimetype: opts.mimetype ?? null,
+        size: opts.size ?? null,
+        status: opts.status,
+        ocrText: opts.ocrText ?? null,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to persist upload metadata:", error);
+  }
 }
 
 export default async function handler(
@@ -93,6 +120,13 @@ export default async function handler(
     const ocrServiceUrl = process.env.OCR_SERVICE_URL;
     if (!ocrServiceUrl) {
       console.log("Received upload (stub, OCR_SERVICE_URL not set):", fileInfos);
+      void recordUpload({
+        filename: fileInfos[0]?.originalFilename ?? null,
+        mimetype: null,
+        size: fileInfos[0]?.size,
+        status: "COMPLETE",
+        ocrText: null,
+      });
       return res.status(200).json({
         ok: true,
         source: "stub",
@@ -113,6 +147,12 @@ export default async function handler(
     const size =
       typeof file.size === "number" ? file.size : undefined;
     if (size && size > MAX_FILE_SIZE_BYTES) {
+      void recordUpload({
+        filename: file.originalFilename ?? null,
+        mimetype: file.mimetype ?? null,
+        size,
+        status: "FAILED",
+      });
       return res.status(413).json({
         ok: false,
         message: "File too large. Maximum allowed size is 10MB.",
@@ -126,6 +166,12 @@ export default async function handler(
         mimetype.startsWith("image/")
       )
     ) {
+      void recordUpload({
+        filename: file.originalFilename ?? null,
+        mimetype: file.mimetype ?? null,
+        size,
+        status: "FAILED",
+      });
       return res.status(400).json({
         ok: false,
         message:
@@ -169,6 +215,12 @@ export default async function handler(
       if (!response.ok) {
         const bodyText = await response.text().catch(() => "");
         console.error("OCR service error:", response.status, bodyText);
+        void recordUpload({
+          filename: file.originalFilename ?? null,
+          mimetype: file.mimetype ?? null,
+          size,
+          status: "FAILED",
+        });
         return res.status(502).json({
           ok: false,
           message: "OCR service returned an error.",
@@ -180,6 +232,14 @@ export default async function handler(
         filename?: string;
       };
 
+      void recordUpload({
+        filename: file.originalFilename ?? null,
+        mimetype: file.mimetype ?? null,
+        size,
+        status: "COMPLETE",
+        ocrText: data.text ?? null,
+      });
+
       return res.status(200).json({
         ok: true,
         source: "ocr_service",
@@ -189,6 +249,12 @@ export default async function handler(
       });
     } catch (uploadError) {
       console.error("Error calling OCR service:", uploadError);
+      void recordUpload({
+        filename: file?.originalFilename ?? null,
+        mimetype: file?.mimetype ?? null,
+        size: typeof file?.size === "number" ? file.size : undefined,
+        status: "FAILED",
+      });
       return res.status(500).json({
         ok: false,
         message: "Failed to send file to OCR service.",

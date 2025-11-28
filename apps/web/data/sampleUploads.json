@@ -1,0 +1,18 @@
+[
+  {
+    "id": "upl-sample-1",
+    "filename": "calculus_notes_page1.png",
+    "mimetype": "image/png",
+    "size": 204800,
+    "status": "COMPLETE",
+    "createdAt": "2025-01-01T09:15:00.000Z"
+  },
+  {
+    "id": "upl-sample-2",
+    "filename": "derivatives.pdf",
+    "mimetype": "application/pdf",
+    "size": 512000,
+    "status": "PROCESSING",
+    "createdAt": "2025-01-02T10:30:00.000Z"
+  }
+]

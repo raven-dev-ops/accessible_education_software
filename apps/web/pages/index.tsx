@@ -1,17 +1,17 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useSession } from "next-auth/react";
 
 export default function Home() {
   const router = useRouter();
-  const { user } = useUser();
+  const { data: session } = useSession();
 
   useEffect(() => {
-    if (user) {
+    if (session?.user) {
       void router.push("/dashboard");
     }
-  }, [user, router]);
+  }, [session, router]);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6">
