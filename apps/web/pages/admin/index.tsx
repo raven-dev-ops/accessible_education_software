@@ -58,6 +58,7 @@ function AdminPage() {
   const { data: session, status } = useSession();
   const preview = router.query.preview === "1";
   const showPreviewNav = router.query.showPreviewNav === "1";
+  const role = session?.user ? getRoleFromUser(session.user) : null;
   const [unauthorized, setUnauthorized] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [studentsError, setStudentsError] = useState<string | null>(null);
@@ -74,34 +75,39 @@ function AdminPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [ticketsError, setTicketsError] = useState<string | null>(null);
   const [ticketsLoading, setTicketsLoading] = useState(true);
-  const allowSamples = preview || allowSampleEnv;
+  const [useSamples, setUseSamples] = useState(preview || allowSampleEnv);
+  const isPreviewOnly = preview && (!session || !session.user);
 
   useEffect(() => {
-      if (!authEnabled) return;
+    if (!authEnabled) return;
     if (status === "loading") return;
+    if (preview) {
+      setUnauthorized(false);
+      return;
+    }
     if (!session || !session.user) {
       void router.replace("/login");
       return;
     }
 
-    const role = getRoleFromUser(session.user);
+    const r = getRoleFromUser(session.user);
 
-    if (role !== "admin") {
+    if (r !== "admin") {
       setUnauthorized(true);
       void router.replace("/dashboard");
     }
-  }, [session, status, router]);
+  }, [session, status, router, preview]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadStudents() {
-      if (authEnabled && (!session || !session.user || unauthorized)) return;
+      if (authEnabled && !isPreviewOnly && (!session || !session.user || unauthorized)) return;
       if (unauthorized) return;
       try {
         const res = await fetch("/api/students");
         if (!res.ok) {
-          if (allowSamples) {
+          if (useSamples) {
             setStudents(sampleStudents as Student[]);
             setStudentsError(null);
           } else {
@@ -115,7 +121,7 @@ function AdminPage() {
           if (data.length) {
             setStudents(data);
             setStudentsError(null);
-          } else if (allowSamples) {
+          } else if (useSamples) {
             setStudents(sampleStudents as Student[]);
             setStudentsError(null);
           } else {
@@ -125,7 +131,7 @@ function AdminPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          if (allowSamples) {
+          if (useSamples) {
             setStudents(sampleStudents as Student[]);
             setStudentsError(null);
           } else {
@@ -141,12 +147,12 @@ function AdminPage() {
 
     void loadStudents();
     async function loadUploads() {
-      if (authEnabled && (!session || !session.user || unauthorized)) return;
+      if (authEnabled && !isPreviewOnly && (!session || !session.user || unauthorized)) return;
       if (unauthorized) return;
       try {
         const res = await fetch("/api/uploads");
         if (!res.ok) {
-          if (allowSamples) {
+          if (useSamples) {
             setUploads(sampleUploads as UploadSummary[]);
             setUploadsError(null);
           } else {
@@ -160,7 +166,7 @@ function AdminPage() {
           if (data.length) {
             setUploads(data);
             setUploadsError(null);
-          } else if (allowSamples) {
+          } else if (useSamples) {
             setUploads(sampleUploads as UploadSummary[]);
             setUploadsError(null);
           } else {
@@ -170,7 +176,7 @@ function AdminPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          if (allowSamples) {
+          if (useSamples) {
             setUploads(sampleUploads as UploadSummary[]);
             setUploadsError(null);
           } else {
@@ -186,12 +192,12 @@ function AdminPage() {
 
     void loadUploads();
     async function loadTickets() {
-      if (authEnabled && (!session || !session.user || unauthorized)) return;
+      if (authEnabled && !isPreviewOnly && (!session || !session.user || unauthorized)) return;
       if (unauthorized) return;
       try {
         const res = await fetch("/api/support-tickets");
         if (!res.ok) {
-          if (allowSamples) {
+          if (useSamples) {
             setTickets(normalizeTickets(sampleTickets as any));
             setTicketsError(null);
           } else {
@@ -206,7 +212,7 @@ function AdminPage() {
           if (normalized.length) {
             setTickets(normalized);
             setTicketsError(null);
-          } else if (allowSamples) {
+          } else if (useSamples) {
             setTickets(normalizeTickets(sampleTickets as any));
             setTicketsError(null);
           } else {
@@ -216,7 +222,7 @@ function AdminPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          if (allowSamples) {
+          if (useSamples) {
             setTickets(normalizeTickets(sampleTickets as any));
             setTicketsError(null);
           } else {
@@ -235,7 +241,7 @@ function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [unauthorized, session, allowSamples]);
+  }, [unauthorized, session, useSamples, isPreviewOnly]);
 
   const handleTestOcr = async () => {
     setOcrLoading(true);
@@ -350,6 +356,24 @@ function AdminPage() {
       </select>
     </label>
   ) : undefined;
+
+  const sampleToggle =
+    role === "admin" ? (
+      <button
+        type="button"
+        onClick={() => setUseSamples((v) => !v)}
+        className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+      >
+        Samples: {useSamples ? "On" : "Off"}
+      </button>
+    ) : null;
+
+  const secondaryNav = (
+    <>
+      {previewNav}
+      {sampleToggle}
+    </>
+  );
 
   return (
     <Layout title="Admin Dashboard" secondaryNav={previewNav}>
