@@ -32,7 +32,7 @@ export function Layout({ title, children }: LayoutProps) {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                void signOut({ callbackUrl: "/login" });
+                void signOut({ callbackUrl: "/login?skipAuth=1" });
               }}
               className="px-3 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm"
             >

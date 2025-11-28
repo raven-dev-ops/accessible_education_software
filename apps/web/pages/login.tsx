@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { signIn } from "next-auth/react";
 
 const authEnabled =
@@ -7,17 +8,39 @@ const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
 
 export default function Login() {
-  // When auth is enabled (e.g. staging/production), forward to Google sign-in.
+  const router = useRouter();
+  const skipAuth = router.query.skipAuth === "1";
+
+  // When auth is enabled (e.g. staging/production), forward to Google sign-in unless skipping.
   useEffect(() => {
-    if (authEnabled) {
+    if (authEnabled && !skipAuth) {
       void signIn("google");
     }
-  }, []);
+  }, [skipAuth]);
 
   if (authEnabled) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p>Redirecting to secure login…</p>
+      <main className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        <div className="max-w-xl w-full bg-white rounded-2xl shadow-lg p-6 text-center border border-slate-200">
+          {skipAuth ? (
+            <>
+              <h1 className="text-2xl font-semibold text-slate-900 mb-3">
+                Sign back in
+              </h1>
+              <p className="text-slate-600 mb-4">
+                You have been signed out. Continue to sign in with Google.
+              </p>
+              <button
+                onClick={() => signIn("google")}
+                className="inline-block px-4 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-sm hover:bg-blue-700 transition"
+              >
+                Continue with Google
+              </button>
+            </>
+          ) : (
+            <p>Redirecting to secure login…</p>
+          )}
+        </div>
       </main>
     );
   }
@@ -25,7 +48,7 @@ export default function Login() {
   const showDevLogin = process.env.NODE_ENV !== "production";
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
+    <main className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <div className="max-w-xl text-center space-y-4">
         <h1 className="text-2xl font-semibold">
           Accessible Education Platform
