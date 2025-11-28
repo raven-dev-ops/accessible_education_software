@@ -23,9 +23,29 @@ type UploadSummary = {
   createdAt?: string | null;
 };
 
+type SupportTicket = {
+  id: string;
+  detail: string;
+  createdAt: string;
+  score?: number | null;
+  userEmail?: string | null;
+  attachmentUrl?: string | null;
+};
+
 const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
+
+const normalizeTickets = (raw: any[]): SupportTicket[] =>
+  (raw || []).map((t: any) => ({
+    id: t.id ?? (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : String(Math.random())),
+    detail: t.detail ?? t.message ?? "OCR issue reported",
+    createdAt: t.createdAt ?? new Date().toISOString(),
+    score: t.score ?? t.meta?.score ?? null,
+    userEmail: t.userEmail ?? t.studentEmail ?? t.meta?.userEmail ?? null,
+    attachmentUrl: t.attachmentUrl ?? t.meta?.attachmentUrl ?? null,
+  }));
+
 
 function AdminPage() {
   const router = useRouter();
@@ -43,9 +63,7 @@ function AdminPage() {
   const [uploads, setUploads] = useState<UploadSummary[]>([]);
   const [uploadsError, setUploadsError] = useState<string | null>(null);
   const [uploadsLoading, setUploadsLoading] = useState(true);
-  const [tickets, setTickets] = useState<
-    { id: string; detail: string; createdAt: string; score?: number | null; userEmail?: string | null }[]
-  >([]);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [ticketsError, setTicketsError] = useState<string | null>(null);
   const [ticketsLoading, setTicketsLoading] = useState(true);
 
@@ -131,19 +149,20 @@ function AdminPage() {
       try {
         const res = await fetch("/api/support-tickets");
         if (!res.ok) {
-          setTickets(sampleTickets as any);
+          setTickets(normalizeTickets(sampleTickets as any));
           setTicketsError(null);
           setTicketsLoading(false);
           return;
         }
         const data = (await res.json()) as typeof sampleTickets;
+        const normalized = normalizeTickets(Array.isArray(data) ? data : []);
         if (!cancelled) {
-          setTickets(data.length ? data : (sampleTickets as any));
+          setTickets(normalized.length ? normalized : normalizeTickets(sampleTickets as any));
           setTicketsError(null);
         }
       } catch (error) {
         if (!cancelled) {
-          setTickets(sampleTickets as any);
+          setTickets(normalizeTickets(sampleTickets as any));
           setTicketsError(null);
         }
       } finally {
@@ -627,44 +646,92 @@ function AdminPage() {
                 </div>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-                Recent tickets submitted when OCR failed or scored under 80%. Includes the reported detail and score.
+                Recent tickets submitted when OCR failed or scored under 80%. Includes the reported detail, score, and any attachment preview.
               </p>
               {ticketsError && (
                 <p role="alert" className="text-red-600 dark:text-red-300 text-sm">
                   {ticketsError}
                 </p>
               )}
-              {ticketsLoading && <p className="text-sm text-slate-500">Loading tickets…</p>}
-              {!ticketsLoading && !ticketsError && (
-                <ul className="space-y-3 text-sm">
-                  {tickets.map((t) => (
-                    <li
-                      key={t.id}
-                      className="p-3 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="font-semibold text-slate-900 dark:text-slate-100">
-                          OCR quality issue (&lt;80%)
-                        </div>
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            (t.score ?? 0) < 80
-                              ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                              : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
-                          }`}
-                        >
-                          Score: {t.score ?? "N/A"}%
-                        </span>
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {new Date(t.createdAt).toLocaleString()}
-                        {t.userEmail ? ` • ${t.userEmail}` : ""}
-                      </div>
-                      <p className="mt-1 text-slate-800 dark:text-slate-100">{t.detail}</p>
-                      <p className="text-xs text-slate-500 mt-1">Flagged for review</p>
-                    </li>
-                  ))}
-                </ul>
+              {ticketsLoading && <p className="text-sm text-slate-500">Loading tickets...</p>}
+              {!ticketsLoading && !ticketsError && tickets.length === 0 && (
+                <p className="text-sm text-slate-600 dark:text-slate-300">No tickets yet.</p>
+              )}
+              {!ticketsLoading && !ticketsError && tickets.length > 0 && (
+                <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Student</th>
+                        <th className="px-3 py-2 text-left">Created</th>
+                        <th className="px-3 py-2 text-left">Score</th>
+                        <th className="px-3 py-2 text-left">Detail</th>
+                        <th className="px-3 py-2 text-left">Attachment</th>
+                        <th className="px-3 py-2 text-left">Preview</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tickets.map((t) => {
+                        const isImage =
+                          t.attachmentUrl &&
+                          /(png|jpe?g|gif|webp|bmp|svg)$/i.test(t.attachmentUrl.split("?")[0]);
+                        return (
+                          <tr key={t.id} className="border-t border-slate-100 dark:border-slate-800 align-top">
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {t.userEmail ?? "Unknown"}
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                              {new Date(t.createdAt).toLocaleString()}
+                            </td>
+                            <td className="px-3 py-2">
+                              <span
+                                className={`px-2 py-1 rounded text-xs ${
+                                  (t.score ?? 0) < 80
+                                    ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                    : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                                }`}
+                              >
+                                {t.score != null ? `${t.score}%` : "N/A"}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100 max-w-xs">
+                              <div className="line-clamp-3">{t.detail}</div>
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {t.attachmentUrl ? (
+                                <a
+                                  href={t.attachmentUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-blue-600 dark:text-blue-300 underline"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                "—"
+                              )}
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {isImage ? (
+                                <img
+                                  src={t.attachmentUrl as string}
+                                  alt="Attachment preview"
+                                  className="h-16 w-auto rounded border border-slate-200 dark:border-slate-700 object-contain"
+                                />
+                              ) : t.attachmentUrl ? (
+                                <span className="text-xs text-slate-500 dark:text-slate-300">
+                                  Preview unavailable
+                                </span>
+                              ) : (
+                                "—"
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </section>
           </div>

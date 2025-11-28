@@ -105,11 +105,17 @@ export default async function handler(
         } catch (uploadErr) {
           console.error("Attachment upload failed", uploadErr);
         } finally {
-          // Clean temp file
+          // Clean temp file safely (avoid path traversal by enforcing tmp dir prefix)
           try {
-            fs.unlinkSync(attachment.filepath);
-          } catch {
-            /* ignore */
+            const tmpRoot = path.resolve(os.tmpdir());
+            const resolved = path.resolve(attachment.filepath);
+            if (resolved.startsWith(tmpRoot)) {
+              fs.unlinkSync(resolved);
+            } else {
+              console.warn("Skipped unlink for unexpected temp path", resolved);
+            }
+          } catch (unlinkErr) {
+            console.warn("Failed to unlink temp attachment", unlinkErr);
           }
         }
       }
