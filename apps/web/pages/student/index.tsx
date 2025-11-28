@@ -47,6 +47,7 @@ function StudentPage() {
   const [speechStatus, setSpeechStatus] = useState<string | null>(null);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [activeSpeechId, setActiveSpeechId] = useState<string | null>(null);
+  const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
   const [notes, setNotes] = useState<ReleasedNote[]>([]);
   const [notesLoading, setNotesLoading] = useState(true);
   const [notesError, setNotesError] = useState<string | null>(null);
@@ -137,6 +138,7 @@ function StudentPage() {
     }
 
     setSpeechError(null);
+    const words = text.split(" ");
     const voice = voices.find((v) => v.voiceURI === selectedVoiceUri);
     const utterance = speakText(text, {
       volume,
@@ -156,12 +158,24 @@ function StudentPage() {
             return prev - 1;
           });
         }, 1000);
+        // crude word-level highlight cadence
+        let i = 0;
+        const wordTimer = setInterval(() => {
+          if (!isSpeaking || i >= words.length) {
+            clearInterval(wordTimer);
+            setHighlightIndex(null);
+            return;
+          }
+          setHighlightIndex(i);
+          i += 1;
+        }, 400);
       },
       onEnd: () => {
         setIsSpeaking(false);
         setActiveSpeechId(null);
         setSpeechStatus(`Finished reading ${label}.`);
         setCountdown(null);
+        setHighlightIndex(null);
       },
       onError: () => {
         setIsSpeaking(false);
@@ -169,6 +183,7 @@ function StudentPage() {
         setSpeechStatus(null);
         setSpeechError(`Text-to-speech could not play ${label}.`);
         setCountdown(null);
+        setHighlightIndex(null);
       },
     });
 
@@ -460,11 +475,32 @@ function StudentPage() {
               <div className="text-sm text-gray-800 dark:text-gray-200 mb-2 space-y-2">
                 <p className="font-semibold">Sample paragraphs</p>
                 <ul className="list-disc pl-5 space-y-1">
-                  {sampleParagraphs.map((p, idx) => (
-                    <li key={idx} className={idx === sampleParagraphIndex ? "font-semibold" : ""}>
-                      {p}
-                    </li>
-                  ))}
+                  {sampleParagraphs.map((p, idx) => {
+                    const words = p.split(" ");
+                    return (
+                      <li key={idx} className={idx === sampleParagraphIndex ? "font-semibold" : ""}>
+                        {idx === sampleParagraphIndex ? (
+                          <span>
+                            {words.map((w, wi) => (
+                              <span
+                                key={`${idx}-${wi}`}
+                                className={
+                                  highlightIndex === wi && activeSpeechId === "sample-note"
+                                    ? "bg-yellow-200 dark:bg-yellow-500/60"
+                                    : ""
+                                }
+                              >
+                                {w}
+                                {wi < words.length - 1 ? " " : ""}
+                              </span>
+                            ))}
+                          </span>
+                        ) : (
+                          p
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
                 <p className="mt-2 font-semibold">TL;DR</p>
                 <p>{sampleTLDR}</p>
