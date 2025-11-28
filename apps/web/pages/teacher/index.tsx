@@ -439,7 +439,7 @@ function TeacherPage() {
               <select
                 value={selectedModuleId}
                 onChange={(e) => setSelectedModuleId(e.target.value)}
-                className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800"
+                className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
               >
                 {modules.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -450,15 +450,26 @@ function TeacherPage() {
             </label>
             <label className="block">
               <span className="block mb-1 text-sm">Upload course material (PDF/image)</span>
-              <input type="file" accept=".pdf,image/*" className="block w-full text-sm" />
+              <input
+                type="file"
+                accept=".pdf,image/*"
+                className="block w-full text-sm border rounded px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
+              />
             </label>
             <label className="block">
               <span className="block mb-1 text-sm">Optional description (up to ~2000 characters)</span>
-              <textarea className="block w-full border rounded p-2 text-sm" rows={4} maxLength={2000} />
+              <textarea
+                className="block w-full border rounded p-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
+                rows={4}
+                maxLength={2000}
+              />
             </label>
             <label className="block">
               <span className="block mb-1 text-sm">Planned release date</span>
-              <input type="datetime-local" className="block w-full border rounded p-2 text-sm" />
+              <input
+                type="datetime-local"
+                className="block w-full border rounded p-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 placeholder:text-slate-500 dark:placeholder:text-slate-400"
+              />
             </label>
             <button type="button" className="px-4 py-2 rounded bg-blue-600 text-white text-sm">
               Save
