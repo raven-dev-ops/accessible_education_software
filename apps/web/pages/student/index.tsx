@@ -533,26 +533,40 @@ function StudentPage() {
           <div className="space-y-3">
             <label className="block text-lg">
               <span className="block mb-1">Choose image or PDF</span>
-              <input
-                type="file"
-                accept=".pdf,image/*"
-                className="block w-full text-base border rounded p-2 bg-white dark:bg-slate-800"
-                onChange={(e) => {
-                  const file = e.target.files?.[0] || null;
-                  setUploadFileName(file ? file.name : null);
-                  setUploadStatus(null);
-                  setUploadError(null);
-                  setUploadPreview(null);
-                  setUploadScore(null);
-                  setCorrectionText("");
-                  setUploadImageUrl(null);
-                  if (file && file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = () => setUploadImageUrl(reader.result as string);
-                    reader.readAsDataURL(file);
-                  }
-                }}
-              />
+              <div className="flex flex-col md:flex-row gap-3 items-start">
+                <input
+                  type="file"
+                  accept=".pdf,image/*"
+                  className="block w-full text-base border rounded p-2 bg-white dark:bg-slate-800"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setUploadFileName(file ? file.name : null);
+                    setUploadStatus(null);
+                    setUploadError(null);
+                    setUploadPreview(null);
+                    setUploadScore(null);
+                    setCorrectionText("");
+                    setUploadImageUrl(null);
+                    if (file && file.type.startsWith("image/")) {
+                      const reader = new FileReader();
+                      reader.onload = () => setUploadImageUrl(reader.result as string);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+                <div className="min-w-[180px] w-full md:w-48">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mb-1">Selected image</p>
+                  {uploadImageUrl ? (
+                    <div className="relative w-full h-32 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded">
+                      <Image src={uploadImageUrl} alt="Uploaded preview" fill className="object-contain rounded" />
+                    </div>
+                  ) : (
+                    <div className="h-32 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 rounded border border-dashed border-slate-300 dark:border-slate-700">
+                      No image selected
+                    </div>
+                  )}
+                </div>
+              </div>
             </label>
 
             <label className="block text-lg">
@@ -594,60 +608,36 @@ function StudentPage() {
               Upload & format for TTS
             </button>
 
-            <div className="grid gap-3 md:grid-cols-2">
+            {(uploadStatus || uploadError || uploadPreview) && (
               <div className="rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
-                <h3 className="text-sm font-semibold mb-2">Selected image</h3>
-                {uploadImageUrl ? (
-                  <div className="relative w-full h-48 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded">
-                    <Image
-                      src={uploadImageUrl}
-                      alt="Uploaded preview"
-                      fill
-                      className="object-contain rounded"
-                    />
-                  </div>
-                ) : (
-                  <div className="h-48 flex items-center justify-center text-sm text-slate-500 dark:text-slate-300 rounded border border-dashed border-slate-300 dark:border-slate-700">
-                    No image selected
-                  </div>
-                )}
-              </div>
-              {(uploadStatus || uploadError || uploadPreview) && (
-                <div className="rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
-                  <h3 className="text-sm font-semibold mb-2">Review OCR + formatting</h3>
-                  {uploadPreview ? (
-                    <div className="grid gap-2 md:grid-cols-2">
-                      <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-white dark:bg-slate-900 md:col-span-1">
-                        {uploadPreview}
-                      </pre>
-                      <div className="md:col-span-1 space-y-2">
-                        <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
-                          {uploadImageUrl ? (
-                            <div className="relative h-full w-full">
-                              <Image
-                                src={uploadImageUrl}
-                                alt="Scanned region"
-                                fill
-                                className="object-contain rounded"
-                              />
+                <h3 className="text-sm font-semibold mb-2">Review OCR + formatting</h3>
+                {uploadPreview ? (
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-white dark:bg-slate-900 md:col-span-1">
+                      {uploadPreview}
+                    </pre>
+                    <div className="md:col-span-1 space-y-2">
+                      <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
+                        {uploadImageUrl ? (
+                          <div className="relative h-full w-full">
+                            <Image src={uploadImageUrl} alt="Scanned region" fill className="object-contain rounded" />
+                            <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
+                              Scanned region
                             </div>
-                          ) : (
-                            <span className="text-sm text-slate-500 dark:text-slate-300">Region preview</span>
-                          )}
-                          <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-                            Scanned region
                           </div>
-                        </div>
+                        ) : (
+                          <span className="text-sm text-slate-500 dark:text-slate-300">Region preview</span>
+                        )}
                       </div>
                     </div>
-                  ) : (
-                    <p className="text-sm text-slate-600 dark:text-slate-300">
-                      Upload to see OCR and formatting preview.
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-600 dark:text-slate-300">
+                    Upload to see OCR and formatting preview.
+                  </p>
+                )}
+              </div>
+            )}
 
             {(uploadStatus || uploadError) && (
               <div
