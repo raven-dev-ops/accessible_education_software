@@ -304,10 +304,8 @@ function TeacherPage() {
   const training = trainingSets[selectedModule?.id as string] ?? Object.values(trainingSets)[0];
 
   const previewNav = showPreviewNav ? (
-    <div className="flex items-center gap-2 text-sm">
-      <label className="text-slate-700 dark:text-slate-200" htmlFor="preview-nav-teacher">
-        Preview:
-      </label>
+    <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200" htmlFor="preview-nav-teacher">
+      <span className="sr-only">Preview role</span>
       <select
         id="preview-nav-teacher"
         className="px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
@@ -321,13 +319,7 @@ function TeacherPage() {
         <option value="teacher">Teacher</option>
         <option value="admin">Admin</option>
       </select>
-      <Link
-        className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 text-sm"
-        href="/login?skipAuth=1"
-      >
-        Back to login
-      </Link>
-    </div>
+    </label>
   ) : undefined;
 
   return (

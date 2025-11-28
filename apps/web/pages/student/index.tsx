@@ -422,10 +422,8 @@ function StudentPage() {
   }, [brailleSourceText, braillePreferredEngine, brailleTable, brailleSourceVersion]);
 
   const previewNav = showPreviewNav ? (
-    <div className="flex items-center gap-2 text-sm">
-      <label className="text-slate-700 dark:text-slate-200" htmlFor="preview-nav-student">
-        Preview:
-      </label>
+    <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200" htmlFor="preview-nav-student">
+      <span className="sr-only">Preview role</span>
       <select
         id="preview-nav-student"
         className="px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
@@ -439,13 +437,7 @@ function StudentPage() {
         <option value="teacher">Teacher</option>
         <option value="admin">Admin</option>
       </select>
-      <Link
-        className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 text-sm"
-        href="/login?skipAuth=1"
-      >
-        Back to login
-      </Link>
-    </div>
+    </label>
   ) : undefined;
 
   if (unauthorized) {
