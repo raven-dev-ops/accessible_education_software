@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { Layout } from "../../components/Layout";
 import { getRoleFromUser } from "../../lib/roleUtils";
 import sampleStudents from "../../data/sampleStudents.json";
@@ -713,9 +714,11 @@ function AdminPage() {
                             </td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
                               {isImage ? (
-                                <img
+                                <Image
                                   src={t.attachmentUrl as string}
                                   alt="Attachment preview"
+                                  width={200}
+                                  height={200}
                                   className="h-16 w-auto rounded border border-slate-200 dark:border-slate-700 object-contain"
                                 />
                               ) : t.attachmentUrl ? (
