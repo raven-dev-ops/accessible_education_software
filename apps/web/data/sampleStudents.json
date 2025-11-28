@@ -1,7 +1,6 @@
 [
-  { "id": 1, "name": "Alice A.", "email": "[email protected]", "course": "Calculus I" },
-  { "id": 2, "name": "Bob B.", "email": "[email protected]", "course": "Calculus I" },
-  { "id": 3, "name": "Charlie C.", "email": "[email protected]", "course": "Calculus I" },
-  { "id": 4, "name": "Dana D.", "email": "[email protected]", "course": "Calculus I" }
+  { "id": 1, "name": "Alice A.", "email": "alice@example.com", "course": "Calculus I" },
+  { "id": 2, "name": "Bob B.", "email": "bob@example.com", "course": "Calculus I" },
+  { "id": 3, "name": "Charlie C.", "email": "charlie@example.com", "course": "Calculus I" },
+  { "id": 4, "name": "Dana D.", "email": "dana@example.com", "course": "Calculus I" }
 ]
-
