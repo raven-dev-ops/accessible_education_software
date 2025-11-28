@@ -10,7 +10,7 @@
     "lint": "next lint",
     "seed:sample": "node scripts/seed-sample.js",
     "test": "echo \"No frontend tests defined yet\"",
-    "a11y:smoke": "playwright install --with-deps chromium && node scripts/a11y-smoke.ts"
+    "a11y:smoke": "playwright install --with-deps chromium && node scripts/a11y-smoke.js"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
