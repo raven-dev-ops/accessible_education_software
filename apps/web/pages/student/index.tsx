@@ -773,24 +773,42 @@ function StudentPage() {
             </p>
           )}
           {ttsSupported && (
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="max-w-6xl mx-auto grid gap-6 lg:grid-cols-2">
               <div className="space-y-4">
-                <p className="text-lg leading-relaxed">
-                  Use the controls below to hear a sample Calculus I note read out loud. This simulates how your own notes
+                <p className="text-lg leading-relaxed text-center lg:text-left">
+                  Use the controls below to hear a sample Calculus I note read aloud. This simulates how your own notes
                   will sound once OCR and TTS are fully wired.
                 </p>
                 <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
                   <div>
-                    <p className="font-semibold text-sm text-slate-900 dark:text-slate-50">Sample paragraphs</p>
-                    <ul className="list-disc pl-5 space-y-1 text-sm text-slate-800 dark:text-slate-200">
-                      {sampleParagraphs.map((p, idx) => (
-                        <li
-                          key={idx}
-                          className={idx === sampleParagraphIndex ? "font-semibold text-blue-700 dark:text-blue-300" : ""}
-                        >
-                          {p}
-                        </li>
-                      ))}
+                    <p className="font-semibold text-sm text-slate-900 dark:text-slate-50">Paragraphs</p>
+                    <ul className="space-y-1 text-sm text-slate-800 dark:text-slate-200">
+                      {sampleParagraphs.map((p, idx) => {
+                        const snippet = p.length > 96 ? `${p.slice(0, 96)}…` : p;
+                        return (
+                          <li
+                            key={idx}
+                            className={`flex items-center justify-between gap-2 rounded px-2 py-1 ${
+                              idx === sampleParagraphIndex ? "bg-blue-50 dark:bg-blue-900/30" : ""
+                            }`}
+                          >
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                                Paragraph {idx + 1}
+                              </div>
+                              <div className="text-sm">{snippet}</div>
+                            </div>
+                            <button
+                              type="button"
+                              className="px-2 py-1 text-xs rounded border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              onClick={() => setSampleParagraphIndex(idx)}
+                              aria-label={`Read paragraph ${idx + 1}`}
+                            >
+                              Play
+                            </button>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                   <div>
