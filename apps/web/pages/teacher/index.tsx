@@ -70,7 +70,7 @@ function TeacherPage() {
     return () => {
       cancelled = true;
     };
-  }, [unauthorized, authEnabled, session]);
+  }, [unauthorized, session]);
 
   if (unauthorized) {
     return (

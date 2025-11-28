@@ -114,7 +114,7 @@ function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [unauthorized, authEnabled, session]);
+  }, [unauthorized, session]);
 
 
   const handleTestOcr = async () => {
