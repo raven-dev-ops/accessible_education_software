@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { Layout } from "../../components/Layout";
 import { getRoleFromUser } from "../../lib/roleUtils";
+import sampleStudents from "../../data/sampleStudents.json";
+import sampleUploads from "../../data/sampleUploads.json";
 
 type Student = {
   id: number;
@@ -70,7 +72,7 @@ function AdminPage() {
         }
         const data: Student[] = await res.json();
         if (!cancelled) {
-          setStudents(data);
+          setStudents(data.length ? data : (sampleStudents as Student[]));
           setStudentsError(null);
         }
       } catch (error) {
@@ -95,7 +97,7 @@ function AdminPage() {
         }
         const data = (await res.json()) as UploadSummary[];
         if (!cancelled) {
-          setUploads(data);
+          setUploads(data.length ? data : (sampleUploads as UploadSummary[]));
           setUploadsError(null);
         }
       } catch (error) {
@@ -277,7 +279,7 @@ function AdminPage() {
             </section>
 
             <section
-              className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5"
+              className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 h-full"
               aria-labelledby="admin-upload"
             >
               <h2 id="admin-upload" className="text-lg font-semibold mb-2">
