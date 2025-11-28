@@ -31,11 +31,14 @@ export function ThemeToggle() {
     if (typeof document === "undefined") return;
 
     const root = document.documentElement;
+    const body = document.body;
 
     if (theme === "dark") {
       root.classList.add("dark");
+      body.classList.add("dark");
     } else {
       root.classList.remove("dark");
+      body.classList.remove("dark");
     }
 
     window.localStorage.setItem(STORAGE_KEY, theme);
@@ -56,4 +59,3 @@ export function ThemeToggle() {
     </button>
   );
 }
-
