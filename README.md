@@ -60,15 +60,16 @@ The system helps **students**, **teachers**, and **site admins** work with handw
     - Upload handwritten notes
     - Attach short notes (up to **500 words**)
     - Access teacher-released course materials
-    - Listen to OCR output (planned)
+    - TTS sample (voice search, volume, countdown, prev/next), Braille preview, support ticket submission (OCR issues; attachments to GCS when configured)
   - **Teacher dashboard**
-    - Upload materials (images/PDFs)
-    - Attach detailed notes (up to **2000 words**)
-    - Schedule auto-release or manual release of content
-    - Review student uploads (planned)
+    - Upload materials (images/PDFs), attach detailed notes (up to **2000 words**)
+    - Module-aware training checklist (per-equation upload/status/editable OCR text)
+    - AI chat placeholder for module/OCR Q&A
+    - Support ticket review table: view attachment/score/status, close/escalate
   - **Admin dashboard**
     - View student information
     - Monitor system logs and analytics (planned)
+    - See sample support tickets and links to dashboards
 
 - **Authentication with Google (NextAuth)**
   - Google-backed login via NextAuth
@@ -88,17 +89,12 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 ---
 
-## Status (Day 5)
+## Status (Week 1)
 
-- Version **0.2.0** (Day 5): Swapped Auth0 for Google OAuth via NextAuth, added email-based role mapping, and refreshed Netlify env templates. Cloud SQL (Postgres) is provisioned with private IP and ready for proxy-based access.
-- OAuth client configured with redirect URIs for Netlify + localhost; NextAuth now drives login/logout/callbacks.
-- Docs updated for NextAuth/Google env vars, Netlify deployment, and Cloud SQL connection requirements.
-
-### Issue updates (Day 5)
-
-- [x] Replace Auth0 integration with NextAuth + Google provider (`apps/web/lib/authOptions.ts`, `/api/auth/[...nextauth].ts`, updated pages/layout).
-- [x] Add email allowlists for admin/teacher roles (`ADMIN_EMAILS`, `TEACHER_EMAILS`) and NextAuth session role wiring.
-- [x] Refresh env examples and Netlify guidance for Google OAuth and private Cloud SQL.
+- Version **0.3.x**: Google OAuth via NextAuth; role-based routing; Cloud SQL (Postgres) private IP.
+- Student dashboard: low-vision friendly layout, collapsible accessibility widget, TTS voice/volume prefs, multi-paragraph sample (prev/next, countdown), Braille preview, support tickets with attachment upload to GCS (when configured).
+- Teacher dashboard: profile card, module-aware training checklist (per-equation upload/status/editable OCR text), AI chat placeholder, course upload, support ticket review table (pulls `/api/support-tickets`, view/close/escalate).
+- Admin dashboard: students/uploads with sample fallback; sample support tickets; logout fixed in light mode.
 
 ---
 
@@ -500,3 +496,4 @@ Draft legal and policy documents live under `docs/`:
 
 These will be expanded and finalized before any real student data is processed
 or the system is deployed in a production environment.
+
