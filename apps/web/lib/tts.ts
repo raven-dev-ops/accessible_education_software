@@ -10,6 +10,7 @@ type SpeakTextOptions = {
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (error: SpeechSynthesisErrorEvent) => void;
+  voice?: SpeechSynthesisVoice;
 };
 
 export function speakText(
@@ -27,6 +28,9 @@ export function speakText(
   utterance.rate = options.rate ?? 1;
   utterance.pitch = options.pitch ?? 1;
   utterance.volume = options.volume ?? 1;
+  if (options.voice) {
+    utterance.voice = options.voice;
+  }
 
   if (options.onStart) utterance.onstart = options.onStart;
   if (options.onEnd) utterance.onend = options.onEnd;

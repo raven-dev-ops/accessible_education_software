@@ -19,6 +19,18 @@ const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
 
+const fallbackNotes: ReleasedNote[] = [
+  {
+    id: "sample-1",
+    title: "Limits and derivatives overview",
+    course: "Calculus I",
+    module: "Limits",
+    createdAt: "2025-01-10T10:00:00Z",
+    excerpt:
+      "A function f of x equals x squared. The derivative is 2x. This note walks through the limit definition and common pitfalls.",
+  },
+];
+
 function StudentPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -28,6 +40,9 @@ function StudentPage() {
   const [highContrast, setHighContrast] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsSupported, setTtsSupported] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceUri, setSelectedVoiceUri] = useState<string | null>(null);
+  const [volume, setVolume] = useState(0.5);
   const [speechStatus, setSpeechStatus] = useState<string | null>(null);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [activeSpeechId, setActiveSpeechId] = useState<string | null>(null);
@@ -69,8 +84,35 @@ function StudentPage() {
   }, [session, status, router, preview]);
 
   useEffect(() => {
-    setTtsSupported(isTtsSupported());
-  }, []);
+    const supported = isTtsSupported();
+    setTtsSupported(supported);
+
+    if (supported && typeof window !== "undefined") {
+      const loadVoices = () => {
+        const v = window.speechSynthesis.getVoices() || [];
+        setVoices(v);
+        if (!selectedVoiceUri && v.length > 0) {
+          const preferred = v.find((voice) =>
+            voice.lang?.toLowerCase().startsWith("en")
+          );
+          setSelectedVoiceUri(preferred?.voiceURI || v[0].voiceURI);
+        }
+      };
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+
+      const raw = window.localStorage.getItem("tts-prefs");
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as { volume?: number; voiceURI?: string };
+          if (typeof parsed.volume === "number") setVolume(parsed.volume);
+          if (parsed.voiceURI) setSelectedVoiceUri(parsed.voiceURI);
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }, [selectedVoiceUri]);
 
   const sampleText =
     "This is a sample Calculus I note. It describes a function f of x equals x squared, and explains how to find the derivative using the limit definition.";
@@ -82,7 +124,10 @@ function StudentPage() {
     }
 
     setSpeechError(null);
+    const voice = voices.find((v) => v.voiceURI === selectedVoiceUri);
     const utterance = speakText(text, {
+      volume,
+      voice,
       onStart: () => {
         setIsSpeaking(true);
         setActiveSpeechId(speechId);
@@ -146,16 +191,19 @@ function StudentPage() {
       try {
         const res = await fetch("/api/notes");
         if (!res.ok) {
-          throw new Error(`Failed with status ${res.status}`);
+          setNotes(fallbackNotes);
+          setNotesError(null);
+          return;
         }
         const data = (await res.json()) as ReleasedNote[];
         if (!cancelled) {
-          setNotes(data);
+          setNotes(data.length ? data : fallbackNotes);
           setNotesError(null);
         }
       } catch (error) {
         if (!cancelled) {
-          setNotesError("Failed to load released materials.");
+          setNotes(fallbackNotes);
+          setNotesError(null);
         }
       } finally {
         if (!cancelled) {
@@ -255,6 +303,23 @@ function StudentPage() {
         style={{ fontSize: `${fontScale}rem` }}
       >
         <section
+          aria-labelledby="student-profile"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800 flex items-center gap-4"
+        >
+          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
+            {(session?.user?.name || "Sample Student").charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h2 id="student-profile" className="text-xl font-semibold">
+              {session?.user?.name || "Sample Student"}
+            </h2>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              {session?.user?.email || "sample.student@example.com"}
+            </p>
+          </div>
+        </section>
+
+        <section
           aria-labelledby="student-welcome"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
@@ -322,6 +387,58 @@ function StudentPage() {
                 Use the controls below to hear a sample Calculus I note read out loud. This simulates how your own notes
                 will sound once OCR and TTS are fully wired.
               </p>
+              <div className="flex flex-wrap gap-4 mb-4">
+                <label className="text-sm">
+                  <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
+                  <select
+                    value={selectedVoiceUri ?? ""}
+                    onChange={(e) => {
+                      setSelectedVoiceUri(e.target.value);
+                      if (typeof window !== "undefined") {
+                        window.localStorage.setItem(
+                          "tts-prefs",
+                          JSON.stringify({ volume, voiceURI: e.target.value })
+                        );
+                      }
+                    }}
+                    className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 min-w-[200px]"
+                  >
+                    {voices.length === 0 && <option value="">Loading voices…</option>}
+                    {voices.map((v) => (
+                      <option key={v.voiceURI} value={v.voiceURI}>
+                        {v.name} ({v.lang})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-sm">
+                  <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">
+                    Volume (starts at 50%)
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={volume}
+                    onChange={(e) => {
+                      const vol = parseFloat(e.target.value);
+                      setVolume(vol);
+                      if (typeof window !== "undefined") {
+                        window.localStorage.setItem(
+                          "tts-prefs",
+                          JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined })
+                        );
+                      }
+                    }}
+                    className="w-48 accent-blue-600"
+                    aria-valuemin={0}
+                    aria-valuemax={1}
+                    aria-valuenow={volume}
+                  />
+                  <span className="ml-2 text-sm">{Math.round(volume * 100)}%</span>
+                </label>
+              </div>
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="button"
