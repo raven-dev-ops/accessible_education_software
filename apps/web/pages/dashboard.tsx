@@ -32,7 +32,7 @@ export default function DashboardRedirect() {
   }, [session, status, router]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
+    <main className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100">
       <p>Loading your dashboard…</p>
     </main>
   );

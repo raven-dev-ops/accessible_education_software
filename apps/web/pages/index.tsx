@@ -14,20 +14,32 @@ export default function Home() {
   }, [session, router]);
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6">
-      <h1 className="text-3xl font-bold mb-4">
-        Accessible Education Platform
-      </h1>
-      <p className="mb-6 max-w-xl text-center">
-        AI-assisted accessibility platform that turns handwritten STEM notes into
-        readable, listenable content for blind and low-vision students.
-      </p>
-      <Link
-        href="/login"
-        className="px-4 py-2 rounded bg-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
-        Go to login
-      </Link>
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100">
+      <div className="max-w-3xl w-full text-center space-y-4 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow">
+        <p className="text-sm uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Accessible Education Platform
+        </p>
+        <h1 className="text-4xl font-bold">
+          AI-powered, accessible STEM notes for blind and low-vision students
+        </h1>
+        <p className="text-lg text-slate-700 dark:text-slate-200">
+          Convert handwritten calculus notes into readable, listenable content with role-based dashboards for students, teachers, and admins.
+        </p>
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          <Link
+            href="/login"
+            className="px-5 py-3 rounded-lg bg-blue-600 text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Go to login
+          </Link>
+          <Link
+            href="/student?preview=1"
+            className="px-5 py-3 rounded-lg bg-slate-100 text-slate-900 border border-slate-200 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700"
+          >
+            Preview student dashboard
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }
