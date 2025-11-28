@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ReactNode } from "react";
+import { useRouter } from "next/router";
 import { signOut } from "next-auth/react";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -13,6 +14,8 @@ const showStagingBanner =
   process.env.NEXT_PUBLIC_SHOW_STAGING_BANNER === "1";
 
 export function Layout({ title, children }: LayoutProps) {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900">
       <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm">
@@ -30,9 +33,10 @@ export function Layout({ title, children }: LayoutProps) {
             </Link>
             <Link
               href="#"
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault();
-                void signOut({ callbackUrl: "/login?skipAuth=1" });
+                await signOut({ redirect: false });
+                await router.push("/login?skipAuth=1");
               }}
               className="px-3 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm"
             >
