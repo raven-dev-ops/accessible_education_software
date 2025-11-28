@@ -15,12 +15,21 @@ const showStagingBanner =
 export function Layout({ title, children }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100 transition-colors">
-      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm dark:bg-slate-900/80 dark:border-slate-800">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-blue-600 focus:text-white shadow"
+      >
+        Skip to main content
+      </a>
+      <header
+        className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm dark:bg-slate-900/80 dark:border-slate-800"
+        role="banner"
+      >
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
           <Link href="/dashboard" className="text-xl font-semibold text-slate-900 dark:text-slate-100">
             {title}
           </Link>
-          <nav className="flex items-center gap-3 text-sm">
+          <nav className="flex items-center gap-3 text-sm" aria-label="Primary">
             <ThemeToggle />
             <Link
               href="/dashboard"
@@ -53,10 +62,13 @@ export function Layout({ title, children }: LayoutProps) {
           Staging environment — for testing only. Do not use with real student data.
         </div>
       )}
-      <main className="flex-1 p-6">
+      <main id="main-content" className="flex-1 p-6" role="main">
         <div className="max-w-6xl mx-auto w-full">{children}</div>
       </main>
-      <footer className="bg-white/90 border-t border-slate-200 dark:bg-slate-900/80 dark:border-slate-800">
+      <footer
+        className="bg-white/90 border-t border-slate-200 dark:bg-slate-900/80 dark:border-slate-800"
+        role="contentinfo"
+      >
         <div className="max-w-6xl mx-auto px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
           Accessible Education Platform
         </div>

@@ -437,6 +437,10 @@ The project follows a milestone-based plan:
 
 The detailed day-by-day plan and milestone goals are reflected in GitHub milestones and issues.
 
+See also:
+- `docs/M4.md` for database schema and Braille prototype notes.
+- `docs/ACCESSIBILITY.md` for current accessibility posture and testing notes.
+
 ---
 
 ## Project Workflow
