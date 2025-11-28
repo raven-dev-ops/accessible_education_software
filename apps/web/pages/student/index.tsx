@@ -50,6 +50,7 @@ function StudentPage() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceUri, setSelectedVoiceUri] = useState<string | null>(null);
   const [volume, setVolume] = useState(0.5);
+  const [rate, setRate] = useState(1);
   const [voiceSearch, setVoiceSearch] = useState("");
   const [speechStatus, setSpeechStatus] = useState<string | null>(null);
   const [speechError, setSpeechError] = useState<string | null>(null);
@@ -132,9 +133,10 @@ function StudentPage() {
       const raw = window.localStorage.getItem("tts-prefs");
       if (raw) {
         try {
-          const parsed = JSON.parse(raw) as { volume?: number; voiceURI?: string };
+          const parsed = JSON.parse(raw) as { volume?: number; voiceURI?: string; rate?: number };
           if (typeof parsed.volume === "number") setVolume(parsed.volume);
           if (parsed.voiceURI) setSelectedVoiceUri(parsed.voiceURI);
+          if (typeof parsed.rate === "number") setRate(parsed.rate);
         } catch {
           // ignore
         }
@@ -183,6 +185,7 @@ function StudentPage() {
     const words = text.split(" ");
     const voice = voices.find((v) => v.voiceURI === selectedVoiceUri);
     const utterance = speakText(text, {
+      rate,
       volume,
       voice,
       onStart: () => {
@@ -770,155 +773,186 @@ function StudentPage() {
             </p>
           )}
           {ttsSupported && (
-            <>
-              <p className="text-lg mb-3 leading-relaxed">
-                Use the controls below to hear a sample Calculus I note read out loud. This simulates how your own notes
-                will sound once OCR and TTS are fully wired.
-              </p>
-              <div className="text-sm text-gray-800 dark:text-gray-200 mb-2 space-y-2">
-                <p className="font-semibold">Sample paragraphs</p>
-                <ul className="list-disc pl-5 space-y-1">
-                  {sampleParagraphs.map((p, idx) => {
-                    const words = p.split(" ");
-                    return (
-                      <li key={idx} className={idx === sampleParagraphIndex ? "font-semibold" : ""}>
-                        {idx === sampleParagraphIndex ? (
-                          <span>
-                            {words.map((w, wi) => (
-                              <span
-                                key={`${idx}-${wi}`}
-                                className={
-                                  highlightIndex === wi && activeSpeechId === "sample-note"
-                                    ? "bg-yellow-200 dark:bg-yellow-500/60"
-                                    : ""
-                                }
-                              >
-                                {w}
-                                {wi < words.length - 1 ? " " : ""}
-                              </span>
-                            ))}
-                          </span>
-                        ) : (
-                          p
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-                <p className="mt-2 font-semibold">TL;DR</p>
-                <p>{sampleTLDR}</p>
-              </div>
-              <div className="flex flex-wrap gap-4 mb-4">
-                <label className="text-sm">
-                  <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
-                  <input
-                    type="text"
-                    value={voiceSearch}
-                    onChange={(e) => setVoiceSearch(e.target.value)}
-                    placeholder="Search voices"
-                    className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full mb-2"
-                  />
-                  <select
-                    value={selectedVoiceUri ?? ""}
-                    onChange={(e) => {
-                      setSelectedVoiceUri(e.target.value);
-                      if (typeof window !== "undefined") {
-                        window.localStorage.setItem(
-                          "tts-prefs",
-                          JSON.stringify({ volume, voiceURI: e.target.value })
-                        );
-                      }
-                    }}
-                    className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 min-w-[200px]"
-                  >
-                    {voices.length === 0 && <option value="">Loading voices...</option>}
-                    {voices
-                      .filter((v) =>
-                        `${v.name} ${v.lang}`.toLowerCase().includes(voiceSearch.toLowerCase())
-                      )
-                      .map((v) => (
-                        <option key={v.voiceURI} value={v.voiceURI}>
-                          {v.name} ({v.lang})
-                        </option>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="space-y-4">
+                <p className="text-lg leading-relaxed">
+                  Use the controls below to hear a sample Calculus I note read out loud. This simulates how your own notes
+                  will sound once OCR and TTS are fully wired.
+                </p>
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
+                  <div>
+                    <p className="font-semibold text-sm text-slate-900 dark:text-slate-50">Sample paragraphs</p>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-slate-800 dark:text-slate-200">
+                      {sampleParagraphs.map((p, idx) => (
+                        <li
+                          key={idx}
+                          className={idx === sampleParagraphIndex ? "font-semibold text-blue-700 dark:text-blue-300" : ""}
+                        >
+                          {p}
+                        </li>
                       ))}
-                  </select>
-                </label>
-                <label className="text-sm">
-                  <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">
-                    Volume (starts at 50%)
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={volume}
-                    onChange={(e) => {
-                      const vol = parseFloat(e.target.value);
-                      setVolume(vol);
-                      if (typeof window !== "undefined") {
-                        window.localStorage.setItem(
-                          "tts-prefs",
-                          JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined })
-                        );
-                      }
-                    }}
-                    className="w-48 accent-blue-600"
-                    aria-valuemin={0}
-                    aria-valuemax={1}
-                    aria-valuenow={volume}
-                  />
-                  <span className="ml-2 text-sm">{Math.round(volume * 100)}%</span>
-                </label>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="mt-2 font-semibold text-sm text-slate-900 dark:text-slate-50">TL;DR</p>
+                    <p className="text-sm text-slate-800 dark:text-slate-200">{sampleTLDR}</p>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="text-sm">
+                    <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
+                    <input
+                      type="text"
+                      value={voiceSearch}
+                      onChange={(e) => setVoiceSearch(e.target.value)}
+                      placeholder="Search voices"
+                      className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full mb-2"
+                    />
+                    <select
+                      value={selectedVoiceUri ?? ""}
+                      onChange={(e) => {
+                        setSelectedVoiceUri(e.target.value);
+                        if (typeof window !== "undefined") {
+                          window.localStorage.setItem(
+                            "tts-prefs",
+                            JSON.stringify({ volume, voiceURI: e.target.value, rate })
+                          );
+                        }
+                      }}
+                      className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
+                    >
+                      {voices.length === 0 && <option value="">Loading voices...</option>}
+                      {voices
+                        .filter((v) => `${v.name} ${v.lang}`.toLowerCase().includes(voiceSearch.toLowerCase()))
+                        .map((v) => (
+                          <option key={v.voiceURI} value={v.voiceURI}>
+                            {v.name} ({v.lang})
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <label className="text-sm">
+                    <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Volume (starts at 50%)</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={volume}
+                        onChange={(e) => {
+                          const vol = parseFloat(e.target.value);
+                          setVolume(vol);
+                          if (typeof window !== "undefined") {
+                            window.localStorage.setItem(
+                              "tts-prefs",
+                              JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined, rate })
+                            );
+                          }
+                        }}
+                        className="w-full accent-blue-600"
+                        aria-valuemin={0}
+                        aria-valuemax={1}
+                        aria-valuenow={volume}
+                      />
+                      <span className="text-xs text-slate-700 dark:text-slate-200">{Math.round(volume * 100)}%</span>
+                    </div>
+                  </label>
+                  <label className="text-sm">
+                    <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Speed</span>
+                    <select
+                      value={rate}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        setRate(val);
+                        if (typeof window !== "undefined") {
+                          window.localStorage.setItem(
+                            "tts-prefs",
+                            JSON.stringify({ volume, voiceURI: selectedVoiceUri ?? undefined, rate: val })
+                          );
+                        }
+                      }}
+                      className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
+                    >
+                      <option value={0.5}>0.5x</option>
+                      <option value={1}>1.0x</option>
+                      <option value={1.5}>1.5x</option>
+                      <option value={2}>2.0x</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSampleParagraphIndex((i) => Math.max(0, i - 1))}
+                    className="px-4 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
+                    disabled={sampleParagraphIndex === 0}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePlaySample}
+                    className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60"
+                    aria-pressed={activeSpeechId === "sample-note"}
+                    disabled={isSpeaking && activeSpeechId === "sample-note"}
+                  >
+                    {activeSpeechId === "sample-note"
+                      ? `Playing... ${countdown !== null ? `${countdown}s` : ""}`
+                      : "Nav reader"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSampleParagraphIndex((i) => Math.min(sampleParagraphs.length - 1, i + 1))}
+                    className="px-4 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
+                    disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
+                  >
+                    Next
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleStop}
+                    className="px-5 py-3 rounded border text-base disabled:opacity-60"
+                    disabled={!isSpeaking}
+                  >
+                    Stop
+                  </button>
+                </div>
+                <div className="text-sm space-y-1" aria-live="polite" role="status">
+                  {speechStatus && <p className="text-emerald-700">{speechStatus}</p>}
+                  {speechError && (
+                    <p className="text-red-700" role="alert">
+                      {speechError}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSampleParagraphIndex((i) => Math.max(0, i - 1))}
-                  className="px-4 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                  disabled={sampleParagraphIndex === 0}
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePlaySample}
-                  className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60"
-                  aria-pressed={activeSpeechId === "sample-note"}
-                  disabled={isSpeaking && activeSpeechId === "sample-note"}
-                >
-                  {activeSpeechId === "sample-note"
-                    ? `Playing... ${countdown !== null ? `${countdown}s` : ""}`
-                    : "Play sample"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSampleParagraphIndex((i) => Math.min(sampleParagraphs.length - 1, i + 1))
-                  }
-                  className="px-4 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                  disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
-                >
-                  Next
-                </button>
-                <button
-                  type="button"
-                  onClick={handleStop}
-                  className="px-5 py-3 rounded border text-base disabled:opacity-60"
-                  disabled={!isSpeaking}
-                >
-                  Stop
-                </button>
+
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4">
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-2">Live reading preview</p>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Now reading</p>
+                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 text-base leading-7 min-h-[160px]">
+                    {sampleParagraphs[sampleParagraphIndex].split(" ").map((w, wi, arr) => {
+                      const isActive = highlightIndex === wi && activeSpeechId === "sample-note";
+                      return (
+                        <span
+                          key={`live-${wi}`}
+                          className={`mr-1 inline-block transition-all duration-200 ${
+                            isActive
+                              ? "bg-yellow-200 dark:bg-yellow-500/50 font-semibold text-lg border-2 border-amber-500 rounded px-1.5 shadow transform scale-[1.14]"
+                              : ""
+                          }`}
+                        >
+                          {w}
+                          {wi < arr.length - 1 ? " " : ""}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-              <div className="mt-3 text-base" aria-live="polite" role="status">
-                {speechStatus && <p className="text-emerald-700">{speechStatus}</p>}
-                {speechError && (
-                  <p className="text-red-700" role="alert">
-                    {speechError}
-                  </p>
-                )}
-              </div>
-            </>
+            </div>
           )}
         </section>
 
@@ -1166,7 +1200,7 @@ function StudentPage() {
                   if (typeof window !== "undefined") {
                     window.localStorage.setItem(
                       "tts-prefs",
-                      JSON.stringify({ volume, voiceURI: e.target.value })
+                      JSON.stringify({ volume, voiceURI: e.target.value, rate })
                     );
                   }
                 }}
@@ -1202,7 +1236,7 @@ function StudentPage() {
                     if (typeof window !== "undefined") {
                       window.localStorage.setItem(
                         "tts-prefs",
-                        JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined })
+                        JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined, rate })
                       );
                     }
                   }}
