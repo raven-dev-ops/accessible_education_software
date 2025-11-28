@@ -63,6 +63,7 @@ function StudentPage() {
   const [brailleStatus, setBrailleStatus] = useState<string | null>(null);
   const [brailleError, setBrailleError] = useState<string | null>(null);
   const [brailleLoading, setBrailleLoading] = useState(false);
+  const [widgetOpen, setWidgetOpen] = useState(true);
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -669,57 +670,78 @@ function StudentPage() {
       </div>
 
       <div className="fixed right-4 bottom-4 z-40">
-        <div className="rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-2 w-64">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Vision & Reader</p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className="px-3 py-2 rounded bg-blue-600 text-white text-sm"
-              onClick={() => setFontScale((s) => Math.min(s + 0.1, 1.8))}
-            >
-              A+
-            </button>
-            <button
-              type="button"
-              className="px-3 py-2 rounded bg-blue-100 text-slate-800 text-sm"
-              onClick={() => setFontScale((s) => Math.max(s - 0.1, 0.9))}
-            >
-              A-
-            </button>
-            <button
-              type="button"
-              className="px-3 py-2 rounded border text-sm"
-              onClick={() => setFontScale(1.05)}
-            >
-              Reset
-            </button>
-            <button
-              type="button"
-              className="px-3 py-2 rounded bg-amber-500 text-white text-sm"
-              onClick={() => setHighContrast((v) => !v)}
-            >
-              {highContrast ? "Normal" : "High contrast"}
-            </button>
+        {widgetOpen ? (
+          <div className="rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-2 w-64">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Vision & Reader</p>
+              <button
+                type="button"
+                className="text-sm px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                onClick={() => setWidgetOpen(false)}
+                aria-label="Collapse accessibility widget"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="px-3 py-2 rounded bg-blue-600 text-white text-sm"
+                onClick={() => setFontScale((s) => Math.min(s + 0.1, 1.8))}
+              >
+                A+
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 rounded bg-blue-100 text-slate-800 text-sm"
+                onClick={() => setFontScale((s) => Math.max(s - 0.1, 0.9))}
+              >
+                A-
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 rounded border text-sm"
+                onClick={() => setFontScale(1.05)}
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 rounded bg-amber-500 text-white text-sm"
+                onClick={() => setHighContrast((v) => !v)}
+              >
+                {highContrast ? "Normal" : "High contrast"}
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="flex-1 px-3 py-2 rounded bg-emerald-600 text-white text-sm disabled:opacity-60"
+                onClick={handlePlaySample}
+                disabled={isSpeaking && activeSpeechId === "sample-note"}
+              >
+                Read sample
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 rounded border text-sm disabled:opacity-60"
+                onClick={handleStop}
+                disabled={!isSpeaking}
+              >
+                Stop
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="flex-1 px-3 py-2 rounded bg-emerald-600 text-white text-sm disabled:opacity-60"
-              onClick={handlePlaySample}
-              disabled={isSpeaking && activeSpeechId === "sample-note"}
-            >
-              Read sample
-            </button>
-            <button
-              type="button"
-              className="px-3 py-2 rounded border text-sm disabled:opacity-60"
-              onClick={handleStop}
-              disabled={!isSpeaking}
-            >
-              Stop
-            </button>
-          </div>
-        </div>
+        ) : (
+          <button
+            type="button"
+            className="h-12 w-12 rounded-full shadow-lg bg-blue-700 text-white flex items-center justify-center text-xl"
+            aria-label="Open accessibility controls"
+            onClick={() => setWidgetOpen(true)}
+          >
+            ♿
+          </button>
+        )}
       </div>
     </Layout>
   );
