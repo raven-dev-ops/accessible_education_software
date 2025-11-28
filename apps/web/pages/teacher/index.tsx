@@ -44,7 +44,7 @@ function TeacherPage() {
   const [selectedModuleId, setSelectedModuleId] = useState<string | number>("calc-1");
   const [ticketDescription, setTicketDescription] = useState("");
   const [ticketList, setTicketList] = useState<
-    { id: string; detail: string; createdAt: string }[]
+    { id: string; detail: string; createdAt: string; studentEmail?: string | null; status?: string }[]
   >([]);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<
@@ -142,15 +142,8 @@ function TeacherPage() {
           id: data.id ?? `ticket-${ticketList.length + 1}`,
           detail: payload.detail,
           createdAt: data.createdAt ?? now,
-        };
-        setTicketList((prev) => [newTicket, ...prev].slice(0, 5));
-        setTicketDescription("");
-      })
-      .catch(() => {
-        const newTicket = {
-          id: `ticket-${ticketList.length + 1}`,
-          detail: payload.detail,
-          createdAt: now,
+          studentEmail: data.userEmail ?? null,
+          status: "pending review",
         };
         setTicketList((prev) => [newTicket, ...prev].slice(0, 5));
         setTicketDescription("");
@@ -174,6 +167,23 @@ function TeacherPage() {
   return (
     <Layout title="Teacher Dashboard">
       <div className="space-y-8">
+        <section
+          aria-labelledby="teacher-profile"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800 flex items-center gap-4"
+        >
+          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
+            {(session?.user?.name || "Sample Teacher").charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h2 id="teacher-profile" className="text-xl font-semibold">
+              {session?.user?.name || "Sample Teacher"}
+            </h2>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              {session?.user?.email || "teacher@example.com"}
+            </p>
+          </div>
+        </section>
+
         <section aria-labelledby="teacher-welcome" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
           <h2 id="teacher-welcome" className="text-2xl font-semibold mb-3">
             Welcome, Teacher
@@ -308,24 +318,24 @@ function TeacherPage() {
 
         <section aria-labelledby="teacher-support" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
           <h2 id="teacher-support" className="text-xl font-semibold mb-3">
-            Support & escalation
+            Support & escalation (review student tickets)
           </h2>
           <p className="text-sm mb-3">
-            Report issues (e.g., OCR below 80%) with optional attachments. Tickets are available to admins for follow-up.
+            Review or escalate student-submitted tickets (e.g., OCR below 80%). Add context and pass to software support as needed.
           </p>
           <form onSubmit={handleTicketSubmit} className="space-y-3">
             <label className="block text-sm">
-              <span className="block mb-1">Attach screenshot or file (optional)</span>
+              <span className="block mb-1">Attach relevant file (optional)</span>
               <input type="file" accept=".png,.jpg,.jpeg,.pdf" className="block w-full text-base" />
             </label>
             <label className="block text-sm">
-              <span className="block mb-1">Describe the issue</span>
+              <span className="block mb-1">Add teacher notes for escalation</span>
               <textarea
                 className="w-full border rounded p-3 text-base bg-white dark:bg-slate-800"
                 rows={4}
                 value={ticketDescription}
                 onChange={(e) => setTicketDescription(e.target.value)}
-                placeholder="Example: OCR scored 72% on derivatives notes; missed Greek symbols."
+                placeholder="Example: Student ticket shows OCR 72% on derivatives; please review Greek symbols."
               />
             </label>
             <button
@@ -333,17 +343,21 @@ function TeacherPage() {
               className="px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
               disabled={!ticketDescription.trim()}
             >
-              Submit ticket
+              Escalate to support
             </button>
           </form>
           {ticketList.length > 0 && (
             <div className="mt-4 space-y-2">
-              <p className="text-sm font-semibold">Recent tickets (local preview)</p>
+              <p className="text-sm font-semibold">Recent escalations (local preview)</p>
               <ul className="space-y-2 text-sm">
                 {ticketList.map((t) => (
                   <li key={t.id} className="p-2 rounded border border-slate-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
-                    <div className="text-xs text-gray-500">{new Date(t.createdAt).toLocaleString()}</div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-gray-500">{new Date(t.createdAt).toLocaleString()}</div>
+                      {t.studentEmail && <div className="text-xs text-gray-500">{t.studentEmail}</div>}
+                    </div>
                     <p className="mt-1">{t.detail}</p>
+                    <p className="text-xs text-gray-500 mt-1">{t.status || "pending review"}</p>
                   </li>
                 ))}
               </ul>
