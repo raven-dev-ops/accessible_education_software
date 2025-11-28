@@ -17,8 +17,13 @@ export default function Login() {
       (Array.isArray(skipAuthParam) && skipAuthParam.includes("1")));
 
   useEffect(() => {
+    // If explicitly skipping auth, send to home.
+    if (isReady && skipAuth) {
+      void router.replace("/");
+      return;
+    }
+
     if (!authEnabled || !isReady) return;
-    if (skipAuth) return;
 
     // Start Google login; NextAuth will handle the callback and redirect.
     void signIn("google", { callbackUrl: "/dashboard" });
@@ -34,7 +39,7 @@ export default function Login() {
     );
   }
 
-  const showDevLogin = process.env.NODE_ENV !== "production";
+  const showDevLogin = process.env.NODE_ENV !== "production" && !skipAuth;
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors">
