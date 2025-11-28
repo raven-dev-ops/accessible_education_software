@@ -442,6 +442,10 @@ See also:
 - `docs/NETLIFY.md` for production Netlify settings.
 - `docs/OCR_DOCKER.md` for packaging the OCR service.
 - `docs/ACCESSIBILITY.md` for current accessibility posture and testing notes.
+- `docs/A11Y_AUDIT.md` for WCAG audit notes and next steps.
+- `docs/QA_PERFORMANCE.md` for QA/perf checklist.
+- `docs/LEGAL.md` and `docs/ONBOARDING.md` for legal/onboarding guidance.
+- `docs/RELEASE_PLAN.md` and `docs/BACKLOG.md` for release and feature-freeze planning.
 
 ---
 
