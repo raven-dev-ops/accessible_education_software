@@ -236,6 +236,140 @@ function AdminPage() {
             </div>
           </div>
 
+          {/* Upload workspace - full width with two panels */}
+          <section
+            className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
+            aria-labelledby="admin-upload"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                  OCR pipeline
+                </p>
+                <h2 id="admin-upload" className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Upload for OCR
+                </h2>
+              </div>
+              <div className="text-xs text-slate-500 dark:text-slate-300">
+                Recent uploads and live preview
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 p-4 h-full">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  Upload a file
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
+                  Upload a PDF or image to send it to the OCR service. A short text preview
+                  will appear when available.
+                </p>
+                <form onSubmit={handleUpload} aria-describedby="admin-upload-help">
+                  <label className="block mb-2">
+                    <span className="block mb-1 text-sm text-slate-700 dark:text-slate-200">
+                      Choose PDF or image
+                    </span>
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      name="file"
+                      className="block w-full text-sm text-slate-800 dark:text-slate-100"
+                    />
+                  </label>
+                  <p id="admin-upload-help" className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                    Choose a file and select Upload. A short text preview will be shown when available.
+                  </p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-sm disabled:opacity-60"
+                      disabled={uploading}
+                      aria-busy={uploading}
+                    >
+                      {uploading ? "Uploading..." : "Upload"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleTestOcr}
+                      className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm shadow-sm dark:bg-emerald-500 dark:text-slate-900"
+                    >
+                      {ocrLoading ? "Running OCR test..." : "Run sample OCR test"}
+                    </button>
+                  </div>
+                </form>
+
+                <div className="mt-3" aria-live="polite" role="status">
+                  {uploadStatus && (
+                    <p className="text-sm text-emerald-700 dark:text-emerald-300">{uploadStatus}</p>
+                  )}
+                  {uploadError && (
+                    <p className="text-sm text-red-600 dark:text-red-300" role="alert">
+                      {uploadError}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 h-full space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    OCR preview
+                  </h3>
+                  <span className="text-xs text-slate-500 dark:text-slate-300">
+                    Latest upload or sample text
+                  </span>
+                </div>
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 min-h-[160px]">
+                  {ocrMessage ? (
+                    <p className="whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-100">
+                      {ocrMessage}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-300">
+                      Upload a file to see OCR text preview, or run the sample OCR test.
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      Recent uploads
+                    </h4>
+                    {uploadsLoading && (
+                      <span className="text-xs text-slate-500 dark:text-slate-300">Loading…</span>
+                    )}
+                  </div>
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 max-h-48 overflow-auto">
+                    {!uploadsLoading && uploads.length === 0 && (
+                      <p className="text-sm text-slate-500 dark:text-slate-300">No uploads yet.</p>
+                    )}
+                    {!uploadsLoading && uploads.length > 0 && (
+                      <ul className="space-y-2 text-sm">
+                        {uploads.slice(0, 5).map((u) => (
+                          <li
+                            key={u.id}
+                            className="p-2 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/70"
+                          >
+                            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-300 mb-1">
+                              <span>{u.mimetype || "file"}</span>
+                              <span>{u.createdAt ? new Date(u.createdAt).toLocaleString() : ""}</span>
+                            </div>
+                            <p className="text-slate-900 dark:text-slate-100">
+                              {u.filename || "Untitled upload"}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-300">
+                              {u.status} {typeof u.size === "number" ? `• ${(u.size / 1024).toFixed(1)} KB` : ""}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <div className="grid gap-6 md:grid-cols-2">
             <section
               aria-labelledby="admin-students"
@@ -278,90 +412,6 @@ function AdminPage() {
               )}
             </section>
 
-            <section
-              className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5 h-full"
-              aria-labelledby="admin-upload"
-            >
-              <h2 id="admin-upload" className="text-lg font-semibold mb-2">
-                Upload for OCR
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-                Upload a PDF or image to send it to the OCR service. A short text
-                preview will appear when available.
-              </p>
-              <form onSubmit={handleUpload} aria-describedby="admin-upload-help">
-                <label className="block mb-2">
-                  <span className="block mb-1 text-sm text-slate-700 dark:text-slate-200">
-                    Choose PDF or image
-                  </span>
-                  <input
-                    type="file"
-                    accept=".pdf,image/*"
-                    name="file"
-                    className="block w-full text-sm text-slate-800 dark:text-slate-100"
-                  />
-                </label>
-                <p id="admin-upload-help" className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                  Choose a file and select Upload. A short text preview will be
-                  shown when available.
-                </p>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-sm disabled:opacity-60"
-                    disabled={uploading}
-                    aria-busy={uploading}
-                  >
-                    {uploading ? "Uploading..." : "Upload"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTestOcr}
-                    className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm shadow-sm dark:bg-emerald-500 dark:text-slate-900"
-                  >
-                    {ocrLoading ? "Running OCR test..." : "Run sample OCR test"}
-                  </button>
-                </div>
-              </form>
-
-              <div className="mt-3" aria-live="polite" role="status">
-                {uploadStatus && (
-                  <p className="text-sm text-emerald-700 dark:text-emerald-300">{uploadStatus}</p>
-                )}
-                {uploadError && (
-                  <p className="text-sm text-red-600 dark:text-red-300" role="alert">
-                    {uploadError}
-                  </p>
-                )}
-                <span className="sr-only">
-                  {uploadError
-                    ? `Upload failed: ${uploadError}`
-                    : uploadStatus
-                    ? `Upload status: ${uploadStatus}`
-                    : ""}
-                </span>
-              </div>
-
-              {ocrMessage && (
-                <section
-                  className="mt-4 border border-slate-100 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800 p-3"
-                  aria-labelledby="admin-ocr-preview"
-                  aria-live="polite"
-                >
-                  <h3 id="admin-ocr-preview" className="font-semibold mb-1 text-slate-900 dark:text-slate-100">
-                    OCR text preview
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-300 mb-2">
-                    {ocrSource === "ocr_service"
-                      ? "This text came from the live OCR service."
-                      : "OCR_SERVICE_URL is not configured; this is a stub preview."}
-                  </p>
-                  <p className="whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-100">
-                    {ocrMessage}
-                  </p>
-                </section>
-              )}
-            </section>
           </div>
 
           <section
