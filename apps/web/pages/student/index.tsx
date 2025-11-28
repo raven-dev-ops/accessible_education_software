@@ -928,6 +928,29 @@ function StudentPage() {
                 {highContrast ? "Normal" : "High contrast"}
               </button>
             </div>
+            <label className="flex flex-col text-xs text-slate-700 dark:text-slate-200">
+              <span className="mb-1">Voice for nav reader</span>
+              <select
+                value={selectedVoiceUri ?? ""}
+                onChange={(e) => {
+                  setSelectedVoiceUri(e.target.value);
+                  if (typeof window !== "undefined") {
+                    window.localStorage.setItem(
+                      "tts-prefs",
+                      JSON.stringify({ volume, voiceURI: e.target.value })
+                    );
+                  }
+                }}
+                className="border rounded px-2 py-2 text-sm bg-white dark:bg-slate-800"
+              >
+                {voices.length === 0 && <option value="">Loading voices...</option>}
+                {voices.map((v) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} ({v.lang})
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -935,7 +958,7 @@ function StudentPage() {
                 onClick={handlePlaySample}
                 disabled={isSpeaking && activeSpeechId === "sample-note"}
               >
-                Read sample
+                Nav reader
               </button>
               <button
                 type="button"
