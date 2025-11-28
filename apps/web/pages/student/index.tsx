@@ -529,62 +529,74 @@ function StudentPage() {
       >
         <section
           aria-labelledby="student-profile"
-          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800 flex items-center gap-4"
-        >
-          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
-            {(session?.user?.name || "Sample Student").charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h2 id="student-profile" className="text-xl font-semibold">
-              {session?.user?.name || "Sample Student"}
-            </h2>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              {session?.user?.email || "sample.student@example.com"}
-            </p>
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="student-released"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <h2 id="student-released" className="text-xl font-semibold mb-3">
-            Released materials from your instructors
-          </h2>
-          {notesLoading && <p className="text-base">Loading released materials...</p>}
-          {!notesLoading && notes.length === 0 && (
-            <p className="text-base">No new notes from your instructors yet.</p>
-          )}
-          {!notesLoading && notes.length > 0 && (
-            <ul className="space-y-3 text-base">
-              {notes.map((note) => (
-                <li key={note.id} className="border rounded p-4 bg-gray-50 dark:bg-slate-800">
-                  <div className="font-semibold text-lg">
-                    {note.title}
-                    {note.course && <span className="ml-1 text-gray-600">({note.course})</span>}
-                  </div>
-                  {note.module && <div className="text-sm text-gray-600">Module: {note.module}</div>}
-                  {note.createdAt && (
-                    <div className="text-sm text-gray-500">Released: {new Date(note.createdAt).toLocaleString()}</div>
+          <div className="grid gap-4 md:grid-cols-2 items-center">
+            <div className="flex items-center gap-4">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
+                {(session?.user?.name || "Sample Student").charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h2 id="student-profile" className="text-xl font-semibold">
+                  {session?.user?.name || "Sample Student"}
+                </h2>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  {session?.user?.email || "sample.student@example.com"}
+                </p>
+                {preview && (
+                  <p className="mt-1 text-xs inline-flex items-center px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    Preview mode · sample student
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="mt-3 md:mt-0">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">
+                Released materials at a glance
+              </h3>
+              {notesLoading && <p className="text-sm text-slate-700 dark:text-slate-300">Loading released materials...</p>}
+              {!notesLoading && notes.length === 0 && (
+                <p className="text-sm text-slate-700 dark:text-slate-300">
+                  No new notes from your instructors yet.
+                </p>
+              )}
+              {!notesLoading && notes.length > 0 && (
+                <ul className="space-y-1 text-sm text-slate-800 dark:text-slate-200">
+                  {notes.slice(0, 2).map((note) => (
+                    <li key={note.id} className="flex items-center justify-between gap-2">
+                      <div>
+                        <div className="font-medium">
+                          {note.title}
+                          {note.course && <span className="ml-1 text-gray-600">({note.course})</span>}
+                        </div>
+                        {note.createdAt && (
+                          <div className="text-xs text-gray-500">
+                            Released: {new Date(note.createdAt).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
+                      {ttsSupported && (
+                        <button
+                          type="button"
+                          onClick={() => handleSpeakNote(note)}
+                          className="px-2 py-1 rounded bg-indigo-700 text-white text-xs disabled:opacity-60 whitespace-nowrap"
+                          aria-pressed={activeSpeechId === String(note.id)}
+                          disabled={isSpeaking && activeSpeechId !== String(note.id)}
+                        >
+                          Listen
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                  {notes.length > 2 && (
+                    <li className="text-xs text-slate-600 dark:text-slate-300">
+                      + {notes.length - 2} more released notes below
+                    </li>
                   )}
-                  <p className="mt-2 leading-relaxed">{note.excerpt}</p>
-                  {ttsSupported && (
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        onClick={() => handleSpeakNote(note)}
-                        className="px-4 py-2 rounded bg-indigo-700 text-white text-sm disabled:opacity-60"
-                        aria-pressed={activeSpeechId === String(note.id)}
-                        disabled={isSpeaking && activeSpeechId !== String(note.id)}
-                      >
-                        {activeSpeechId === String(note.id) ? "Playing excerpt..." : "Listen to excerpt"}
-                      </button>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+                </ul>
+              )}
+            </div>
+          </div>
         </section>
 
         <section
