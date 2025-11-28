@@ -144,6 +144,15 @@ function TeacherPage() {
   });
 
   useEffect(() => {
+    if (allowSamples) {
+      if (!modules.length) setModules(sampleModules);
+      if (!ticketList.length) setTicketList(sampleTickets);
+    }
+    // We intentionally skip deps for modules/ticketList to avoid clobbering live data after load
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowSamples]);
+
+  useEffect(() => {
     if (!authEnabled) return;
     if (status === "loading") return;
     if (!session || !session.user) {
