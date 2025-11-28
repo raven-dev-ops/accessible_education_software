@@ -148,7 +148,7 @@ export default async function handler(
       take: 50,
     });
 
-    const mapped: SupportTicket[] = logs.map((log) => ({
+    const mapped: SupportTicket[] = logs.map((log: any) => ({
       id: log.id,
       detail: log.message,
       createdAt: log.createdAt.toISOString(),
