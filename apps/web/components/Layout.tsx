@@ -46,11 +46,6 @@ export function Layout({ title, children, secondaryNav }: LayoutProps) {
             >
               Logout
             </Link>
-            {secondaryNav && (
-              <div className="flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-700">
-                {secondaryNav}
-              </div>
-            )}
           </nav>
         </div>
       </header>
