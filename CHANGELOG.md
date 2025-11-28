@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - M4 docs & braille/db polish
+
+- Added `docs/M4.md` to document the Prisma schema (core models, migrations, seeds) and the Braille prototype path with liblouis/fallback configuration.
+- Secured temp-file cleanup in support ticket uploads and normalized admin ticket previews (attachment-aware).
+- Version bumps to 0.2.2 to mark M4 completion.
+
 ## [0.2.1] - Cloud Run proxy + WIF
 
 - Add a Cloud Run API scaffold (`apps/cloud-run-api`) that connects to the private-IP Cloud SQL instance via the Cloud SQL Connector, guarded by an `X-API-Key`.

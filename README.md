@@ -430,10 +430,10 @@ See issues labeled `a11y` in GitHub for specific accessibility tasks and audits.
 
 The project follows a milestone-based plan:
 
-- **M1–M2** – Foundation, repo hygiene, initial auth integration, basic dashboards, theming.
-- **M3–M4** – Auth + OCR wiring (now Google/NextAuth), upload UX, student TTS, database foundation.
-- **M5–M7** – Persistence, CI hardening, accessibility polish, OCR robustness, Beta.
-- **M8–M10** – Testing, performance, packaging, deployment, and MVP client handover.
+- **M1-M2** - Foundation, repo hygiene, initial auth integration, basic dashboards, theming.
+- **M4** - Database foundation + Braille path prototype (see `docs/M4.md` for schema, migrations, and Braille config notes).
+- **M5-M7** - Persistence, CI hardening, accessibility polish, OCR robustness, Beta.
+- **M8-M10** - Testing, performance, packaging, deployment, and MVP client handover.
 
 The detailed day-by-day plan and milestone goals are reflected in GitHub milestones and issues.
 
