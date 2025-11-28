@@ -31,9 +31,9 @@ export default function Login() {
 
   if (authEnabled && !skipAuth) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-white to-slate-100">
-        <div className="max-w-xl w-full bg-white rounded-2xl shadow-lg p-6 text-center border border-slate-200">
-          <p>Redirecting to secure login...</p>
+      <main className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors">
+        <div className="max-w-xl w-full bg-white dark:bg-slate-900/80 rounded-2xl shadow-lg p-6 text-center border border-slate-200 dark:border-slate-800">
+          <p className="text-slate-900 dark:text-slate-100">Redirecting to secure login...</p>
         </div>
       </main>
     );

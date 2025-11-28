@@ -199,12 +199,12 @@ function AdminPage() {
   if (unauthorized) {
     return (
       <Layout title="Admin Dashboard">
-        <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6">
-          <div className="max-w-xl w-full bg-white shadow-lg rounded-2xl p-6 text-center">
-            <h1 className="text-2xl font-semibold text-slate-900 mb-2">
+        <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center p-6 transition-colors">
+          <div className="max-w-xl w-full bg-white dark:bg-slate-900/80 shadow-lg rounded-2xl p-6 text-center border border-slate-200 dark:border-slate-800">
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
               Admin dashboard
             </h1>
-            <p className="text-slate-600 mb-4" role="alert">
+            <p className="text-slate-600 dark:text-slate-300 mb-4" role="alert">
               You do not have access to this page. Redirecting…
             </p>
           </div>
@@ -215,20 +215,20 @@ function AdminPage() {
 
   return (
     <Layout title="Admin Dashboard">
-      <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-6 transition-colors">
         <div className="max-w-6xl mx-auto space-y-6">
-          <div className="bg-white rounded-2xl shadow-md p-6 border border-slate-100">
+          <div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-md p-6 border border-slate-100 dark:border-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
-                <p className="text-sm uppercase tracking-wide text-slate-500">
+                <p className="text-sm uppercase tracking-wide text-slate-500 dark:text-slate-300">
                   Admin dashboard
                 </p>
-                <h1 className="text-2xl font-semibold text-slate-900">
+                <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
                   Accessible Education Platform
                 </h1>
               </div>
-              <div className="text-sm text-slate-600">
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <div className="text-sm text-slate-600 dark:text-slate-300">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200 dark:border-emerald-800">
                   <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   Signed in as admin
                 </span>
@@ -239,25 +239,25 @@ function AdminPage() {
           <div className="grid gap-6 md:grid-cols-2">
             <section
               aria-labelledby="admin-students"
-              className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5"
+              className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
             >
               <div className="flex items-center justify-between mb-3">
-                <h2 id="admin-students" className="text-lg font-semibold">
+                <h2 id="admin-students" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   Students
                 </h2>
                 {studentsLoading && (
-                  <span className="text-xs text-slate-500">Loading…</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-300">Loading…</span>
                 )}
               </div>
               {studentsError && (
-                <p role="alert" className="text-red-600 text-sm">
+                <p role="alert" className="text-red-500 dark:text-red-300 text-sm">
                   {studentsError}
                 </p>
               )}
               {!studentsLoading && !studentsError && (
-                <div className="overflow-auto rounded-lg border border-slate-100">
+                <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
                   <table className="min-w-full text-sm">
-                    <thead className="bg-slate-50 text-slate-700">
+                    <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
                       <tr>
                         <th className="px-3 py-2 text-left">Name</th>
                         <th className="px-3 py-2 text-left">Email</th>
@@ -266,10 +266,10 @@ function AdminPage() {
                     </thead>
                     <tbody>
                       {students.map((s) => (
-                        <tr key={s.id} className="border-t border-slate-100">
-                          <td className="px-3 py-2">{s.name}</td>
-                          <td className="px-3 py-2">{s.email}</td>
-                          <td className="px-3 py-2">{s.course}</td>
+                        <tr key={s.id} className="border-t border-slate-100 dark:border-slate-800">
+                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{s.name}</td>
+                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{s.email}</td>
+                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{s.course}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -279,29 +279,29 @@ function AdminPage() {
             </section>
 
             <section
-              className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 h-full"
+              className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5 h-full"
               aria-labelledby="admin-upload"
             >
               <h2 id="admin-upload" className="text-lg font-semibold mb-2">
                 Upload for OCR
               </h2>
-              <p className="text-sm text-slate-600 mb-3">
+              <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
                 Upload a PDF or image to send it to the OCR service. A short text
                 preview will appear when available.
               </p>
               <form onSubmit={handleUpload} aria-describedby="admin-upload-help">
                 <label className="block mb-2">
-                  <span className="block mb-1 text-sm text-slate-700">
+                  <span className="block mb-1 text-sm text-slate-700 dark:text-slate-200">
                     Choose PDF or image
                   </span>
                   <input
                     type="file"
                     accept=".pdf,image/*"
                     name="file"
-                    className="block w-full text-sm"
+                    className="block w-full text-sm text-slate-800 dark:text-slate-100"
                   />
                 </label>
-                <p id="admin-upload-help" className="text-xs text-slate-500 mb-3">
+                <p id="admin-upload-help" className="text-xs text-slate-500 dark:text-slate-400 mb-3">
                   Choose a file and select Upload. A short text preview will be
                   shown when available.
                 </p>
@@ -317,7 +317,7 @@ function AdminPage() {
                   <button
                     type="button"
                     onClick={handleTestOcr}
-                    className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm shadow-sm"
+                    className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm shadow-sm dark:bg-emerald-500 dark:text-slate-900"
                   >
                     {ocrLoading ? "Running OCR test..." : "Run sample OCR test"}
                   </button>
@@ -326,10 +326,10 @@ function AdminPage() {
 
               <div className="mt-3" aria-live="polite" role="status">
                 {uploadStatus && (
-                  <p className="text-sm text-emerald-700">{uploadStatus}</p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300">{uploadStatus}</p>
                 )}
                 {uploadError && (
-                  <p className="text-sm text-red-700" role="alert">
+                  <p className="text-sm text-red-600 dark:text-red-300" role="alert">
                     {uploadError}
                   </p>
                 )}
@@ -344,19 +344,19 @@ function AdminPage() {
 
               {ocrMessage && (
                 <section
-                  className="mt-4 border border-slate-100 rounded-lg bg-slate-50 p-3"
+                  className="mt-4 border border-slate-100 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800 p-3"
                   aria-labelledby="admin-ocr-preview"
                   aria-live="polite"
                 >
-                  <h3 id="admin-ocr-preview" className="font-semibold mb-1">
+                  <h3 id="admin-ocr-preview" className="font-semibold mb-1 text-slate-900 dark:text-slate-100">
                     OCR text preview
                   </h3>
-                  <p className="text-xs text-slate-500 mb-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-300 mb-2">
                     {ocrSource === "ocr_service"
                       ? "This text came from the live OCR service."
                       : "OCR_SERVICE_URL is not configured; this is a stub preview."}
                   </p>
-                  <p className="whitespace-pre-wrap text-sm text-slate-800">
+                  <p className="whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-100">
                     {ocrMessage}
                   </p>
                 </section>
@@ -365,29 +365,29 @@ function AdminPage() {
           </div>
 
           <section
-            className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5"
+            className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
             aria-labelledby="admin-uploads"
           >
             <div className="flex items-center justify-between mb-3">
-              <h2 id="admin-uploads" className="text-lg font-semibold">
+              <h2 id="admin-uploads" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Recent uploads
               </h2>
               {uploadsLoading && (
-                <span className="text-xs text-slate-500">Loading…</span>
+                <span className="text-xs text-slate-500 dark:text-slate-300">Loading…</span>
               )}
             </div>
             {uploadsError && (
-              <p role="alert" className="text-red-700 text-sm">
+              <p role="alert" className="text-red-600 dark:text-red-300 text-sm">
                 {uploadsError}
               </p>
             )}
             {!uploadsLoading && !uploadsError && uploads.length === 0 && (
-              <p className="text-sm text-slate-600">No uploads yet.</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">No uploads yet.</p>
             )}
             {!uploadsLoading && !uploadsError && uploads.length > 0 && (
-              <div className="overflow-auto rounded-lg border border-slate-100">
+              <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
                 <table className="min-w-full text-sm">
-                  <thead className="bg-slate-50 text-slate-700">
+                  <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
                     <tr>
                       <th className="px-3 py-2 text-left">Filename</th>
                       <th className="px-3 py-2 text-left">MIME type</th>
@@ -398,16 +398,16 @@ function AdminPage() {
                   </thead>
                   <tbody>
                     {uploads.map((u) => (
-                      <tr key={u.id} className="border-t border-slate-100">
-                        <td className="px-3 py-2">{u.filename || ""}</td>
-                        <td className="px-3 py-2">{u.mimetype || ""}</td>
-                        <td className="px-3 py-2">
+                      <tr key={u.id} className="border-t border-slate-100 dark:border-slate-800">
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.filename || ""}</td>
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.mimetype || ""}</td>
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
                           {typeof u.size === "number"
                             ? `${(u.size / 1024).toFixed(1)} KB`
                             : ""}
                         </td>
-                        <td className="px-3 py-2">{u.status}</td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.status}</td>
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
                           {u.createdAt
                             ? new Date(u.createdAt).toLocaleString()
                             : ""}
