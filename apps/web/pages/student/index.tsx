@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
@@ -78,6 +78,7 @@ function StudentPage() {
   const [liveAlert, setLiveAlert] = useState<
     { message: string; tone: "info" | "success" | "error" } | null
   >(null);
+  const defaultRootFontSize = useRef<string | null>(null);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
     setLiveAlert({ message, tone });
@@ -346,6 +347,20 @@ function StudentPage() {
       cancelled = true;
     };
   }, [unauthorized, allowSamples]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const docEl = document.documentElement;
+    if (!defaultRootFontSize.current) {
+      defaultRootFontSize.current = docEl.style.fontSize || getComputedStyle(docEl).fontSize;
+    }
+    docEl.style.fontSize = `${fontScale * 100}%`;
+    return () => {
+      if (defaultRootFontSize.current) {
+        docEl.style.fontSize = defaultRootFontSize.current;
+      }
+    };
+  }, [fontScale]);
 
   useEffect(() => {
     let cancelled = false;
