@@ -10,6 +10,8 @@ type StudentSummary = {
   course?: string;
 };
 
+const allowSamples = process.env.ALLOW_SAMPLE_FALLBACKS === "true";
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<StudentSummary[] | { error: string }>
@@ -25,6 +27,9 @@ export default async function handler(
     });
 
     if (!users.length) {
+      if (!allowSamples) {
+        return res.status(503).json({ error: "Students unavailable (samples disabled)." });
+      }
       return res.status(200).json(fallbackStudents as StudentSummary[]);
     }
 
@@ -38,10 +43,10 @@ export default async function handler(
 
     return res.status(200).json(mapped);
   } catch (error) {
-    console.error(
-      "Falling back to mock students due to database error:",
-      error
-    );
+    console.error("Students load failed:", error);
+    if (!allowSamples) {
+      return res.status(503).json({ error: "Students unavailable (samples disabled)." });
+    }
     return res.status(200).json(fallbackStudents as StudentSummary[]);
   }
 }

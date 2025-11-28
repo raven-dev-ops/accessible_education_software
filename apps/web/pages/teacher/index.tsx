@@ -70,11 +70,15 @@ const trainingSets: Record<
 const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
+const allowSampleEnv =
+  process.env.NEXT_PUBLIC_ALLOW_SAMPLE_FALLBACKS === "true" &&
+  process.env.NODE_ENV !== "production";
 
 function TeacherPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const preview = router.query.preview === "1";
+  const allowSamples = preview || allowSampleEnv;
   const [unauthorized, setUnauthorized] = useState(false);
   const [modules, setModules] = useState<ModuleSummary[]>([]);
   const [modulesLoading, setModulesLoading] = useState(true);
@@ -164,20 +168,36 @@ function TeacherPage() {
       try {
         const res = await fetch("/api/modules");
         if (!res.ok) {
-          setModules(sampleModules);
-          setModulesError(null);
+          if (allowSamples) {
+            setModules(sampleModules);
+            setModulesError(null);
+          } else {
+            setModulesError("Modules unavailable (samples disabled).");
+          }
           setModulesLoading(false);
           return;
         }
         const data = (await res.json()) as ModuleSummary[];
         if (!cancelled) {
-          setModules(data.length ? data : sampleModules);
-          setModulesError(null);
+          if (data.length) {
+            setModules(data);
+            setModulesError(null);
+          } else if (allowSamples) {
+            setModules(sampleModules);
+            setModulesError(null);
+          } else {
+            setModules([]);
+            setModulesError("No modules yet (samples disabled).");
+          }
         }
       } catch (error) {
         if (!cancelled) {
-          setModules(sampleModules);
-          setModulesError(null);
+          if (allowSamples) {
+            setModules(sampleModules);
+            setModulesError(null);
+          } else {
+            setModulesError("Failed to load modules (samples disabled).");
+          }
         }
       } finally {
         if (!cancelled) {
@@ -201,8 +221,12 @@ function TeacherPage() {
       try {
         const res = await fetch("/api/support-tickets");
         if (!res.ok) {
-          setTicketList(sampleTickets);
-          setTicketsError(null);
+          if (allowSamples) {
+            setTicketList(sampleTickets);
+            setTicketsError(null);
+          } else {
+            setTicketsError("Tickets unavailable (samples disabled).");
+          }
           setTicketsLoading(false);
           return;
         }
@@ -230,8 +254,12 @@ function TeacherPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          setTicketList(sampleTickets);
-          setTicketsError(null);
+          if (allowSamples) {
+            setTicketList(sampleTickets);
+            setTicketsError(null);
+          } else {
+            setTicketsError("Failed to load tickets (samples disabled).");
+          }
         }
       } finally {
         if (!cancelled) setTicketsLoading(false);

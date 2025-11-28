@@ -37,6 +37,10 @@ const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
 
+const allowSampleEnv =
+  process.env.NEXT_PUBLIC_ALLOW_SAMPLE_FALLBACKS === "true" &&
+  process.env.NODE_ENV !== "production";
+
 const normalizeTickets = (raw: any[]): SupportTicket[] =>
   (raw || []).map((t: any) => ({
     id: t.id ?? (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : String(Math.random())),
@@ -51,6 +55,7 @@ const normalizeTickets = (raw: any[]): SupportTicket[] =>
 function AdminPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const preview = router.query.preview === "1";
   const [unauthorized, setUnauthorized] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [studentsError, setStudentsError] = useState<string | null>(null);
@@ -67,9 +72,10 @@ function AdminPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [ticketsError, setTicketsError] = useState<string | null>(null);
   const [ticketsLoading, setTicketsLoading] = useState(true);
+  const allowSamples = preview || allowSampleEnv;
 
   useEffect(() => {
-    if (!authEnabled) return;
+      if (!authEnabled) return;
     if (status === "loading") return;
     if (!session || !session.user) {
       void router.replace("/login");
@@ -93,20 +99,36 @@ function AdminPage() {
       try {
         const res = await fetch("/api/students");
         if (!res.ok) {
-            // Fall back to local sample if unauthorized or error
+          if (allowSamples) {
             setStudents(sampleStudents as Student[]);
             setStudentsError(null);
-            setStudentsLoading(false);
-            return;
+          } else {
+            setStudentsError("Students unavailable (samples disabled).");
+          }
+          setStudentsLoading(false);
+          return;
         }
         const data: Student[] = await res.json();
         if (!cancelled) {
-          setStudents(data.length ? data : (sampleStudents as Student[]));
-          setStudentsError(null);
+          if (data.length) {
+            setStudents(data);
+            setStudentsError(null);
+          } else if (allowSamples) {
+            setStudents(sampleStudents as Student[]);
+            setStudentsError(null);
+          } else {
+            setStudents([]);
+            setStudentsError("No students yet (samples disabled).");
+          }
         }
       } catch (error) {
         if (!cancelled) {
-          setStudentsError("Failed to load students.");
+          if (allowSamples) {
+            setStudents(sampleStudents as Student[]);
+            setStudentsError(null);
+          } else {
+            setStudentsError("Failed to load students (samples disabled).");
+          }
         }
       } finally {
         if (!cancelled) {
@@ -122,19 +144,36 @@ function AdminPage() {
       try {
         const res = await fetch("/api/uploads");
         if (!res.ok) {
+          if (allowSamples) {
             setUploads(sampleUploads as UploadSummary[]);
             setUploadsError(null);
-            setUploadsLoading(false);
-            return;
+          } else {
+            setUploadsError("Uploads unavailable (samples disabled).");
+          }
+          setUploadsLoading(false);
+          return;
         }
         const data = (await res.json()) as UploadSummary[];
         if (!cancelled) {
-          setUploads(data.length ? data : (sampleUploads as UploadSummary[]));
-          setUploadsError(null);
+          if (data.length) {
+            setUploads(data);
+            setUploadsError(null);
+          } else if (allowSamples) {
+            setUploads(sampleUploads as UploadSummary[]);
+            setUploadsError(null);
+          } else {
+            setUploads([]);
+            setUploadsError("No uploads yet (samples disabled).");
+          }
         }
       } catch (error) {
         if (!cancelled) {
-          setUploadsError("Failed to load uploads.");
+          if (allowSamples) {
+            setUploads(sampleUploads as UploadSummary[]);
+            setUploadsError(null);
+          } else {
+            setUploadsError("Failed to load uploads (samples disabled).");
+          }
         }
       } finally {
         if (!cancelled) {
@@ -150,21 +189,37 @@ function AdminPage() {
       try {
         const res = await fetch("/api/support-tickets");
         if (!res.ok) {
-          setTickets(normalizeTickets(sampleTickets as any));
-          setTicketsError(null);
+          if (allowSamples) {
+            setTickets(normalizeTickets(sampleTickets as any));
+            setTicketsError(null);
+          } else {
+            setTicketsError("Tickets unavailable (samples disabled).");
+          }
           setTicketsLoading(false);
           return;
         }
         const data = (await res.json()) as typeof sampleTickets;
         const normalized = normalizeTickets(Array.isArray(data) ? data : []);
         if (!cancelled) {
-          setTickets(normalized.length ? normalized : normalizeTickets(sampleTickets as any));
-          setTicketsError(null);
+          if (normalized.length) {
+            setTickets(normalized);
+            setTicketsError(null);
+          } else if (allowSamples) {
+            setTickets(normalizeTickets(sampleTickets as any));
+            setTicketsError(null);
+          } else {
+            setTickets([]);
+            setTicketsError("No tickets yet (samples disabled).");
+          }
         }
       } catch (error) {
         if (!cancelled) {
-          setTickets(normalizeTickets(sampleTickets as any));
-          setTicketsError(null);
+          if (allowSamples) {
+            setTickets(normalizeTickets(sampleTickets as any));
+            setTicketsError(null);
+          } else {
+            setTicketsError("Failed to load tickets (samples disabled).");
+          }
         }
       } finally {
         if (!cancelled) {

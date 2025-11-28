@@ -18,6 +18,9 @@ type ReleasedNote = {
 const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
+const allowSampleEnv =
+  process.env.NEXT_PUBLIC_ALLOW_SAMPLE_FALLBACKS === "true" &&
+  process.env.NODE_ENV !== "production";
 
 const fallbackNotes: ReleasedNote[] = [
   {
@@ -35,6 +38,7 @@ function StudentPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const preview = router.query.preview === "1";
+  const allowSamples = preview || allowSampleEnv;
   const [unauthorized, setUnauthorized] = useState(false);
   const [fontScale, setFontScale] = useState(1.05);
   const [highContrast, setHighContrast] = useState(false);
@@ -284,28 +288,46 @@ function StudentPage() {
       try {
         const res = await fetch("/api/notes");
         if (!res.ok) {
-          setNotes(fallbackNotes);
-          setNotesError("Showing sample notes; database unavailable.");
-          announce("Showing sample notes because the database could not be reached.", "info");
+          if (allowSamples) {
+            setNotes(fallbackNotes);
+            setNotesError("Showing sample notes; database unavailable.");
+            announce("Showing sample notes because the database could not be reached.", "info");
+          } else {
+            setNotes([]);
+            setNotesError("Notes unavailable (samples disabled).");
+            announce("Notes unavailable; samples disabled.", "error");
+          }
           return;
         }
         const data = (await res.json()) as ReleasedNote[];
         if (!cancelled) {
           const usedFallback = data.length === 0;
-          setNotes(usedFallback ? fallbackNotes : data);
-          setNotesError(null);
-          announce(
-            usedFallback
-              ? "No database notes yet; showing sample notes."
-              : "Loaded notes from the database.",
-            "info"
-          );
+          if (usedFallback && !allowSamples) {
+            setNotes([]);
+            setNotesError("No notes yet (samples disabled).");
+            announce("No notes yet; samples disabled.", "info");
+          } else {
+            setNotes(usedFallback ? fallbackNotes : data);
+            setNotesError(null);
+            announce(
+              usedFallback
+                ? "No database notes yet; showing sample notes."
+                : "Loaded notes from the database.",
+              "info"
+            );
+          }
         }
       } catch (error) {
         if (!cancelled) {
-          setNotes(fallbackNotes);
-          setNotesError("Could not load notes; showing sample notes.");
-          announce("Could not load notes; showing sample notes instead.", "error");
+          if (allowSamples) {
+            setNotes(fallbackNotes);
+            setNotesError("Could not load notes; showing sample notes.");
+            announce("Could not load notes; showing sample notes instead.", "error");
+          } else {
+            setNotes([]);
+            setNotesError("Could not load notes (samples disabled).");
+            announce("Could not load notes; samples disabled.", "error");
+          }
         }
       } finally {
         if (!cancelled) {

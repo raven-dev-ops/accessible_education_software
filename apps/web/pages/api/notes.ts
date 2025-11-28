@@ -12,6 +12,8 @@ type NoteSummary = {
   excerpt: string;
 };
 
+const allowSamples = process.env.ALLOW_SAMPLE_FALLBACKS === "true";
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<NoteSummary[] | { error: string }>
@@ -33,6 +35,9 @@ export default async function handler(
     });
 
     if (!notes.length) {
+      if (!allowSamples) {
+        return res.status(503).json({ error: "Notes unavailable (samples disabled)." });
+      }
       return res.status(200).json(fallbackNotes as NoteSummary[]);
     }
 
@@ -57,11 +62,10 @@ export default async function handler(
 
     return res.status(200).json(mapped);
   } catch (error) {
-    console.error(
-      "Falling back to mock notes due to database error:",
-      error
-    );
+    console.error("Notes load failed:", error);
+    if (!allowSamples) {
+      return res.status(503).json({ error: "Notes unavailable (samples disabled)." });
+    }
     return res.status(200).json(fallbackNotes as NoteSummary[]);
   }
 }
-

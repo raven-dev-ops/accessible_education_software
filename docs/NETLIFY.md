@@ -19,6 +19,7 @@ Recommended Netlify settings for the Next.js app under `apps/web`:
 - `ADMIN_EMAILS`, `TEACHER_EMAILS` — comma-separated allowlists
 - `OCR_SERVICE_URL` — HTTP endpoint of OCR service (if wired)
 - `DATABASE_URL` — Postgres connection string (if Netlify functions call DB via proxy/API)
+- `ALLOW_SAMPLE_FALLBACKS` / `NEXT_PUBLIC_ALLOW_SAMPLE_FALLBACKS` — set to `false` in production to prevent sample data in APIs/UI. Preview/demos only.
 
 ## Notes
 - The repo includes `netlify.toml` with the same settings; Netlify UI should mirror it.

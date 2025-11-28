@@ -12,6 +12,8 @@ type UploadSummary = {
   createdAt?: string | null;
 };
 
+const allowSamples = process.env.ALLOW_SAMPLE_FALLBACKS === "true";
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<UploadSummary[] | { error: string }>
@@ -27,6 +29,9 @@ export default async function handler(
     type DbUpload = (typeof uploads)[number];
 
     if (!uploads.length) {
+      if (!allowSamples) {
+        return res.status(503).json({ error: "Uploads unavailable (samples disabled)." });
+      }
       return res.status(200).json(fallbackUploads as UploadSummary[]);
     }
 
@@ -42,6 +47,9 @@ export default async function handler(
     return res.status(200).json(mapped);
   } catch (error) {
     console.error("Falling back to mock uploads due to database error:", error);
+    if (!allowSamples) {
+      return res.status(503).json({ error: "Uploads unavailable (samples disabled)." });
+    }
     return res.status(200).json(fallbackUploads as UploadSummary[]);
   }
 }
