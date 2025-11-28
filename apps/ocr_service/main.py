@@ -5,6 +5,8 @@ from typing import List, Tuple
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+import os
+import requests
 
 try:
     import pytesseract  # type: ignore
@@ -33,11 +35,33 @@ class OCRRequest(BaseModel):
     filename: str | None = None
     content_type: str | None = None
     text: str | None = None  # Optional text body or hex-encoded PDF bytes
+    ai_verify: bool | None = False
 
 
 def run_ocr_on_image(image: "Image.Image") -> str:
     return pytesseract.image_to_string(image) if pytesseract else ""
 
+
+def maybe_ai_verify(text: str) -> dict | None:
+    """Optional AI verification hook; enabled via env AI_VERIFY_URL and toggle."""
+    if not text.strip():
+        return None
+    ai_url = os.environ.get("AI_VERIFY_URL")
+    ai_key = os.environ.get("AI_VERIFY_API_KEY")
+    if not ai_url:
+        return None
+    try:
+        resp = requests.post(
+            ai_url,
+            headers={"Authorization": f"Bearer {ai_key}"} if ai_key else {},
+            json={"text": text, "context": "calculus_ocr"},
+            timeout=10,
+        )
+        if resp.ok:
+            return resp.json()
+    except Exception:
+        logger.exception("AI verification failed")
+    return None
 
 def is_scanned_pdf(doc: "fitz.Document") -> bool:
     if doc is None or doc.page_count == 0:
@@ -153,7 +177,8 @@ async def run_ocr_json(req: OCRRequest) -> JSONResponse:
     - If plain text provided, echo back as OCR result.
     """
     if req.text and not req.content_type:
-        return JSONResponse(status_code=200, content={"ok": True, "type": "text", "text": req.text, "pages": 1})
+        ai = maybe_ai_verify(req.text) if req.ai_verify else None
+        return JSONResponse(status_code=200, content={"ok": True, "type": "text", "text": req.text, "pages": 1, "ai": ai})
 
     if req.content_type == "application/pdf":
         if fitz is None:
@@ -167,17 +192,21 @@ async def run_ocr_json(req: OCRRequest) -> JSONResponse:
                     text_parts = []
                     for idx, img in pages:
                         text_parts.append(f"[page {idx+1}] {run_ocr_on_image(img)}")
+                    text_out = "\n".join(text_parts)
+                    ai = maybe_ai_verify(text_out) if req.ai_verify else None
                     return JSONResponse(
                         status_code=200,
-                        content={"ok": True, "type": "pdf_scanned", "pages": len(pages), "text": "\n".join(text_parts)},
+                        content={"ok": True, "type": "pdf_scanned", "pages": len(pages), "text": text_out, "ai": ai},
                     )
                 else:
                     text_parts = []
                     for i in range(doc.page_count):
                         text_parts.append(f"[page {i+1}] {doc.load_page(i).get_text('text')}")
+                    text_out = "\n".join(text_parts)
+                    ai = maybe_ai_verify(text_out) if req.ai_verify else None
                     return JSONResponse(
                         status_code=200,
-                        content={"ok": True, "type": "pdf_text", "pages": doc.page_count, "text": "\n".join(text_parts)},
+                        content={"ok": True, "type": "pdf_text", "pages": doc.page_count, "text": text_out, "ai": ai},
                     )
         except Exception:
             logger.exception("PDF processing failed")
