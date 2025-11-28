@@ -88,6 +88,9 @@ function StudentPage() {
   const [uploadScore, setUploadScore] = useState<number | null>(null);
   const [correctionText, setCorrectionText] = useState<string>("");
   const [uploadImageUrl, setUploadImageUrl] = useState<string | null>(null);
+  const [previousUploads, setPreviousUploads] = useState<
+    { id: string; name: string; dataUrl: string; createdAt: string }[]
+  >([]);
   const [brailleOpen, setBrailleOpen] = useState(false);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
@@ -160,6 +163,23 @@ function StudentPage() {
         if (typeof parsed.fontScale === "number") setFontScale(parsed.fontScale);
         if (typeof parsed.highContrast === "boolean") setHighContrast(parsed.highContrast);
         if (typeof parsed.widgetOpen === "boolean") setWidgetOpen(parsed.widgetOpen);
+      }
+    } catch {
+      // ignore
+    }
+  }, [preview, session?.user?.email]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const key =
+        preview || !session?.user?.email ? "student-uploads-sample" : `student-uploads-${session.user.email}`;
+      const raw = window.localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { id: string; name: string; dataUrl: string; createdAt: string }[];
+        if (Array.isArray(parsed)) {
+          setPreviousUploads(parsed);
+        }
       }
     } catch {
       // ignore
@@ -543,59 +563,14 @@ function StudentPage() {
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {session?.user?.email || "sample.student@example.com"}
                 </p>
-                {preview && (
+                {false && (
                   <p className="mt-1 text-xs inline-flex items-center px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                     Preview mode · sample student
                   </p>
                 )}
               </div>
             </div>
-            <div className="mt-3 md:mt-0">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">
-                Released materials at a glance
-              </h3>
-              {notesLoading && <p className="text-sm text-slate-700 dark:text-slate-300">Loading released materials...</p>}
-              {!notesLoading && notes.length === 0 && (
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  No new notes from your instructors yet.
-                </p>
-              )}
-              {!notesLoading && notes.length > 0 && (
-                <ul className="space-y-1 text-sm text-slate-800 dark:text-slate-200">
-                  {notes.slice(0, 2).map((note) => (
-                    <li key={note.id} className="flex items-center justify-between gap-2">
-                      <div>
-                        <div className="font-medium">
-                          {note.title}
-                          {note.course && <span className="ml-1 text-gray-600">({note.course})</span>}
-                        </div>
-                        {note.createdAt && (
-                          <div className="text-xs text-gray-500">
-                            Released: {new Date(note.createdAt).toLocaleDateString()}
-                          </div>
-                        )}
-                      </div>
-                      {ttsSupported && (
-                        <button
-                          type="button"
-                          onClick={() => handleSpeakNote(note)}
-                          className="px-2 py-1 rounded bg-indigo-700 text-white text-xs disabled:opacity-60 whitespace-nowrap"
-                          aria-pressed={activeSpeechId === String(note.id)}
-                          disabled={isSpeaking && activeSpeechId !== String(note.id)}
-                        >
-                          Listen
-                        </button>
-                      )}
-                    </li>
-                  ))}
-                  {notes.length > 2 && (
-                    <li className="text-xs text-slate-600 dark:text-slate-300">
-                      + {notes.length - 2} more released notes below
-                    </li>
-                  )}
-                </ul>
-              )}
-            </div>
+            <div className="mt-3 md:mt-0" />
           </div>
         </section>
 
@@ -641,29 +616,81 @@ function StudentPage() {
                     setUploadImageUrl(null);
                     if (file && file.type.startsWith("image/")) {
                       const reader = new FileReader();
-                      reader.onload = () => setUploadImageUrl(reader.result as string);
+                      reader.onload = () => {
+                        const dataUrl = reader.result as string;
+                        setUploadImageUrl(dataUrl);
+                        const entry = {
+                          id: `upload-${Date.now()}`,
+                          name: file.name,
+                          dataUrl,
+                          createdAt: new Date().toISOString(),
+                        };
+                        setPreviousUploads((prev) => {
+                          const next = [entry, ...prev].slice(0, 6);
+                          if (typeof window !== "undefined") {
+                            try {
+                              const key =
+                                preview || !session?.user?.email
+                                  ? "student-uploads-sample"
+                                  : `student-uploads-${session.user.email}`;
+                              window.localStorage.setItem(key, JSON.stringify(next));
+                            } catch {
+                              // ignore
+                            }
+                          }
+                          return next;
+                        });
+                      };
                       reader.readAsDataURL(file);
                     }
                   }}
                 />
               </label>
 
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Selected image</p>
-                  {uploadFileName && (
-                    <span className="text-xs text-slate-600 dark:text-slate-300">{uploadFileName}</span>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Selected image</p>
+                    {uploadFileName && (
+                      <span className="text-xs text-slate-600 dark:text-slate-300">{uploadFileName}</span>
+                    )}
+                  </div>
+                  {uploadImageUrl ? (
+                    <div className="relative w-full h-48 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded">
+                      <Image src={uploadImageUrl} alt="Uploaded preview" fill className="object-contain rounded" />
+                    </div>
+                  ) : (
+                    <div className="h-48 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 rounded border border-dashed border-slate-300 dark:border-slate-700">
+                      No image selected
+                    </div>
                   )}
                 </div>
-                {uploadImageUrl ? (
-                  <div className="relative w-full h-48 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded">
-                    <Image src={uploadImageUrl} alt="Uploaded preview" fill className="object-contain rounded" />
-                  </div>
-                ) : (
-                  <div className="h-48 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 rounded border border-dashed border-slate-300 dark:border-slate-700">
-                    No image selected
-                  </div>
-                )}
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                    Previous uploads
+                  </p>
+                  {previousUploads.length === 0 ? (
+                    <div className="h-36 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 border border-dashed border-slate-300 dark:border-slate-700 rounded">
+                      No previous uploads yet
+                    </div>
+                  ) : (
+                    <ul className="space-y-2 max-h-40 overflow-auto text-xs text-slate-700 dark:text-slate-200">
+                      {previousUploads.map((u) => (
+                        <li key={u.id} className="flex items-center gap-2">
+                          <div className="relative h-10 w-10 flex-shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+                            <Image src={u.dataUrl} alt={u.name} fill className="object-cover" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="truncate font-medium">{u.name}</div>
+                            <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                              {new Date(u.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
 
               <button
