@@ -1,0 +1,42 @@
+name: Call Cloud Run API (WIF)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  WORKLOAD_ID_PROVIDER: projects/139864076628/locations/global/workloadIdentityPools/gh-pool/providers/gh-provider
+  SERVICE_ACCOUNT: cloud-run-invoker@cs-poc-kvjwpp97kjozemn894cmvvg.iam.gserviceaccount.com
+  CLOUD_RUN_URL: https://cloud-run-api-139864076628.us-central1.run.app
+  CLOUD_RUN_API_KEY: 9pYZUI0z3hWbKtDv4FKnvfZOSwiL8BRH
+
+jobs:
+  call-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Auth via Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WORKLOAD_ID_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+          token_format: access_token
+
+      - name: Fetch ID token for Cloud Run
+        id: idtoken
+        run: |
+          ID_TOKEN=$(gcloud auth print-identity-token --audiences="${CLOUD_RUN_URL}")
+          echo "id_token=$ID_TOKEN" >> "$GITHUB_OUTPUT"
+        env:
+          CLOUD_RUN_URL: ${{ env.CLOUD_RUN_URL }}
+
+      - name: Call Cloud Run /db-ping
+        run: |
+          curl -sSf \
+            -H "Authorization: Bearer ${{ steps.idtoken.outputs.id_token }}" \
+            -H "X-API-Key: ${{ env.CLOUD_RUN_API_KEY }}" \
+            "${{ env.CLOUD_RUN_URL }}/db-ping"
