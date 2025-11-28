@@ -38,7 +38,16 @@ export default function Home() {
           >
             Preview student dashboard
           </Link>
+          <Link
+            href="/student?preview=1&showPreviewNav=1"
+            className="px-5 py-3 rounded-lg bg-emerald-600 text-white shadow hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+          >
+            Preview all dashboards
+          </Link>
         </div>
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          The preview nav lets you switch Student, Teacher, and Admin demos and return to login without authenticating.
+        </p>
       </div>
     </main>
   );
