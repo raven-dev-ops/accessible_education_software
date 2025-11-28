@@ -258,26 +258,29 @@ function AdminPage() {
             <div className="grid gap-6 md:grid-cols-2">
               <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 p-4 h-full">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                  Upload a file
+                  Upload
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-                  Upload a PDF or image to send it to the OCR service. A short text preview
-                  will appear when available.
+                  Tap the + button to pick a PDF/image from camera or gallery and send it to OCR.
                 </p>
                 <form onSubmit={handleUpload} aria-describedby="admin-upload-help">
-                  <label className="block mb-2">
-                    <span className="block mb-1 text-sm text-slate-700 dark:text-slate-200">
-                      Choose PDF or image
-                    </span>
+                  <label className="flex items-center gap-3 mb-3">
                     <input
                       type="file"
                       accept=".pdf,image/*"
                       name="file"
-                      className="block w-full text-sm text-slate-800 dark:text-slate-100"
+                      className="sr-only"
+                      capture="environment"
                     />
+                    <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-blue-600 text-white text-xl font-semibold shadow-sm">
+                      +
+                    </span>
+                    <span className="text-sm text-slate-700 dark:text-slate-200">
+                      Select a PDF or image
+                    </span>
                   </label>
                   <p id="admin-upload-help" className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                    Choose a file and select Upload. A short text preview will be shown when available.
+                    One-click upload; OCR preview will show on the right.
                   </p>
                   <div className="flex items-center gap-3 flex-wrap">
                     <button
@@ -286,14 +289,14 @@ function AdminPage() {
                       disabled={uploading}
                       aria-busy={uploading}
                     >
-                      {uploading ? "Uploading..." : "Upload"}
+                      {uploading ? "Uploading..." : "Send"}
                     </button>
                     <button
                       type="button"
                       onClick={handleTestOcr}
                       className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm shadow-sm dark:bg-emerald-500 dark:text-slate-900"
                     >
-                      {ocrLoading ? "Running OCR test..." : "Run sample OCR test"}
+                      {ocrLoading ? "Running sample..." : "Run sample OCR"}
                     </button>
                   </div>
                 </form>
@@ -412,63 +415,126 @@ function AdminPage() {
               )}
             </section>
 
+            <section
+              className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
+              aria-labelledby="admin-uploads"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h2 id="admin-uploads" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Recent uploads
+                </h2>
+                {uploadsLoading && (
+                  <span className="text-xs text-slate-500 dark:text-slate-300">Loading…</span>
+                )}
+              </div>
+              {uploadsError && (
+                <p role="alert" className="text-red-600 dark:text-red-300 text-sm">
+                  {uploadsError}
+                </p>
+              )}
+              {!uploadsLoading && !uploadsError && uploads.length === 0 && (
+                <p className="text-sm text-slate-600 dark:text-slate-300">No uploads yet.</p>
+              )}
+              {!uploadsLoading && !uploadsError && uploads.length > 0 && (
+                <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Filename</th>
+                        <th className="px-3 py-2 text-left">MIME type</th>
+                        <th className="px-3 py-2 text-left">Size</th>
+                        <th className="px-3 py-2 text-left">Status</th>
+                        <th className="px-3 py-2 text-left">Created</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {uploads.map((u) => (
+                        <tr key={u.id} className="border-t border-slate-100 dark:border-slate-800">
+                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.filename || ""}</td>
+                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.mimetype || ""}</td>
+                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                            {typeof u.size === "number" ? `${(u.size / 1024).toFixed(1)} KB` : ""}
+                          </td>
+                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.status}</td>
+                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                            {u.createdAt ? new Date(u.createdAt).toLocaleString() : ""}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
           </div>
 
-          <section
-            className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
-            aria-labelledby="admin-uploads"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h2 id="admin-uploads" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Recent uploads
-              </h2>
-              {uploadsLoading && (
-                <span className="text-xs text-slate-500 dark:text-slate-300">Loading…</span>
-              )}
-            </div>
-            {uploadsError && (
-              <p role="alert" className="text-red-600 dark:text-red-300 text-sm">
-                {uploadsError}
-              </p>
-            )}
-            {!uploadsLoading && !uploadsError && uploads.length === 0 && (
-              <p className="text-sm text-slate-600 dark:text-slate-300">No uploads yet.</p>
-            )}
-            {!uploadsLoading && !uploadsError && uploads.length > 0 && (
-              <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Filename</th>
-                      <th className="px-3 py-2 text-left">MIME type</th>
-                      <th className="px-3 py-2 text-left">Size</th>
-                      <th className="px-3 py-2 text-left">Status</th>
-                      <th className="px-3 py-2 text-left">Created</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {uploads.map((u) => (
-                      <tr key={u.id} className="border-t border-slate-100 dark:border-slate-800">
-                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.filename || ""}</td>
-                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.mimetype || ""}</td>
-                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                          {typeof u.size === "number"
-                            ? `${(u.size / 1024).toFixed(1)} KB`
-                            : ""}
-                        </td>
-                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.status}</td>
-                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                          {u.createdAt
-                            ? new Date(u.createdAt).toLocaleString()
-                            : ""}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <div className="grid gap-6 md:grid-cols-2">
+            <section className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                    Teacher training docs
+                  </p>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    Upload curriculum PDFs
+                  </h2>
+                </div>
               </div>
-            )}
-          </section>
+              <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
+                Provide handwritten/printed curriculum samples to improve OCR accuracy for math notes.
+              </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-sm cursor-pointer">
+                  <span className="text-xl font-semibold leading-none">+</span>
+                  <span>Upload PDF</span>
+                  <input type="file" accept=".pdf" className="sr-only" />
+                </label>
+                <span className="text-xs text-slate-500 dark:text-slate-300">
+                  Supports PDF; drag scanned pages or export from LMS.
+                </span>
+              </div>
+            </section>
+
+            <section className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                    OCR analytics
+                  </p>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    Quality & volume
+                  </h2>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
+                  <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
+                    OCR samples
+                  </p>
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                    10
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-300">
+                    Initial batch submitted
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
+                  <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
+                    Accuracy (mock)
+                  </p>
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                    94%
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-300">
+                    Based on recent runs
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-300 mt-3">
+                Analytics are illustrative until we wire real OCR scoring.
+              </p>
+            </section>
+          </div>
         </div>
       </main>
     </Layout>
