@@ -33,12 +33,6 @@ export default function Home() {
             Go to login
           </Link>
           <Link
-            href="/student?preview=1"
-            className="px-5 py-3 rounded-lg bg-slate-100 text-slate-900 border border-slate-200 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700"
-          >
-            Preview student dashboard
-          </Link>
-          <Link
             href="/student?preview=1&showPreviewNav=1"
             className="px-5 py-3 rounded-lg bg-emerald-600 text-white shadow hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
           >
