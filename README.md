@@ -339,14 +339,38 @@ Early plan for representing and rendering math from OCR output:
 ---
 
 ## APIs & Database
-  
-  Several Next.js API routes power the dashboards:
+
+Several Next.js API routes power the dashboards:
 
 - `GET /api/students` - returns a list of students for the admin dashboard. Uses the `User` table when the database is configured; otherwise falls back to `apps/web/data/sampleStudents.json`.
 - `GET /api/modules` - returns a list of modules for the teacher dashboard. Uses the `Module` and `Course` tables when available; otherwise falls back to `apps/web/data/sampleModules.json`.
 - `GET /api/notes` - returns "released materials" for the student dashboard. Uses the `Note`, `Module`, and `Course` tables when available; otherwise falls back to `apps/web/data/sampleNotes.json`.
 - `POST /api/upload` - accepts a file upload and, if `OCR_SERVICE_URL` is configured, forwards the file to the Python OCR service `/ocr` endpoint. Returns basic file metadata and any OCR text received.
 - `POST /api/test-ocr` - calls the OCR service `/health` endpoint (when `OCR_SERVICE_URL` is set) and reports whether OCR is available; otherwise returns a stub message.
+
+### Cloud SQL and Cloud Run proxy
+
+- Cloud SQL instance: `accessible-software-db` (private IP only) with database `appdb`, users `postgres` and `appuser`.
+- A small Cloud Run API (`cloud-run-api`) connects to Cloud SQL over private IP using the Cloud SQL Connector. It is protected by an `X-API-Key` header and intended to be called from CI/Netlify via HTTPS instead of direct DB access.
+- Cloud Run URL: `https://cloud-run-api-139864076628.us-central1.run.app`
+- API key: set via the `API_KEY` environment variable on the service (see deploy notes below).
+- Serverless VPC connector: `serverless-sql-connector` (us-central1) to reach the private IP DB.
+
+### Workload Identity Federation (GitHub Actions)
+
+Netlify cannot emit OIDC tokens, so keyless access is provided through GitHub Actions OIDC:
+
+- WIF pool/provider: `gh-pool` / `gh-provider` (issuer `https://token.actions.githubusercontent.com`) with condition `attribute.repository=='raven-dev-ops/accessible_education_software'`.
+- Service account for invocation: `cloud-run-invoker@cs-poc-kvjwpp97kjozemn894cmvvg.iam.gserviceaccount.com` (roles: `run.invoker`, `iam.workloadIdentityUser` bound to the GitHub repo).
+- Example GitHub secrets:
+  - `WORKLOAD_ID_PROVIDER=projects/139864076628/locations/global/workloadIdentityPools/gh-pool/providers/gh-provider`
+  - `SERVICE_ACCOUNT=cloud-run-invoker@cs-poc-kvjwpp97kjozemn894cmvvg.iam.gserviceaccount.com`
+  - `CLOUD_RUN_URL=https://cloud-run-api-139864076628.us-central1.run.app`
+  - `CLOUD_RUN_API_KEY=<match Cloud Run API_KEY>`
+- Workflow outline:
+  - Use `google-github-actions/auth@v2` with the WIF provider and service account.
+  - Fetch an ID token: `gcloud auth print-identity-token --audiences="${CLOUD_RUN_URL}"`.
+  - Call Cloud Run with `Authorization: Bearer <ID_TOKEN>` and `X-API-Key: <API_KEY>`.
 - `POST /api/braille` - converts text to Braille using liblouis/Nemeth when enabled (`BRAILLE_ENGINE=liblouis`) and falls back to the Grade 1 mapper otherwise.
 
 ### Database & Prisma

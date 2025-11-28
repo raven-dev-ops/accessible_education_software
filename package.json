@@ -1,6 +1,6 @@
 {
   "name": "accessible-education-software",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "AI-powered accessibility platform that turns handwritten STEM notes into accessible content for blind and low-vision students.",
   "scripts": {

@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - Cloud Run proxy + WIF
+
+- Add a Cloud Run API scaffold (`apps/cloud-run-api`) that connects to the private-IP Cloud SQL instance via the Cloud SQL Connector, guarded by an `X-API-Key`.
+- Configure a Serverless VPC Access connector (`serverless-sql-connector`) for private DB access.
+- Set up Workload Identity Federation for GitHub Actions (pool `gh-pool`, provider `gh-provider`) to impersonate `cloud-run-invoker` (roles/run.invoker) and call the Cloud Run API with OIDC tokens instead of service account keys.
+- Document the Cloud Run/WIF flow and current Cloud SQL connection details.
+
 ## [0.2.0] - Day 5 auth swap
 
 - Replace Auth0 with NextAuth + Google provider (new `/api/auth/[...nextauth].ts`, email allowlists for admin/teacher roles, login/logout flows updated across pages/components).
