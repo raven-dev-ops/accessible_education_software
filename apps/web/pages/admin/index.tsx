@@ -492,7 +492,7 @@ function AdminPage() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="/student"
+                  href="/student?preview=1"
                   className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-sm hover:bg-blue-700"
                   target="_blank"
                   rel="noreferrer"
@@ -500,7 +500,7 @@ function AdminPage() {
                   Student dashboard
                 </a>
                 <a
-                  href="/teacher"
+                  href="/teacher?preview=1"
                   className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm shadow-sm hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
                   target="_blank"
                   rel="noreferrer"

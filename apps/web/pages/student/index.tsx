@@ -22,6 +22,7 @@ const authEnabled =
 function StudentPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const preview = router.query.preview === "1";
   const [unauthorized, setUnauthorized] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsSupported, setTtsSupported] = useState(false);
@@ -49,17 +50,21 @@ function StudentPage() {
     if (!authEnabled) return;
     if (status === "loading") return;
     if (!session || !session.user) {
-      void router.replace("/login");
+      if (!preview) void router.replace("/login");
+      return;
+    }
+
+    if (preview) {
+      setUnauthorized(false);
       return;
     }
 
     const role = getRoleFromUser(session.user);
-
     if (role !== "student") {
       setUnauthorized(true);
       void router.replace("/dashboard");
     }
-  }, [session, status, router]);
+  }, [session, status, router, preview]);
 
   useEffect(() => {
     setTtsSupported(isTtsSupported());

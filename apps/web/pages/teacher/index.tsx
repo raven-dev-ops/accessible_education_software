@@ -17,6 +17,7 @@ const authEnabled =
 function TeacherPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const preview = router.query.preview === "1";
   const [unauthorized, setUnauthorized] = useState(false);
   const [modules, setModules] = useState<ModuleSummary[]>([]);
   const [modulesLoading, setModulesLoading] = useState(true);
@@ -26,17 +27,21 @@ function TeacherPage() {
     if (!authEnabled) return;
     if (status === "loading") return;
     if (!session || !session.user) {
-      void router.replace("/login");
+      if (!preview) void router.replace("/login");
+      return;
+    }
+
+    if (preview) {
+      setUnauthorized(false);
       return;
     }
 
     const role = getRoleFromUser(session.user);
-
     if (role !== "teacher") {
       setUnauthorized(true);
       void router.replace("/dashboard");
     }
-  }, [session, status, router]);
+  }, [session, status, router, preview]);
 
   useEffect(() => {
     let cancelled = false;
