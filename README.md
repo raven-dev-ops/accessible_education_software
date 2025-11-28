@@ -439,6 +439,8 @@ The detailed day-by-day plan and milestone goals are reflected in GitHub milesto
 
 See also:
 - `docs/M4.md` for database schema and Braille prototype notes.
+- `docs/NETLIFY.md` for production Netlify settings.
+- `docs/OCR_DOCKER.md` for packaging the OCR service.
 - `docs/ACCESSIBILITY.md` for current accessibility posture and testing notes.
 
 ---
