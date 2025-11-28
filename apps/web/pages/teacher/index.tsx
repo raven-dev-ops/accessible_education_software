@@ -82,7 +82,15 @@ function TeacherPage() {
   const [selectedModuleId, setSelectedModuleId] = useState<string | number>("calc-1");
   const [ticketDescription, setTicketDescription] = useState("");
   const [ticketList, setTicketList] = useState<
-    { id: string; detail: string; createdAt: string; studentEmail?: string | null; status?: string }[]
+    {
+      id: string;
+      detail: string;
+      createdAt: string;
+      studentEmail?: string | null;
+      status?: string;
+      score?: number | null;
+      attachmentUrl?: string | null;
+    }[]
   >([]);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<
@@ -165,33 +173,8 @@ function TeacherPage() {
 
   const handleTicketSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
-    if (!ticketDescription.trim()) return;
-    const now = new Date().toISOString();
-    const payload = {
-      detail: ticketDescription.trim(),
-      score: 75,
-      userEmail: session?.user?.email ?? null,
-    };
-    void fetch("/api/support-tickets", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then(async (r) => {
-        if (!r.ok) throw new Error(`Failed with status ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        const newTicket = {
-          id: data.id ?? `ticket-${ticketList.length + 1}`,
-          detail: payload.detail,
-          createdAt: data.createdAt ?? now,
-          studentEmail: data.userEmail ?? null,
-          status: "pending review",
-        };
-        setTicketList((prev) => [newTicket, ...prev].slice(0, 5));
-        setTicketDescription("");
-      });
+    // For now, this form is for teacher notes on an existing ticket selection; placeholder no-op.
+    setTicketDescription("");
   };
 
   const handleSendChat = () => {
@@ -434,46 +417,89 @@ function TeacherPage() {
           <p className="text-sm mb-3">
             Review or escalate student-submitted tickets (e.g., OCR below 80%). Add context and pass to software support as needed.
           </p>
-          <form onSubmit={handleTicketSubmit} className="space-y-3">
-            <label className="block text-sm">
-              <span className="block mb-1">Attach relevant file (optional)</span>
-              <input type="file" accept=".png,.jpg,.jpeg,.pdf" className="block w-full text-base" />
-            </label>
-            <label className="block text-sm">
-              <span className="block mb-1">Add teacher notes for escalation</span>
-              <textarea
-                className="w-full border rounded p-3 text-base bg-white dark:bg-slate-800"
-                rows={4}
-                value={ticketDescription}
-                onChange={(e) => setTicketDescription(e.target.value)}
-                placeholder="Example: Student ticket shows OCR 72% on derivatives; please review Greek symbols."
-              />
-            </label>
-            <button
-              type="submit"
-              className="px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
-              disabled={!ticketDescription.trim()}
-            >
-              Escalate to support
-            </button>
-          </form>
-          {ticketList.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <p className="text-sm font-semibold">Recent escalations (local preview)</p>
-              <ul className="space-y-2 text-sm">
+          <div className="overflow-auto rounded-lg border border-slate-200 dark:border-slate-700">
+            <table className="min-w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-100">
+                <tr>
+                  <th className="px-3 py-2 text-left">Student</th>
+                  <th className="px-3 py-2 text-left">Created</th>
+                  <th className="px-3 py-2 text-left">Score</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ticketList.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-2 text-slate-500">
+                      No pending tickets.
+                    </td>
+                  </tr>
+                )}
                 {ticketList.map((t) => (
-                  <li key={t.id} className="p-2 rounded border border-slate-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs text-gray-500">{new Date(t.createdAt).toLocaleString()}</div>
-                      {t.studentEmail && <div className="text-xs text-gray-500">{t.studentEmail}</div>}
-                    </div>
-                    <p className="mt-1">{t.detail}</p>
-                    <p className="text-xs text-gray-500 mt-1">{t.status || "pending review"}</p>
-                  </li>
+                  <tr key={t.id} className="border-t border-slate-200 dark:border-slate-700">
+                    <td className="px-3 py-2">
+                      <div className="font-medium text-slate-900 dark:text-slate-100">
+                        {t.studentEmail || "Student"}
+                      </div>
+                      <div className="text-xs text-slate-500">{t.detail}</div>
+                    </td>
+                    <td className="px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+                      {new Date(t.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-3 py-2 text-sm">
+                      {t.score != null ? `${t.score}%` : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-sm">
+                      {t.status || "pending review"}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex gap-2 flex-wrap">
+                        {t.attachmentUrl && (
+                          <a
+                            href={t.attachmentUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-xs"
+                          >
+                            View attachment
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          className="px-2 py-1 rounded bg-blue-600 text-white text-xs"
+                          onClick={() => {
+                            const note = prompt("Add a teacher comment before closing:");
+                            const updated = ticketList.map((item) =>
+                              item.id === t.id ? { ...item, status: note ? `closed - ${note}` : "closed" } : item
+                            );
+                            setTicketList(updated);
+                          }}
+                        >
+                          Close
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 rounded bg-amber-500 text-white text-xs"
+                          onClick={() => {
+                            const note = prompt("Add escalation note:");
+                            const updated = ticketList.map((item) =>
+                              item.id === t.id
+                                ? { ...item, status: note ? `escalated - ${note}` : "escalated" }
+                                : item
+                            );
+                            setTicketList(updated);
+                          }}
+                        >
+                          Escalate
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-              </ul>
-            </div>
-          )}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </Layout>
