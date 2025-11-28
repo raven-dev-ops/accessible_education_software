@@ -734,129 +734,82 @@ function StudentPage() {
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Review OCR result</h3>
-              {uploadPreview ? (
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">Accuracy grade</span>
-                    {uploadScore != null && (
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          uploadScore >= 80
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
-                            : uploadScore >= 70
-                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
-                            : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                        }`}
-                      >
-                        {uploadScore}% {uploadScore < 80 ? "(will auto-report to teachers)" : ""}
-                      </span>
-                    )}
-                  </div>
-                  <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
-                    {uploadPreview}
-                  </pre>
-                  <div className="space-y-2">
-                    <label className="block text-sm">
-                      <span className="block mb-1">Correction (edit if OCR is wrong)</span>
-                      <textarea
-                        className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
-                        rows={4}
-                        value={correctionText}
-                        onChange={(e) => setCorrectionText(e.target.value)}
-                      />
-                    </label>
-                  </div>
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Review OCR result</h3>
+                  {uploadPreview ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                          Accuracy grade
+                        </span>
+                        {uploadScore != null && (
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              uploadScore >= 80
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                                : uploadScore >= 70
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
+                                : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                            }`}
+                          >
+                            {uploadScore}% {uploadScore < 80 ? "(will auto-report to teachers)" : ""}
+                          </span>
+                        )}
+                      </div>
+                      <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
+                        {uploadPreview}
+                      </pre>
+                      <div className="space-y-2">
+                        <label className="block text-sm">
+                          <span className="block mb-1">Correction (edit if OCR is wrong)</span>
+                          <textarea
+                            className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
+                            rows={4}
+                            value={correctionText}
+                            onChange={(e) => setCorrectionText(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-300">
+                      Upload a handwritten note to review its OCR text and make corrections.
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-300">
-                  Upload a handwritten note to review its OCR text and make corrections.
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 p-4">
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Formatting preview</h3>
-            {uploadPreview ? (
-              <div className="space-y-3">
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  Preview how this note is laid out for reading and where the OCR engine focused.
-                </p>
-                <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
-                  {correctionText || uploadPreview}
-                </pre>
-                <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
-                  {uploadImageUrl ? (
-                    <div className="relative h-full w-full">
-                      <Image src={uploadImageUrl} alt="Scanned region" fill className="object-contain rounded" />
-                      <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-                        Scanned region
+
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 p-4">
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Formatting preview</h3>
+                  {uploadPreview ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-slate-700 dark:text-slate-300">
+                        Preview how this note is laid out for reading and where the OCR engine focused.
+                      </p>
+                      <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
+                        {correctionText || uploadPreview}
+                      </pre>
+                      <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
+                        {uploadImageUrl ? (
+                          <div className="relative h-full w-full">
+                            <Image src={uploadImageUrl} alt="Scanned region" fill className="object-contain rounded" />
+                            <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
+                              Scanned region
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-slate-500 dark:text-slate-300">Region preview</span>
+                        )}
                       </div>
                     </div>
                   ) : (
-                    <span className="text-sm text-slate-500 dark:text-slate-300">Region preview</span>
+                    <p className="text-sm text-slate-700 dark:text-slate-300">
+                      Upload a handwritten note and run OCR to see the formatting preview and scanned region.
+                    </p>
                   )}
                 </div>
-                <div className="mt-2 flex gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded bg-indigo-700 text-white text-sm disabled:opacity-60"
-                    onClick={() =>
-                      handleSpeakNote({
-                        id: "upload-preview",
-                        title: "Uploaded note",
-                        excerpt: correctionText || uploadPreview,
-                      })
-                    }
-                    disabled={!ttsSupported}
-                  >
-                    Play formatted preview
-                  </button>
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded border text-sm"
-                    onClick={handleStop}
-                    disabled={!isSpeaking}
-                  >
-                    Stop
-                  </button>
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded bg-amber-600 text-white text-sm disabled:opacity-60"
-                    disabled={uploadScore == null}
-                    onClick={() => {
-                      const now = new Date().toISOString();
-                      const ticket = {
-                        id: `upload-${Date.now()}`,
-                        detail: `OCR below 80% for ${uploadFileName || "handwritten note"}.`,
-                        createdAt: now,
-                        studentEmail: session?.user?.email || "sample.student@example.com",
-                        status: "pending review",
-                        score: uploadScore ?? 70,
-                        attachmentUrl: "#",
-                        scannedText: uploadPreview,
-                        correctedText: correctionText || uploadPreview,
-                        fileName: uploadFileName || "handwritten-note.png",
-                      };
-                      if (typeof window !== "undefined") {
-                        try {
-                          window.localStorage.setItem("preview-ticket-student", JSON.stringify(ticket));
-                        } catch {
-                          // ignore
-                        }
-                      }
-                      announce("Reported to teacher (preview). Check teacher/admin previews for the ticket.", "success");
-                    }}
-                  >
-                    Submit correction & report
-                  </button>
-                </div>
               </div>
-            ) : (
-              <p className="text-sm text-slate-700 dark:text-slate-300">
-                Upload a handwritten note and run OCR to see the formatting preview and scanned region.
-              </p>
-            )}
+            </div>
           </div>
         </section>
 
