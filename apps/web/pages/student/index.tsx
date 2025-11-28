@@ -140,12 +140,14 @@ function StudentPage() {
         }
       }
     }
-  }, [selectedVoiceUri]);
+  }, [selectedVoiceUri, preview, session]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const raw = window.localStorage.getItem("vision-prefs");
+      const prefsKey =
+        preview || !session?.user?.email ? "vision-prefs-sample" : `vision-prefs-${session.user.email}`;
+      const raw = window.localStorage.getItem(prefsKey);
       if (raw) {
         const parsed = JSON.parse(raw) as {
           fontScale?: number;
@@ -159,7 +161,7 @@ function StudentPage() {
     } catch {
       // ignore
     }
-  }, []);
+  }, [preview, session?.user?.email]);
 
   const sampleParagraphs = [
     "This is a sample Calculus I note. It describes a function f of x equals x squared, and explains how to find the derivative using the limit definition.",
@@ -392,14 +394,12 @@ function StudentPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(
-        "vision-prefs",
-        JSON.stringify({ fontScale, highContrast, widgetOpen })
-      );
+      const key = preview || !session?.user?.email ? "vision-prefs-sample" : `vision-prefs-${session.user.email}`;
+      window.localStorage.setItem(key, JSON.stringify({ fontScale, highContrast, widgetOpen }));
     } catch {
       // ignore
     }
-  }, [fontScale, highContrast, widgetOpen]);
+  }, [fontScale, highContrast, widgetOpen, preview, session?.user?.email]);
 
   useEffect(() => {
     let cancelled = false;
