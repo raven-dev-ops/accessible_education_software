@@ -135,6 +135,17 @@ function TeacherPage() {
     correctedText: "f(x) = x^2 + 3x - 5\nf'(x) = 2x + 3\nIntegral: x^3/3 + (3/2)x^2 - 5x + C",
     fileName: "handwritten-note.png",
   };
+  const sampleEquationProgress: Record<
+    string,
+    { fileName?: string; score?: number | null; status: "pending" | "pass" | "fail"; editableText?: string }
+  > = {
+    "calc-1-0": { status: "pass", score: 88, editableText: "f(x) = x^2\nf'(x) = 2x" },
+    "calc-1-1": { status: "pass", score: 90, editableText: "Limit difference quotient simplifies to 2x" },
+    "calc-1-2": { status: "pending", score: null, editableText: "" },
+    "calc-deriv-0": { status: "pass", score: 85, editableText: "f(x) = 3x^3 - 5x + 2" },
+    "calc-deriv-1": { status: "fail", score: 72, editableText: "f'(x) = 9x^2 - 5" },
+    "limits-0": { status: "pending", score: null, editableText: "" },
+  };
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<
     { role: "teacher" | "assistant"; text: string }[]
@@ -162,6 +173,7 @@ function TeacherPage() {
     if (allowSamples) {
       if (!modules.length) setModules(sampleModules);
       if (!ticketList.length) setTicketList([...sampleTickets, sampleUploadTicket]);
+      if (!Object.keys(equationProgress).length) setEquationProgress(sampleEquationProgress);
     }
     // We intentionally skip deps for modules/ticketList to avoid clobbering live data after load
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -405,6 +417,103 @@ function TeacherPage() {
           </p>
         </section>
 
+        <section aria-labelledby="teacher-support" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
+          <h2 id="teacher-support" className="text-xl font-semibold mb-3">
+            Student Tickets
+          </h2>
+          <p className="text-sm mb-3">
+            Review or escalate student-submitted tickets (e.g., OCR below 80%). Add context and pass to software support as needed.
+          </p>
+          <div className="overflow-auto rounded-lg border border-slate-200 dark:border-slate-700">
+            <table className="min-w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-100">
+                <tr>
+                  <th className="px-3 py-2 text-left">Student</th>
+                  <th className="px-3 py-2 text-left">Created</th>
+                  <th className="px-3 py-2 text-left">Score</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ticketList.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-2 text-slate-500">
+                      No pending tickets.
+                    </td>
+                  </tr>
+                )}
+                {ticketList.map((t) => (
+                  <tr key={t.id} className="border-t border-slate-200 dark:border-slate-700">
+                    <td className="px-3 py-2">
+                      <div className="font-medium text-slate-900 dark:text-slate-100">
+                        {t.studentEmail || "Student"}
+                      </div>
+                      <div className="text-xs text-slate-500">{t.detail}</div>
+                      {t.fileName && <div className="text-xs text-slate-500">File: {t.fileName}</div>}
+                      {(t.scannedText || t.correctedText) && (
+                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                          {t.scannedText && (
+                            <div>
+                              <span className="font-semibold">Scanned:</span> {t.scannedText}
+                            </div>
+                          )}
+                          {t.correctedText && (
+                            <div>
+                              <span className="font-semibold">Correction:</span> {t.correctedText}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+                      {new Date(t.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-3 py-2 text-sm">{t.score != null ? `${t.score}%` : ""}</td>
+                    <td className="px-3 py-2 text-sm">{t.status || "pending review"}</td>
+                    <td className="px-3 py-2">
+                      <div className="flex gap-2 flex-wrap">
+                        {t.attachmentUrl && (
+                          <a
+                            href={t.attachmentUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-xs"
+                          >
+                            View attachment
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          className="px-2 py-1 rounded bg-blue-600 text-white text-xs"
+                          onClick={() => {
+                            const note = prompt("Add a teacher comment before closing:");
+                            const updated = ticketList.map((item) =>
+                              item.id === t.id ? { ...item, status: `closed${note ? `: ${note}` : ""}` } : item
+                            );
+                            setTicketList(updated);
+                          }}
+                        >
+                          Close
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 rounded bg-amber-500 text-white text-xs"
+                          onClick={() => {
+                            alert("Escalated to software support with context.");
+                          }}
+                        >
+                          Escalate
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <div className="grid gap-6 md:grid-cols-2">
           <section aria-labelledby="teacher-modules" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between mb-3">
@@ -640,142 +749,6 @@ function TeacherPage() {
           </div>
         </section>
 
-        <section aria-labelledby="teacher-support" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
-          <h2 id="teacher-support" className="text-xl font-semibold mb-3">
-            Student Tickets
-          </h2>
-          <p className="text-sm mb-3">
-            Review or escalate student-submitted tickets (e.g., OCR below 80%). Add context and pass to software support as needed.
-          </p>
-          <div className="overflow-auto rounded-lg border border-slate-200 dark:border-slate-700">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-100">
-                <tr>
-                  <th className="px-3 py-2 text-left">Student</th>
-                  <th className="px-3 py-2 text-left">Created</th>
-                  <th className="px-3 py-2 text-left">Score</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ticketList.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-3 py-2 text-slate-500">
-                      No pending tickets.
-                    </td>
-                  </tr>
-                )}
-                {ticketList.map((t) => (
-                  <tr key={t.id} className="border-t border-slate-200 dark:border-slate-700">
-                    <td className="px-3 py-2">
-                      <div className="font-medium text-slate-900 dark:text-slate-100">
-                        {t.studentEmail || "Student"}
-                      </div>
-                      <div className="text-xs text-slate-500">{t.detail}</div>
-                      {t.fileName && (
-                        <div className="text-xs text-slate-500">File: {t.fileName}</div>
-                      )}
-                      {(t.scannedText || t.correctedText) && (
-                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 space-y-1">
-                          {t.scannedText && (
-                            <div>
-                              <span className="font-semibold">Scanned:</span> {t.scannedText}
-                            </div>
-                          )}
-                          {t.correctedText && (
-                            <div>
-                              <span className="font-semibold">Correction:</span> {t.correctedText}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-                      {new Date(t.createdAt).toLocaleString()}
-                    </td>
-                    <td className="px-3 py-2 text-sm">
-                      {t.score != null ? `${t.score}%` : ""}
-                    </td>
-                    <td className="px-3 py-2 text-sm">
-                      {t.status || "pending review"}
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex gap-2 flex-wrap">
-                        {t.attachmentUrl && (
-                          <a
-                            href={t.attachmentUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-xs"
-                          >
-                            View attachment
-                          </a>
-                        )}
-                        <button
-                          type="button"
-                          className="px-2 py-1 rounded bg-blue-600 text-white text-xs"
-                          onClick={() => {
-                            const note = prompt("Add a teacher comment before closing:");
-                            const updated = ticketList.map((item) =>
-                              item.id === t.id ? { ...item, status: note ? `closed - ${note}` : "closed" } : item
-                            );
-                            setTicketList(updated);
-                          }}
-                        >
-                          Close
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 rounded bg-amber-500 text-white text-xs"
-                          onClick={() => {
-                            const note = prompt("Add escalation note:");
-                            const updated = ticketList.map((item) =>
-                              item.id === t.id
-                                ? { ...item, status: note ? `escalated - ${note}` : "escalated" }
-                                : item
-                            );
-                            setTicketList(updated);
-                          }}
-                        >
-                          Escalate
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="p-3 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
-              <span>
-                {ticketsLoading
-                  ? "Loading tickets"
-                  : ticketsError
-                  ? "Using sample tickets (failed to load live data)."
-                  : "Loaded tickets from /api/support-tickets."}
-              </span>
-              <button
-                type="button"
-                className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-xs"
-                onClick={() => {
-                  const id = `demo-${Date.now()}`;
-                  const demo = {
-                    id,
-                    detail: "Demo ticket: OCR 70% on integrals; please review.",
-                    createdAt: new Date().toISOString(),
-                    studentEmail: "demo.student@example.com",
-                    status: "pending review",
-                    score: 70,
-                    attachmentUrl: null,
-                  };
-                  setTicketList((prev) => [demo, ...prev]);
-                }}
-              >
-                Add demo ticket
-              </button>
-            </div>
-          </div>
-        </section>
       </div>
     </Layout>
   );
