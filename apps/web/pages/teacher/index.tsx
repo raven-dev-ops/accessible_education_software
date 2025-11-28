@@ -304,20 +304,30 @@ function TeacherPage() {
   const training = trainingSets[selectedModule?.id as string] ?? Object.values(trainingSets)[0];
 
   const previewNav = showPreviewNav ? (
-    <>
-      <Link className="px-3 py-2 rounded bg-blue-600 text-white text-sm" href="/student?preview=1&showPreviewNav=1">
-        Student
-      </Link>
-      <Link className="px-3 py-2 rounded bg-emerald-600 text-white text-sm" href="/teacher?preview=1&showPreviewNav=1">
-        Teacher
-      </Link>
-      <Link className="px-3 py-2 rounded bg-amber-600 text-white text-sm" href="/admin?preview=1&showPreviewNav=1">
-        Admin
-      </Link>
-      <Link className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 text-sm" href="/login?skipAuth=1">
+    <div className="flex items-center gap-2 text-sm">
+      <label className="text-slate-700 dark:text-slate-200" htmlFor="preview-nav-teacher">
+        Preview:
+      </label>
+      <select
+        id="preview-nav-teacher"
+        className="px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+        value="teacher"
+        onChange={(e) => {
+          const target = e.target.value;
+          void router.push(`/${target}?preview=1&showPreviewNav=1`);
+        }}
+      >
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+      </select>
+      <Link
+        className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 text-sm"
+        href="/login?skipAuth=1"
+      >
         Back to login
       </Link>
-    </>
+    </div>
   ) : undefined;
 
   return (
