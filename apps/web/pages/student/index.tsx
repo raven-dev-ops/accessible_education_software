@@ -84,6 +84,8 @@ function StudentPage() {
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadScore, setUploadScore] = useState<number | null>(null);
+  const [correctionText, setCorrectionText] = useState<string>("");
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
     setLiveAlert({ message, tone });
@@ -538,6 +540,9 @@ function StudentPage() {
                   setUploadFileName(file ? file.name : null);
                   setUploadStatus(null);
                   setUploadError(null);
+                  setUploadPreview(null);
+                  setUploadScore(null);
+                  setCorrectionText("");
                 }}
               />
             </label>
@@ -572,6 +577,8 @@ function StudentPage() {
                     "f(x) = x^2 + 3x - 5\n\nDerivative: f'(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
                   setUploadPreview(preview);
                   setUploadStatus("Formatted for TTS. You can listen to the preview below.");
+                  setUploadScore(72);
+                  setCorrectionText(preview);
                   announce("Uploaded sample note processed. Ready to play.", "success");
                 }, 800);
               }}
@@ -597,6 +604,52 @@ function StudentPage() {
                 <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100">
                   {uploadPreview}
                 </pre>
+                <div className="mt-3 space-y-2">
+                  <label className="block text-sm">
+                    <span className="block mb-1">Correction (edit if OCR is wrong)</span>
+                    <textarea
+                      className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
+                      rows={4}
+                      value={correctionText}
+                      onChange={(e) => setCorrectionText(e.target.value)}
+                    />
+                  </label>
+                  {uploadScore != null && (
+                    <p className="text-sm text-slate-700 dark:text-slate-200">
+                      OCR score: {uploadScore}% {uploadScore < 80 ? "(will auto-report to teachers)" : ""}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded bg-amber-600 text-white text-sm disabled:opacity-60"
+                    disabled={uploadScore == null}
+                    onClick={() => {
+                      const now = new Date().toISOString();
+                      const ticket = {
+                        id: `upload-${Date.now()}`,
+                        detail: `OCR below 80% for ${uploadFileName || "handwritten note"}.`,
+                        createdAt: now,
+                        studentEmail: session?.user?.email || "sample.student@example.com",
+                        status: "pending review",
+                        score: uploadScore ?? 70,
+                        attachmentUrl: "#",
+                        scannedText: uploadPreview,
+                        correctedText: correctionText || uploadPreview,
+                        fileName: uploadFileName || "handwritten-note.png",
+                      };
+                      if (typeof window !== "undefined") {
+                        try {
+                          window.localStorage.setItem("preview-ticket-student", JSON.stringify(ticket));
+                        } catch {
+                          // ignore
+                        }
+                      }
+                      announce("Reported to teacher (preview). Check teacher/admin previews for the ticket.", "success");
+                    }}
+                  >
+                    Submit correction & report
+                  </button>
+                </div>
                 <div className="mt-2 flex gap-2 flex-wrap">
                   <button
                     type="button"

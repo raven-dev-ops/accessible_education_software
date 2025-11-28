@@ -11,6 +11,19 @@ type ModuleSummary = {
   course?: string;
 };
 
+type TeacherTicket = {
+  id: string;
+  detail: string;
+  createdAt: string;
+  studentEmail?: string | null;
+  status?: string;
+  score?: number | null;
+  attachmentUrl?: string | null;
+  scannedText?: string | null;
+  correctedText?: string | null;
+  fileName?: string | null;
+};
+
 const sampleModules: ModuleSummary[] = [
   { id: "calc-1", title: "Calculus I  OCR Module", course: "Math 101" },
   { id: "calc-deriv", title: "Derivatives Workshop", course: "Math 101" },
@@ -87,17 +100,7 @@ function TeacherPage() {
   const [modulesError, setModulesError] = useState<string | null>(null);
   const [selectedModuleId, setSelectedModuleId] = useState<string | number>("calc-1");
   const [ticketDescription, setTicketDescription] = useState("");
-  const [ticketList, setTicketList] = useState<
-    {
-      id: string;
-      detail: string;
-      createdAt: string;
-      studentEmail?: string | null;
-      status?: string;
-      score?: number | null;
-      attachmentUrl?: string | null;
-    }[]
-  >([]);
+  const [ticketList, setTicketList] = useState<TeacherTicket[]>([]);
   const [ticketsLoading, setTicketsLoading] = useState(true);
   const [ticketsError, setTicketsError] = useState<string | null>(null);
   const sampleTickets = [
@@ -120,6 +123,18 @@ function TeacherPage() {
       attachmentUrl: null,
     },
   ];
+  const sampleUploadTicket = {
+    id: "ticket-upload-preview",
+    detail: "OCR below 80% on uploaded Calculus note (preview).",
+    createdAt: "2025-11-28T18:00:00Z",
+    studentEmail: "sample.student@example.com",
+    status: "pending review",
+    score: 72,
+    attachmentUrl: "#",
+    scannedText: "f(x) = x^2 + 3x - 5\nDerivative: f'(x) = 2x + 3",
+    correctedText: "f(x) = x^2 + 3x - 5\nf'(x) = 2x + 3\nIntegral: x^3/3 + (3/2)x^2 - 5x + C",
+    fileName: "handwritten-note.png",
+  };
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<
     { role: "teacher" | "assistant"; text: string }[]
@@ -146,7 +161,7 @@ function TeacherPage() {
   useEffect(() => {
     if (allowSamples) {
       if (!modules.length) setModules(sampleModules);
-      if (!ticketList.length) setTicketList(sampleTickets);
+      if (!ticketList.length) setTicketList([...sampleTickets, sampleUploadTicket]);
     }
     // We intentionally skip deps for modules/ticketList to avoid clobbering live data after load
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -233,7 +248,19 @@ function TeacherPage() {
         const res = await fetch("/api/support-tickets");
         if (!res.ok) {
           if (allowSamples) {
-            setTicketList(sampleTickets);
+            let merged = [...sampleTickets, sampleUploadTicket];
+            if (typeof window !== "undefined") {
+              const raw = window.localStorage.getItem("preview-ticket-student");
+              if (raw) {
+                try {
+                  const parsed = JSON.parse(raw);
+                  merged = [parsed, ...merged];
+                } catch {
+                  // ignore
+                }
+              }
+            }
+            setTicketList(merged);
             setTicketsError(null);
           } else {
             setTicketsError("Tickets unavailable (samples disabled).");
@@ -248,6 +275,9 @@ function TeacherPage() {
           score?: number | null;
           userEmail?: string | null;
           attachmentUrl?: string | null;
+          scannedText?: string | null;
+          correctedText?: string | null;
+          fileName?: string | null;
         }[];
         if (!cancelled) {
           setTicketList(
@@ -259,6 +289,9 @@ function TeacherPage() {
               status: (t.score ?? 0) >= 80 ? "pass" : "pending review",
               score: t.score ?? null,
               attachmentUrl: t.attachmentUrl ?? null,
+              scannedText: t.scannedText ?? null,
+              correctedText: t.correctedText ?? null,
+              fileName: t.fileName ?? null,
             }))
           );
           setTicketsError(null);
@@ -266,7 +299,19 @@ function TeacherPage() {
       } catch (err) {
         if (!cancelled) {
           if (allowSamples) {
-            setTicketList(sampleTickets);
+            let merged = [...sampleTickets, sampleUploadTicket];
+            if (typeof window !== "undefined") {
+              const raw = window.localStorage.getItem("preview-ticket-student");
+              if (raw) {
+                try {
+                  const parsed = JSON.parse(raw);
+                  merged = [parsed, ...merged];
+                } catch {
+                  // ignore
+                }
+              }
+            }
+            setTicketList(merged);
             setTicketsError(null);
           } else {
             setTicketsError("Failed to load tickets (samples disabled).");
@@ -628,6 +673,23 @@ function TeacherPage() {
                         {t.studentEmail || "Student"}
                       </div>
                       <div className="text-xs text-slate-500">{t.detail}</div>
+                      {t.fileName && (
+                        <div className="text-xs text-slate-500">File: {t.fileName}</div>
+                      )}
+                      {(t.scannedText || t.correctedText) && (
+                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                          {t.scannedText && (
+                            <div>
+                              <span className="font-semibold">Scanned:</span> {t.scannedText}
+                            </div>
+                          )}
+                          {t.correctedText && (
+                            <div>
+                              <span className="font-semibold">Correction:</span> {t.correctedText}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
                       {new Date(t.createdAt).toLocaleString()}

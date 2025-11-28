@@ -32,6 +32,9 @@ type SupportTicket = {
   score?: number | null;
   userEmail?: string | null;
   attachmentUrl?: string | null;
+  scannedText?: string | null;
+  correctedText?: string | null;
+  fileName?: string | null;
 };
 
 const authEnabled =
@@ -50,6 +53,9 @@ const normalizeTickets = (raw: any[]): SupportTicket[] =>
     score: t.score ?? t.meta?.score ?? null,
     userEmail: t.userEmail ?? t.studentEmail ?? t.meta?.userEmail ?? null,
     attachmentUrl: t.attachmentUrl ?? t.meta?.attachmentUrl ?? null,
+    scannedText: t.scannedText ?? t.meta?.scannedText ?? null,
+    correctedText: t.correctedText ?? t.meta?.correctedText ?? null,
+    fileName: t.fileName ?? t.meta?.fileName ?? null,
   }));
 
 
@@ -198,7 +204,19 @@ function AdminPage() {
         const res = await fetch("/api/support-tickets");
         if (!res.ok) {
           if (useSamples) {
-            setTickets(normalizeTickets(sampleTickets as any));
+            let merged = normalizeTickets(sampleTickets as any);
+            if (typeof window !== "undefined") {
+              const raw = window.localStorage.getItem("preview-ticket-student");
+              if (raw) {
+                try {
+                  const parsed = JSON.parse(raw);
+                  merged = [parsed, ...merged];
+                } catch {
+                  // ignore
+                }
+              }
+            }
+            setTickets(merged);
             setTicketsError(null);
           } else {
             setTicketsError("Tickets unavailable (samples disabled).");
@@ -207,7 +225,20 @@ function AdminPage() {
           return;
         }
         const data = (await res.json()) as typeof sampleTickets;
-        const normalized = normalizeTickets(Array.isArray(data) ? data : []);
+        let normalized = normalizeTickets(Array.isArray(data) ? data : []);
+        if (useSamples) {
+          if (typeof window !== "undefined") {
+            const raw = window.localStorage.getItem("preview-ticket-student");
+            if (raw) {
+              try {
+                const parsed = JSON.parse(raw);
+                normalized = [parsed, ...normalized];
+              } catch {
+                // ignore
+              }
+            }
+          }
+        }
         if (!cancelled) {
           if (normalized.length) {
             setTickets(normalized);
@@ -797,6 +828,23 @@ function AdminPage() {
                             </td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100 max-w-xs">
                               <div className="line-clamp-3">{t.detail}</div>
+                              {t.fileName && (
+                                <div className="text-xs text-slate-500">File: {t.fileName}</div>
+                              )}
+                              {(t.scannedText || t.correctedText) && (
+                                <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                                  {t.scannedText && (
+                                    <div>
+                                      <span className="font-semibold">Scanned:</span> {t.scannedText}
+                                    </div>
+                                  )}
+                                  {t.correctedText && (
+                                    <div>
+                                      <span className="font-semibold">Correction:</span> {t.correctedText}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
                               {t.attachmentUrl ? (
