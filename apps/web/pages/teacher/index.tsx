@@ -152,6 +152,7 @@ function TeacherPage() {
   >([
     { role: "assistant", text: "Hi! Ask anything about your module or OCR results." },
   ]);
+  const [chatOpen, setChatOpen] = useState(false);
   const [equationProgress, setEquationProgress] = useState<
     Record<
       string,
@@ -389,6 +390,7 @@ function TeacherPage() {
   ) : undefined;
 
   return (
+    <>
     <Layout title="Teacher Dashboard" secondaryNav={previewNav}>
       <div className="space-y-8">
         <section
@@ -514,7 +516,7 @@ function TeacherPage() {
           </div>
         </section>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6">
           <section aria-labelledby="teacher-modules" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between mb-3">
               <h2 id="teacher-modules" className="text-xl font-semibold">Your modules</h2>
@@ -561,34 +563,6 @@ function TeacherPage() {
             )}
           </section>
 
-          <section aria-labelledby="teacher-chat" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h2 id="teacher-chat" className="text-xl font-semibold">AI assistant</h2>
-            </div>
-            <div className="flex-1 min-h-[180px] max-h-[240px] overflow-auto space-y-2 border rounded p-3 bg-slate-50 dark:bg-slate-800 text-sm">
-              {chatMessages.map((m, idx) => (
-                <div key={idx} className={m.role === "assistant" ? "text-slate-700 dark:text-slate-200" : "text-slate-900 dark:text-slate-100 font-semibold"}>
-                  <span className="uppercase text-xs mr-2">{m.role === "assistant" ? "AI" : "You"}</span>
-                  {m.text}
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask about OCR results, students, or modules..."
-                className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800"
-              />
-              <button
-                type="button"
-                className="px-4 py-2 rounded bg-blue-600 text-white text-sm"
-                onClick={handleSendChat}
-              >
-                Send
-              </button>
-            </div>
-          </section>
         </div>
 
         <section aria-labelledby="teacher-upload" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
@@ -751,6 +725,67 @@ function TeacherPage() {
 
       </div>
     </Layout>
+
+      <div className="fixed bottom-6 right-6 z-40">
+        {!chatOpen ? (
+          <button
+            type="button"
+            onClick={() => setChatOpen(true)}
+            className="h-12 w-12 rounded-full bg-blue-700 text-white shadow-lg flex items-center justify-center"
+            aria-label="Open AI assistant chat"
+          >
+            💬
+          </button>
+        ) : (
+          <div className="w-80 max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex flex-col">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">AI assistant</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Ask about OCR, modules, tickets</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setChatOpen(false)}
+                className="text-sm px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                aria-label="Close AI chat"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 min-h-[180px] max-h-[260px] overflow-auto space-y-2 p-3 text-sm">
+              {chatMessages.map((m, idx) => (
+                <div
+                  key={idx}
+                  className={
+                    m.role === "assistant"
+                      ? "text-slate-700 dark:text-slate-200"
+                      : "text-slate-900 dark:text-slate-100 font-semibold"
+                  }
+                >
+                  <span className="uppercase text-[10px] mr-2">{m.role === "assistant" ? "AI" : "You"}</span>
+                  {m.text}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 p-3 border-t border-slate-200 dark:border-slate-700">
+              <input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask about OCR results or modules..."
+                className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800"
+              />
+              <button
+                type="button"
+                className="px-3 py-2 rounded bg-blue-600 text-white text-sm"
+                onClick={handleSendChat}
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
