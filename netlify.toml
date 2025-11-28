@@ -5,6 +5,10 @@
   command = "npm run build"
   publish = ".next"
 
+[functions]
+  # User-defined functions live here (Next.js runtime will emit its own handlers separately)
+  directory = "apps/web/netlify/functions"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
