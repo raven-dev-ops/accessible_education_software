@@ -528,7 +528,7 @@ function TeacherPage() {
 
         <section aria-labelledby="teacher-support" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
           <h2 id="teacher-support" className="text-xl font-semibold mb-3">
-            Support & escalation (review student tickets)
+            Student Tickets
           </h2>
           <p className="text-sm mb-3">
             Review or escalate student-submitted tickets (e.g., OCR below 80%). Add context and pass to software support as needed.
