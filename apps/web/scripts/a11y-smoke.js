@@ -1,10 +1,7 @@
 /**
  * Minimal Playwright + axe-core smoke test for key pages.
- * Run: npm --workspace apps/web run a11y:smoke
- * Env:
- *   BASE_URL (default http://localhost:3000)
- *   PAGES (comma-separated, default "/", "/login", "/student?preview=1", "/teacher?preview=1", "/admin")
- *   TAKE_SCREENSHOTS ("true" to capture screenshots)
+ * Run: npm run a11y:smoke
+ * Requires: "playwright" and "@axe-core/playwright" as dev deps.
  */
 const { chromium } = require("playwright");
 const AxeBuilder = require("@axe-core/playwright").default;
@@ -13,8 +10,10 @@ const path = require("path");
 
 const baseURL = process.env.BASE_URL || "http://localhost:3000";
 const pages =
-  (process.env.PAGES && process.env.PAGES.split(",").map((p) => p.trim()).filter(Boolean)) ||
-  ["/", "/login", "/student?preview=1", "/teacher?preview=1", "/admin"];
+  (process.env.PAGES &&
+    process.env.PAGES.split(",")
+      .map((p) => p.trim())
+      .filter(Boolean)) || ["/", "/login", "/student?preview=1", "/teacher?preview=1", "/admin"];
 const takeScreenshots = (process.env.TAKE_SCREENSHOTS || "false").toLowerCase() === "true";
 const screenshotDir = path.join(process.cwd(), "playwright-visual");
 

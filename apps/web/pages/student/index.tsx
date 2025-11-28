@@ -98,7 +98,7 @@ function StudentPage() {
       setUnauthorized(true);
       void router.replace("/dashboard");
     }
-  }, [session, status, router, preview]);
+  }, [session, status, router, preview, allowSamples]);
 
   useEffect(() => {
     const supported = isTtsSupported();
@@ -137,7 +137,7 @@ function StudentPage() {
     "In practice, derivatives let us measure instantaneous rates of change. They are foundational for optimization problems, motion analysis, and curve sketching. This course will build intuition through examples and exercises."
   ];
   const sampleTLDR =
-    "Summary: For f(x)=x², the derivative is 2x via the limit definition. Derivatives measure instantaneous change and power many applications.";
+    "Summary: For f(x)=x^2, the derivative is 2x via the limit definition. Derivatives measure instantaneous change and power many applications.";
   const [sampleParagraphIndex, setSampleParagraphIndex] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
 
@@ -343,7 +343,7 @@ function StudentPage() {
     return () => {
       cancelled = true;
     };
-  }, [unauthorized]);
+  }, [unauthorized, allowSamples]);
 
   useEffect(() => {
     let cancelled = false;
@@ -590,7 +590,7 @@ function StudentPage() {
                     }}
                     className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 min-w-[200px]"
                   >
-                    {voices.length === 0 && <option value="">Loading voices…</option>}
+                    {voices.length === 0 && <option value="">Loading voices...</option>}
                     {voices
                       .filter((v) =>
                         `${v.name} ${v.lang}`.toLowerCase().includes(voiceSearch.toLowerCase())
@@ -647,7 +647,7 @@ function StudentPage() {
                   disabled={isSpeaking && activeSpeechId === "sample-note"}
                 >
                   {activeSpeechId === "sample-note"
-                    ? `Playing… ${countdown !== null ? `${countdown}s` : ""}`
+                    ? `Playing... ${countdown !== null ? `${countdown}s` : ""}`
                     : "Play sample"}
                 </button>
                 <button
@@ -776,7 +776,7 @@ function StudentPage() {
           <h2 id="student-released" className="text-xl font-semibold mb-3">
             Released materials from your instructors
           </h2>
-          {notesLoading && <p className="text-base">Loading released materials…</p>}
+          {notesLoading && <p className="text-base">Loading released materials...</p>}
           {!notesLoading && notes.length === 0 && (
             <p className="text-base">No new notes from your instructors yet.</p>
           )}
@@ -874,7 +874,7 @@ function StudentPage() {
                 onClick={() => setWidgetOpen(false)}
                 aria-label="Collapse accessibility widget"
               >
-                ×
+                Close
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -933,7 +933,7 @@ function StudentPage() {
             aria-label="Open accessibility controls"
             onClick={() => setWidgetOpen(true)}
           >
-            ♿
+            A11y
           </button>
         )}
       </div>

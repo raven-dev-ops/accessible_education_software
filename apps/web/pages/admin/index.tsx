@@ -233,7 +233,7 @@ function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [unauthorized, session]);
+  }, [unauthorized, session, allowSamples]);
 
   const handleTestOcr = async () => {
     setOcrLoading(true);
@@ -322,7 +322,7 @@ function AdminPage() {
               Admin dashboard
             </h1>
             <p className="text-slate-600 dark:text-slate-300 mb-4" role="alert">
-              You do not have access to this page. Redirecting…
+              You do not have access to this page. Redirecting...
             </p>
           </div>
         </main>
@@ -456,7 +456,7 @@ function AdminPage() {
                       Recent uploads
                     </h4>
                     {uploadsLoading && (
-                      <span className="text-xs text-slate-500 dark:text-slate-300">Loading…</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
                     )}
                   </div>
                   <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 max-h-48 overflow-auto">
@@ -478,7 +478,7 @@ function AdminPage() {
                               {u.filename || "Untitled upload"}
                             </p>
                             <p className="text-xs text-slate-500 dark:text-slate-300">
-                              {u.status} {typeof u.size === "number" ? `• ${(u.size / 1024).toFixed(1)} KB` : ""}
+                              {u.status} {typeof u.size === "number" ? `- ${(u.size / 1024).toFixed(1)} KB` : ""}
                             </p>
                           </li>
                         ))}
@@ -500,7 +500,7 @@ function AdminPage() {
                   Students
                 </h2>
                 {studentsLoading && (
-                  <span className="text-xs text-slate-500 dark:text-slate-300">Loading…</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
                 )}
               </div>
               {studentsError && (
@@ -541,7 +541,7 @@ function AdminPage() {
                   Recent uploads
                 </h2>
                 {uploadsLoading && (
-                  <span className="text-xs text-slate-500 dark:text-slate-300">Loading…</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
                 )}
               </div>
               {uploadsError && (
@@ -764,7 +764,7 @@ function AdminPage() {
                                   View
                                 </a>
                               ) : (
-                                "—"
+                                "-"
                               )}
                             </td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
@@ -781,7 +781,7 @@ function AdminPage() {
                                   Preview unavailable
                                 </span>
                               ) : (
-                                "—"
+                                "-"
                               )}
                             </td>
                           </tr>

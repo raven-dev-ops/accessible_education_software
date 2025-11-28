@@ -213,7 +213,7 @@ function TeacherPage() {
     return () => {
       cancelled = true;
     };
-  }, [unauthorized, session]);
+  }, [unauthorized, session, allowSamples]);
 
   useEffect(() => {
     let cancelled = false;
@@ -270,7 +270,7 @@ function TeacherPage() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [unauthorized]);
+  }, [unauthorized, allowSamples]);
 
   if (unauthorized) {
     return (
