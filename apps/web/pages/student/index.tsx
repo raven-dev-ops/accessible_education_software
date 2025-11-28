@@ -24,6 +24,8 @@ function StudentPage() {
   const { data: session, status } = useSession();
   const preview = router.query.preview === "1";
   const [unauthorized, setUnauthorized] = useState(false);
+  const [fontScale, setFontScale] = useState(1.05);
+  const [highContrast, setHighContrast] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsSupported, setTtsSupported] = useState(false);
   const [speechStatus, setSpeechStatus] = useState<string | null>(null);
@@ -248,258 +250,294 @@ function StudentPage() {
 
   return (
     <Layout title="Student Dashboard">
-      <section aria-labelledby="student-welcome" className="mb-8">
-        <h2 id="student-welcome" className="text-lg font-semibold mb-2">
-          Welcome, Student
-        </h2>
-        <p>
-          Upload your handwritten calculus notes and, in future iterations, we
-          will convert them into accessible, listenable content.
-        </p>
-      </section>
-
-      <section aria-labelledby="student-upload" className="mb-8">
-        <h2 id="student-upload" className="text-lg font-semibold mb-2">
-          Upload handwritten notes (placeholder)
-        </h2>
-        <form>
-          <label className="block mb-2">
-            <span className="block mb-1">Choose image or PDF</span>
-            <input type="file" accept=".pdf,image/*" className="block w-full" />
-          </label>
-
-          <label className="block mb-2">
-            <span className="block mb-1">
-              Optional note (caption, up to 500 characters)
-            </span>
-            <textarea
-              className="block w-full border rounded p-2"
-              rows={3}
-              maxLength={500}
-            />
-          </label>
-
-          <button
-            type="button"
-            className="px-4 py-2 rounded bg-blue-600 text-white"
-          >
-            Upload (disabled placeholder)
-          </button>
-        </form>
-      </section>
-
-      <section aria-labelledby="student-tts">
-        <h2 id="student-tts" className="text-lg font-semibold mb-2">
-          Text-to-speech sample
-        </h2>
-        {!ttsSupported && (
-          <p className="text-sm">
-            Text-to-speech is not available in this browser. You can still use
-            your screen reader to read the notes.
+      <div
+        className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
+        style={{ fontSize: `${fontScale}rem` }}
+      >
+        <section
+          aria-labelledby="student-welcome"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <h2 id="student-welcome" className="text-2xl font-semibold mb-3">
+            Welcome, Student
+          </h2>
+          <p className="text-lg leading-relaxed">
+            Upload your handwritten calculus notes and, in future iterations, we will convert them into accessible,
+            listenable content.
           </p>
-        )}
-        {ttsSupported && (
-          <>
-            <p className="text-sm mb-2">
-              Use the controls below to hear a sample Calculus I note read out
-              loud. This simulates how your own notes will sound once OCR and
-              TTS are fully wired.
-            </p>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handlePlaySample}
-                className="px-4 py-2 rounded bg-green-600 text-white text-sm disabled:opacity-60"
-                aria-pressed={activeSpeechId === "sample-note"}
-                disabled={isSpeaking && activeSpeechId === "sample-note"}
-              >
-                {activeSpeechId === "sample-note"
-                  ? "Playing sample..."
-                  : "Play sample"}
-              </button>
-              <button
-                type="button"
-                onClick={handleStop}
-                className="px-4 py-2 rounded border text-sm disabled:opacity-60"
-                disabled={!isSpeaking}
-              >
-                Stop
-              </button>
-            </div>
-            <div className="mt-2 text-sm" aria-live="polite" role="status">
-              {speechStatus && (
-                <p className="text-green-700">{speechStatus}</p>
-              )}
-              {speechError && (
-                <p className="text-red-700" role="alert">
-                  {speechError}
-                </p>
-              )}
-            </div>
-          </>
-        )}
-      </section>
+        </section>
 
-      <section aria-labelledby="student-braille" className="mt-8">
-        <h2 id="student-braille" className="text-lg font-semibold mb-2">
-          Braille preview (prototype)
-        </h2>
-        <p className="text-sm">
-          Early Braille rendering of the most recent note to exercise the Braille
-          path. When the liblouis/Nemeth pipeline is available server-side, this
-          preview will use it automatically; otherwise it falls back to Grade 1.
-        </p>
-        <p className="text-xs text-gray-600 mb-2">
-          Preview source:{" "}
-          {notes.length > 0 ? "Latest released note" : "Sample note"}
-        </p>
-        <div className="flex flex-wrap gap-3 items-end mb-2">
-          <label className="text-sm">
-            <span className="block text-xs text-gray-700">Engine</span>
-            <select
-              value={braillePreferredEngine}
-              onChange={(e) =>
-                setBraillePreferredEngine(
-                  e.target.value as "liblouis" | "fallback"
-                )
-              }
-              className="border rounded px-2 py-1 text-sm"
+        <section
+          aria-labelledby="student-upload"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <h2 id="student-upload" className="text-xl font-semibold mb-3">
+            Upload handwritten notes (placeholder)
+          </h2>
+          <div className="space-y-3">
+            <label className="block text-lg">
+              <span className="block mb-1">Choose image or PDF</span>
+              <input
+                type="file"
+                accept=".pdf,image/*"
+                className="block w-full text-base border rounded p-2 bg-white dark:bg-slate-800"
+              />
+            </label>
+
+            <label className="block text-lg">
+              <span className="block mb-1">
+                Optional note (caption, up to 500 characters)
+              </span>
+              <textarea
+                className="block w-full border rounded p-3 text-base bg-white dark:bg-slate-800"
+                rows={4}
+                maxLength={500}
+              />
+            </label>
+
+            <button
+              type="button"
+              className="px-5 py-3 rounded bg-blue-700 text-white text-base"
             >
-              <option value="liblouis">liblouis (Nemeth)</option>
+              Upload (disabled placeholder)
+            </button>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="student-tts"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <h2 id="student-tts" className="text-xl font-semibold mb-3">
+            Text-to-speech sample
+          </h2>
+          {!ttsSupported && (
+            <p className="text-base">
+              Text-to-speech is not available in this browser. You can still use your screen reader to read the notes.
+            </p>
+          )}
+          {ttsSupported && (
+            <>
+              <p className="text-lg mb-3 leading-relaxed">
+                Use the controls below to hear a sample Calculus I note read out loud. This simulates how your own notes
+                will sound once OCR and TTS are fully wired.
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handlePlaySample}
+                  className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60"
+                  aria-pressed={activeSpeechId === "sample-note"}
+                  disabled={isSpeaking && activeSpeechId === "sample-note"}
+                >
+                  {activeSpeechId === "sample-note" ? "Playing sample..." : "Play sample"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStop}
+                  className="px-5 py-3 rounded border text-base disabled:opacity-60"
+                  disabled={!isSpeaking}
+                >
+                  Stop
+                </button>
+              </div>
+              <div className="mt-3 text-base" aria-live="polite" role="status">
+                {speechStatus && <p className="text-emerald-700">{speechStatus}</p>}
+                {speechError && (
+                  <p className="text-red-700" role="alert">
+                    {speechError}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+        </section>
+
+        <section
+          aria-labelledby="student-braille"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <h2 id="student-braille" className="text-xl font-semibold mb-3">
+            Braille preview (prototype)
+          </h2>
+          <p className="text-lg leading-relaxed">
+            Early Braille rendering of the most recent note to exercise the Braille path. When the liblouis/Nemeth
+            pipeline is available server-side, this preview will use it automatically; otherwise it falls back to Grade 1.
+          </p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+            Preview source: {notes.length > 0 ? "Latest released note" : "Sample note"}
+          </p>
+          <div className="flex flex-wrap gap-4 items-end mb-3">
+            <label className="text-base">
+              <span className="block text-sm text-gray-700 dark:text-gray-300">Engine</span>
+              <select
+                value={braillePreferredEngine}
+                onChange={(e) => setBraillePreferredEngine(e.target.value as "liblouis" | "fallback")}
+                className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
+              >
+                <option value="liblouis">liblouis (Nemeth)</option>
                 <option value="fallback">Grade 1 fallback</option>
               </select>
             </label>
-            <label className="text-sm">
-              <span className="block text-xs text-gray-700">
-              liblouis table
-              </span>
+            <label className="text-base">
+              <span className="block text-sm text-gray-700 dark:text-gray-300">liblouis table</span>
               <select
                 value={brailleTable}
                 onChange={(e) => setBrailleTable(e.target.value)}
-                className="border rounded px-2 py-1 text-sm"
-              aria-disabled={braillePreferredEngine !== "liblouis"}
-              disabled={braillePreferredEngine !== "liblouis"}
+                className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
+                aria-disabled={braillePreferredEngine !== "liblouis"}
+                disabled={braillePreferredEngine !== "liblouis"}
+              >
+                {brailleTables.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={() => setBrailleSourceVersion((v) => v + 1)}
+              className="px-4 py-2 rounded bg-blue-700 text-white text-sm"
             >
-              {brailleTables.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => setBrailleSourceVersion((v) => v + 1)}
-            className="px-3 py-1 rounded bg-blue-600 text-white text-xs"
-          >
-            Refresh Braille
-          </button>
-        </div>
-        <p className="text-xs text-gray-600 mb-2">
-          Available tables: nemeth, en-us-g1, en-us-g2. Switch to Grade 1 fallback
-          if liblouis is not installed on the server.
-        </p>
-        <div className="text-xs text-gray-700 mb-2" aria-live="polite">
-          <p>
-            Engine:{" "}
-            {brailleEngine === "liblouis"
-              ? `liblouis (${brailleTable || "nemeth"})`
-              : "Grade 1 fallback"}
+              Refresh Braille
+            </button>
+          </div>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+            Available tables: nemeth, en-us-g1, en-us-g2. Switch to Grade 1 fallback if liblouis is not installed on the
+            server.
           </p>
-          {brailleLoading && <p>Generating Braille...</p>}
-          {brailleStatus && <p>{brailleStatus}</p>}
-          {brailleError && (
-            <p className="text-red-700" role="alert">
-              {brailleError}
+          <div className="text-sm text-gray-800 dark:text-gray-200 mb-2" aria-live="polite">
+            <p>
+              Engine: {brailleEngine === "liblouis" ? `liblouis (${brailleTable || "nemeth"})` : "Grade 1 fallback"}
             </p>
-          )}
-          {brailleEngine === "fallback" &&
-            braillePreferredEngine === "liblouis" &&
-            !brailleLoading && (
+            {brailleLoading && <p>Generating Braille...</p>}
+            {brailleStatus && <p>{brailleStatus}</p>}
+            {brailleError && (
+              <p className="text-red-700" role="alert">
+                {brailleError}
+              </p>
+            )}
+            {brailleEngine === "fallback" && braillePreferredEngine === "liblouis" && !brailleLoading && (
               <p className="text-yellow-700">
                 liblouis not available; showing fallback Grade 1 output.
               </p>
             )}
-        </div>
-        <div
-          className="mt-2 border rounded p-3 bg-gray-50 font-mono text-sm whitespace-pre-wrap"
-          aria-live="polite"
-        >
-          {braillePreview || "Generating preview..."}
-        </div>
-        <div className="mt-3 flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleDownloadBraille}
-            className="px-3 py-1 rounded bg-gray-800 text-white text-xs"
-          >
-            Download .brf preview
-          </button>
-          <span className="text-xs text-gray-600">
-            Load this into a Braille display simulator to validate spacing and
-            line breaks.
-          </span>
-        </div>
-      </section>
+          </div>
+          <div className="mt-3 border rounded p-4 bg-gray-50 dark:bg-slate-800 font-mono text-base whitespace-pre-wrap" aria-live="polite">
+            {braillePreview || "Generating preview..."}
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleDownloadBraille}
+              className="px-4 py-2 rounded bg-gray-800 text-white text-sm"
+            >
+              Download .brf preview
+            </button>
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              Load this into a Braille display simulator to validate spacing and line breaks.
+            </span>
+          </div>
+        </section>
 
-      <section aria-labelledby="student-released" className="mt-8">
-        <h2 id="student-released" className="text-lg font-semibold mb-2">
-          Released materials from your instructors
-        </h2>
-        {notesLoading && <p>Loading released materials…</p>}
-        {notesError && (
-          <p role="alert" className="text-red-700 text-sm">
-            {notesError}
-          </p>
-        )}
-        {!notesLoading && !notesError && notes.length === 0 && (
-          <p>No new notes from your instructors yet.</p>
-        )}
-        {!notesLoading && !notesError && notes.length > 0 && (
-          <ul className="space-y-2 text-sm">
-            {notes.map((note) => (
-              <li key={note.id} className="border rounded p-3 bg-gray-50">
-                <div className="font-medium">
-                  {note.title}
-                  {note.course && (
-                    <span className="ml-1 text-gray-600">
-                      ({note.course})
-                    </span>
+        <section
+          aria-labelledby="student-released"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <h2 id="student-released" className="text-xl font-semibold mb-3">
+            Released materials from your instructors
+          </h2>
+          {notesLoading && <p className="text-base">Loading released materials…</p>}
+          {!notesLoading && notes.length === 0 && (
+            <p className="text-base">No new notes from your instructors yet.</p>
+          )}
+          {!notesLoading && notes.length > 0 && (
+            <ul className="space-y-3 text-base">
+              {notes.map((note) => (
+                <li key={note.id} className="border rounded p-4 bg-gray-50 dark:bg-slate-800">
+                  <div className="font-semibold text-lg">
+                    {note.title}
+                    {note.course && <span className="ml-1 text-gray-600">({note.course})</span>}
+                  </div>
+                  {note.module && <div className="text-sm text-gray-600">Module: {note.module}</div>}
+                  {note.createdAt && (
+                    <div className="text-sm text-gray-500">Released: {new Date(note.createdAt).toLocaleString()}</div>
                   )}
-                </div>
-                {note.module && (
-                  <div className="text-xs text-gray-600">
-                    Module: {note.module}
-                  </div>
-                )}
-                {note.createdAt && (
-                  <div className="text-xs text-gray-500">
-                    Released: {new Date(note.createdAt).toLocaleString()}
-                  </div>
-                )}
-                <p className="mt-1">{note.excerpt}</p>
-                {ttsSupported && (
-                  <div className="mt-2">
-                    <button
-                      type="button"
-                      onClick={() => handleSpeakNote(note)}
-                      className="px-3 py-1 rounded bg-indigo-700 text-white text-xs disabled:opacity-60"
-                      aria-pressed={activeSpeechId === String(note.id)}
-                      disabled={
-                        isSpeaking && activeSpeechId !== String(note.id)
-                      }
-                    >
-                      {activeSpeechId === String(note.id)
-                        ? "Playing excerpt..."
-                        : "Listen to excerpt"}
-                    </button>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                  <p className="mt-2 leading-relaxed">{note.excerpt}</p>
+                  {ttsSupported && (
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        onClick={() => handleSpeakNote(note)}
+                        className="px-4 py-2 rounded bg-indigo-700 text-white text-sm disabled:opacity-60"
+                        aria-pressed={activeSpeechId === String(note.id)}
+                        disabled={isSpeaking && activeSpeechId !== String(note.id)}
+                      >
+                        {activeSpeechId === String(note.id) ? "Playing excerpt..." : "Listen to excerpt"}
+                      </button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <div className="fixed right-4 bottom-4 z-40">
+        <div className="rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-2 w-64">
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Vision & Reader</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="px-3 py-2 rounded bg-blue-600 text-white text-sm"
+              onClick={() => setFontScale((s) => Math.min(s + 0.1, 1.8))}
+            >
+              A+
+            </button>
+            <button
+              type="button"
+              className="px-3 py-2 rounded bg-blue-100 text-slate-800 text-sm"
+              onClick={() => setFontScale((s) => Math.max(s - 0.1, 0.9))}
+            >
+              A-
+            </button>
+            <button
+              type="button"
+              className="px-3 py-2 rounded border text-sm"
+              onClick={() => setFontScale(1.05)}
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              className="px-3 py-2 rounded bg-amber-500 text-white text-sm"
+              onClick={() => setHighContrast((v) => !v)}
+            >
+              {highContrast ? "Normal" : "High contrast"}
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="flex-1 px-3 py-2 rounded bg-emerald-600 text-white text-sm disabled:opacity-60"
+              onClick={handlePlaySample}
+              disabled={isSpeaking && activeSpeechId === "sample-note"}
+            >
+              Read sample
+            </button>
+            <button
+              type="button"
+              className="px-3 py-2 rounded border text-sm disabled:opacity-60"
+              onClick={handleStop}
+              disabled={!isSpeaking}
+            >
+              Stop
+            </button>
+          </div>
+        </div>
+      </div>
     </Layout>
   );
 }
