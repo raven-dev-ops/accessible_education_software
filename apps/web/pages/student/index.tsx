@@ -17,6 +17,19 @@ type ReleasedNote = {
   excerpt: string;
 };
 
+type UploadHistoryEntry = {
+  score: number;
+  createdAt: string;
+};
+
+type PreviousUpload = {
+  id: string;
+  name: string;
+  dataUrl: string;
+  createdAt: string;
+  history?: UploadHistoryEntry[];
+};
+
 const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
@@ -88,9 +101,8 @@ function StudentPage() {
   const [uploadScore, setUploadScore] = useState<number | null>(null);
   const [correctionText, setCorrectionText] = useState<string>("");
   const [uploadImageUrl, setUploadImageUrl] = useState<string | null>(null);
-  const [previousUploads, setPreviousUploads] = useState<
-    { id: string; name: string; dataUrl: string; createdAt: string }[]
-  >([]);
+  const [previousUploads, setPreviousUploads] = useState<PreviousUpload[]>([]);
+  const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [brailleOpen, setBrailleOpen] = useState(false);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
@@ -176,9 +188,13 @@ function StudentPage() {
         preview || !session?.user?.email ? "student-uploads-sample" : `student-uploads-${session.user.email}`;
       const raw = window.localStorage.getItem(key);
       if (raw) {
-        const parsed = JSON.parse(raw) as { id: string; name: string; dataUrl: string; createdAt: string }[];
+        const parsed = JSON.parse(raw) as PreviousUpload[];
         if (Array.isArray(parsed)) {
-          setPreviousUploads(parsed);
+          const normalised = parsed.map((u) => ({
+            ...u,
+            history: Array.isArray(u.history) ? u.history : [],
+          }));
+          setPreviousUploads(normalised);
         }
       }
     } catch {
@@ -275,6 +291,103 @@ function StudentPage() {
     setSpeechStatus("Playback stopped.");
     setCountdown(null);
   };
+
+  const persistUploads = (next: PreviousUpload[]) => {
+    if (typeof window === "undefined") return;
+    try {
+      const key =
+        preview || !session?.user?.email ? "student-uploads-sample" : `student-uploads-${session.user.email}`;
+      window.localStorage.setItem(key, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleSelectPreviousUpload = (upload: PreviousUpload) => {
+    setActiveUploadId(upload.id);
+    setUploadImageUrl(upload.dataUrl);
+    setUploadFileName(upload.name);
+    setUploadStatus(null);
+    setUploadError(null);
+    setUploadPreview(null);
+    setUploadScore(null);
+    setCorrectionText("");
+  };
+
+  const handleDeletePreviousUpload = (id: string) => {
+    setPreviousUploads((prev) => {
+      const next = prev.filter((u) => u.id !== id);
+      persistUploads(next);
+      return next;
+    });
+    if (activeUploadId === id) {
+      setActiveUploadId(null);
+      setUploadImageUrl(null);
+      setUploadFileName(null);
+      setUploadPreview(null);
+      setUploadScore(null);
+      setCorrectionText("");
+      setUploadStatus(null);
+      setUploadError(null);
+    }
+  };
+
+  const handleRunOcr = () => {
+    if (!uploadFileName && !uploadImageUrl && !activeUploadId) {
+      const message = "Please choose an image or select a previous upload first.";
+      setUploadError(message);
+      setUploadStatus(null);
+      announce(message, "error");
+      return;
+    }
+    setUploadStatus("Processing handwritten note...");
+    setUploadError(null);
+    setUploadPreview(null);
+    setUploadScore(null);
+    setCorrectionText("");
+
+    setTimeout(() => {
+      const previewText =
+        "f(x) = x^2 + 3x - 5\n\nDerivative: f'(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
+      const score = 72;
+      setUploadPreview(previewText);
+      setUploadScore(score);
+      setCorrectionText(previewText);
+      setUploadStatus("OCR complete. Review the text and accuracy below.");
+      announce("Uploaded note processed. Accuracy grade available.", score < 80 ? "info" : "success");
+
+      if (activeUploadId) {
+        const now = new Date().toISOString();
+        setPreviousUploads((prev) => {
+          const next = prev.map((u) => {
+            if (u.id !== activeUploadId) return u;
+            const history = Array.isArray(u.history) ? u.history : [];
+            const entry: UploadHistoryEntry = { score, createdAt: now };
+            return { ...u, history: [entry, ...history].slice(0, 10) };
+          });
+          persistUploads(next);
+          return next;
+        });
+      }
+    }, 800);
+  };
+
+  const handleFormatForTts = () => {
+    if (!uploadPreview) {
+      const message = "Run OCR first to generate text to format for TTS.";
+      setUploadError(message);
+      announce(message, "error");
+      return;
+    }
+    setUploadStatus(
+      "Note formatted for TTS. Use the Nav reader controls in the Text-to-speech sample to listen to similar content."
+    );
+    setUploadError(null);
+    announce("Note formatted for text-to-speech preview.", "success");
+  };
+
+  // Reference handleRunOcr so that linting does not treat it as unused while this preview is evolving.
+  void handleRunOcr;
 
   const brailleSourceText =
     notes.length > 0
@@ -591,7 +704,7 @@ function StudentPage() {
           aria-labelledby="student-upload"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <div className="grid gap-4 md:grid-cols-2 items-start">
+          <div className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Upload & process</h3>
@@ -618,30 +731,24 @@ function StudentPage() {
                       const reader = new FileReader();
                       reader.onload = () => {
                         const dataUrl = reader.result as string;
-                        setUploadImageUrl(dataUrl);
-                        const entry = {
+                        const entry: PreviousUpload = {
                           id: `upload-${Date.now()}`,
                           name: file.name,
                           dataUrl,
                           createdAt: new Date().toISOString(),
+                          history: [],
                         };
+                        setUploadImageUrl(dataUrl);
+                        setActiveUploadId(entry.id);
                         setPreviousUploads((prev) => {
                           const next = [entry, ...prev].slice(0, 6);
-                          if (typeof window !== "undefined") {
-                            try {
-                              const key =
-                                preview || !session?.user?.email
-                                  ? "student-uploads-sample"
-                                  : `student-uploads-${session.user.email}`;
-                              window.localStorage.setItem(key, JSON.stringify(next));
-                            } catch {
-                              // ignore
-                            }
-                          }
+                          persistUploads(next);
                           return next;
                         });
                       };
                       reader.readAsDataURL(file);
+                    } else {
+                      setActiveUploadId(null);
                     }
                   }}
                 />
@@ -675,19 +782,55 @@ function StudentPage() {
                     </div>
                   ) : (
                     <ul className="space-y-2 max-h-40 overflow-auto text-xs text-slate-700 dark:text-slate-200">
-                      {previousUploads.map((u) => (
-                        <li key={u.id} className="flex items-center gap-2">
-                          <div className="relative h-10 w-10 flex-shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
-                            <Image src={u.dataUrl} alt={u.name} fill className="object-cover" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="truncate font-medium">{u.name}</div>
-                            <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                              {new Date(u.createdAt).toLocaleDateString()}
+                      {previousUploads.map((u) => {
+                        const isActive = u.id === activeUploadId;
+                        return (
+                          <li
+                            key={u.id}
+                            className={`flex items-center gap-2 rounded px-2 py-1 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                              isActive
+                                ? "ring-2 ring-blue-500 ring-offset-1 ring-offset-slate-50 dark:ring-offset-slate-900"
+                                : ""
+                            }`}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => handleSelectPreviousUpload(u)}
+                            onKeyDown={(evt) => {
+                              if (evt.key === "Enter" || evt.key === " ") {
+                                evt.preventDefault();
+                                handleSelectPreviousUpload(u);
+                              }
+                            }}
+                          >
+                            <div className="relative h-10 w-10 flex-shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+                              <Image src={u.dataUrl} alt={u.name} fill className="object-cover" />
                             </div>
-                          </div>
-                        </li>
-                      ))}
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate font-medium">{u.name}</div>
+                              <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                                {new Date(u.createdAt).toLocaleDateString()}
+                              </div>
+                              {u.history && u.history.length > 0 && (
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                                  Last score: {u.history[0].score}% on{" "}
+                                  {new Date(u.history[0].createdAt).toLocaleDateString()}
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              className="ml-1 text-[11px] px-2 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-red-50 dark:hover:bg-red-900/40 text-red-700 dark:text-red-200"
+                              onClick={(evt) => {
+                                evt.stopPropagation();
+                                handleDeletePreviousUpload(u.id);
+                              }}
+                              aria-label={`Delete upload ${u.name}`}
+                            >
+                              Delete
+                            </button>
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>
@@ -714,10 +857,32 @@ function StudentPage() {
                     setUploadScore(score);
                     setCorrectionText(preview);
                     announce("Uploaded sample note processed. Ready to play.", "success");
+                    if (activeUploadId) {
+                      const now = new Date().toISOString();
+                      setPreviousUploads((prev) => {
+                        const next = prev.map((u) => {
+                          if (u.id !== activeUploadId) return u;
+                          const history = Array.isArray(u.history) ? u.history : [];
+                          const entry: UploadHistoryEntry = { score, createdAt: now };
+                          return { ...u, history: [entry, ...history].slice(0, 10) };
+                        });
+                        persistUploads(next);
+                        return next;
+                      });
+                    }
                   }, 800);
                 }}
               >
                 Upload & format for TTS
+              </button>
+
+              <button
+                type="button"
+                className="mt-2 w-full px-5 py-3 rounded border border-blue-700 text-blue-700 dark:text-blue-200 dark:border-blue-300 text-base disabled:opacity-60"
+                disabled={!uploadPreview}
+                onClick={handleFormatForTts}
+              >
+                Format for TTS
               </button>
 
               {(uploadStatus || uploadError) && (
@@ -760,6 +925,21 @@ function StudentPage() {
                       <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
                         {uploadPreview}
                       </pre>
+                      {activeUploadId && (
+                        <div className="text-xs text-slate-600 dark:text-slate-300">
+                          {(() => {
+                            const selected = previousUploads.find((u) => u.id === activeUploadId);
+                            if (!selected || !selected.history || selected.history.length === 0) return null;
+                            const historyText = selected.history
+                              .map(
+                                (h) =>
+                                  `${h.score}% on ${new Date(h.createdAt).toLocaleDateString()}`
+                              )
+                              .join(" · ");
+                            return <p>Previous scores for this image: {historyText}</p>;
+                          })()}
+                        </div>
+                      )}
                       <div className="space-y-2">
                         <label className="block text-sm">
                           <span className="block mb-1">Correction (edit if OCR is wrong)</span>
