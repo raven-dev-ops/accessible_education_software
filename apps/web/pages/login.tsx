@@ -48,9 +48,9 @@ export default function Login() {
               </button>
             </>
           ) : hasAuthParams ? (
-            <p>Finishing login…</p>
+            <p>Finishing login</p>
           ) : (
-            <p>Redirecting to secure login…</p>
+            <p>Redirecting to secure login</p>
           )}
         </div>
       </main>
@@ -65,7 +65,7 @@ export default function Login() {
         <h1 className="text-2xl font-semibold">
           Accessible Education Platform
         </h1>
-        <p className="text-lg font-medium">Login – Coming Soon</p>
+        <p className="text-lg font-medium">Login  Coming Soon</p>
         <p className="text-sm text-gray-700">
           The secure login experience for students, teachers, and admins will be
           enabled here once the platform is ready for pilot testing. This
@@ -87,4 +87,4 @@ export default function Login() {
       </div>
     </main>
   );
-}
+}
