@@ -7,7 +7,7 @@ Pre-flight
 - Secrets set for auth/DB/AI hooks; no secrets in client bundles.
 
 Cutting a release
-- Tag format: `vX.Y.Z` (or `vX.Y.Z-rcN` for candidates).
+- Tag format: `vX.Y.Z` (or `vX.Y.Z-rcN` for candidates). Current: `v1.0.0`.
 - Verify changelog entry and versions in `package.json` / `apps/web/package.json` if bumping.
 - Push tag → `release-and-package.yml` creates GitHub Release and publishes shared package to GH Packages.
 

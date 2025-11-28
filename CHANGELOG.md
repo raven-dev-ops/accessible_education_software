@@ -66,4 +66,17 @@ All notable changes to this project will be documented in this file.
 - Scaffold Next.js web app placeholder with role-based dashboards.
 - Add OCR service skeleton and sample OCR test script placeholder.
 - Add documentation stubs (privacy policy, terms of service).
-- Configure basic tooling and ignore files.
+- Configure basic tooling and ignore files.## [1.0.0] - MVP Release
+
+- Web:
+  - Accessible dashboards with NextAuth/Google, role-based flows for student/teacher/admin.
+  - Braille path with liblouis/fallback and .brf preview/download; skip link, focus outlines, reduced-motion support.
+  - Live alerts for DB/Braille/ticket status; attachment previews in admin.
+- Backend:
+  - OCR service handles text vs scanned PDFs (PyMuPDF + Tesseract) and optional AI verification hook.
+  - Cloud Run/Netlify guidance, rate-limited Cloud Run API, and Prisma-backed data models.
+- DevOps/Docs:
+  - CI lint/builds web and syntax-checks OCR; release workflow publishes to GH Packages.
+  - Deploy/infra guides (Netlify, OCR Docker, release plan, onboarding, backlog).
+
+
