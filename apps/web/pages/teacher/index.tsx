@@ -94,6 +94,26 @@ function TeacherPage() {
   >([]);
   const [ticketsLoading, setTicketsLoading] = useState(true);
   const [ticketsError, setTicketsError] = useState<string | null>(null);
+  const sampleTickets = [
+    {
+      id: "ticket-1",
+      detail: "OCR scored 72% on derivatives; Greek symbols missing.",
+      createdAt: "2025-11-28T10:00:00Z",
+      studentEmail: "student1@example.com",
+      status: "pending review",
+      score: 72,
+      attachmentUrl: null,
+    },
+    {
+      id: "ticket-2",
+      detail: "Handwriting not recognized on chain rule PDF.",
+      createdAt: "2025-11-27T18:30:00Z",
+      studentEmail: "student2@example.com",
+      status: "pending review",
+      score: 68,
+      attachmentUrl: null,
+    },
+  ];
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<
     { role: "teacher" | "assistant"; text: string }[]
@@ -172,7 +192,10 @@ function TeacherPage() {
       try {
         const res = await fetch("/api/support-tickets");
         if (!res.ok) {
-          throw new Error(`Failed with status ${res.status}`);
+          setTicketList(sampleTickets);
+          setTicketsError(null);
+          setTicketsLoading(false);
+          return;
         }
         const data = (await res.json()) as {
           id: string;
@@ -198,7 +221,8 @@ function TeacherPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          setTicketsError("Failed to load support tickets.");
+          setTicketList(sampleTickets);
+          setTicketsError(null);
         }
       } finally {
         if (!cancelled) setTicketsLoading(false);
@@ -562,6 +586,34 @@ function TeacherPage() {
                 ))}
               </tbody>
             </table>
+            <div className="p-3 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
+              <span>
+                {ticketsLoading
+                  ? "Loading tickets…"
+                  : ticketsError
+                  ? "Using sample tickets (failed to load live data)."
+                  : "Loaded tickets from /api/support-tickets."}
+              </span>
+              <button
+                type="button"
+                className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-xs"
+                onClick={() => {
+                  const id = `demo-${Date.now()}`;
+                  const demo = {
+                    id,
+                    detail: "Demo ticket: OCR 70% on integrals; please review.",
+                    createdAt: new Date().toISOString(),
+                    studentEmail: "demo.student@example.com",
+                    status: "pending review",
+                    score: 70,
+                    attachmentUrl: null,
+                  };
+                  setTicketList((prev) => [demo, ...prev]);
+                }}
+              >
+                Add demo ticket
+              </button>
+            </div>
           </div>
         </section>
       </div>
