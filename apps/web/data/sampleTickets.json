@@ -1,0 +1,20 @@
+[
+  {
+    "id": "ticket-1",
+    "detail": "OCR scored 72% on derivatives; Greek symbols missing.",
+    "createdAt": "2025-11-28T10:00:00Z",
+    "studentEmail": "student1@example.com",
+    "status": "pending review",
+    "score": 72,
+    "attachmentUrl": null
+  },
+  {
+    "id": "ticket-2",
+    "detail": "Handwriting not recognized on chain rule PDF.",
+    "createdAt": "2025-11-27T18:30:00Z",
+    "studentEmail": "student2@example.com",
+    "status": "pending review",
+    "score": 68,
+    "attachmentUrl": null
+  }
+]

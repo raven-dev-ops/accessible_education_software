@@ -5,22 +5,7 @@ import { Layout } from "../../components/Layout";
 import { getRoleFromUser } from "../../lib/roleUtils";
 import sampleStudents from "../../data/sampleStudents.json";
 import sampleUploads from "../../data/sampleUploads.json";
-const sampleTickets = [
-  {
-    id: "ticket-1",
-    title: "OCR quality issue (<80%)",
-    detail: "OCR missed math symbols on derivatives notes.",
-    createdAt: "2025-11-28T08:00:00Z",
-    score: 72,
-  },
-  {
-    id: "ticket-2",
-    title: "OCR failed to read handwriting",
-    detail: "Handwriting not recognized on calculus PDF.",
-    createdAt: "2025-11-27T15:30:00Z",
-    score: 65,
-  },
-];
+import sampleTickets from "../../data/sampleTickets.json";
 
 type Student = {
   id: number;
