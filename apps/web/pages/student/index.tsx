@@ -899,15 +899,7 @@ function StudentPage() {
                     </select>
                   </label>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setSampleParagraphIndex((i) => Math.max(0, i - 1))}
-                    className="px-4 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                    disabled={sampleParagraphIndex === 0}
-                  >
-                    Previous
-                  </button>
+                <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start">
                   <button
                     type="button"
                     onClick={handlePlaySample}
@@ -918,14 +910,6 @@ function StudentPage() {
                     {activeSpeechId === "sample-note"
                       ? `Playing... ${countdown !== null ? `${countdown}s` : ""}`
                       : "Nav reader"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSampleParagraphIndex((i) => Math.min(sampleParagraphs.length - 1, i + 1))}
-                    className="px-4 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                    disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
-                  >
-                    Next
                   </button>
                   <button
                     type="button"
