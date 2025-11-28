@@ -43,6 +43,7 @@ function StudentPage() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceUri, setSelectedVoiceUri] = useState<string | null>(null);
   const [volume, setVolume] = useState(0.5);
+  const [voiceSearch, setVoiceSearch] = useState("");
   const [speechStatus, setSpeechStatus] = useState<string | null>(null);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [activeSpeechId, setActiveSpeechId] = useState<string | null>(null);
@@ -390,6 +391,13 @@ function StudentPage() {
               <div className="flex flex-wrap gap-4 mb-4">
                 <label className="text-sm">
                   <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
+                  <input
+                    type="text"
+                    value={voiceSearch}
+                    onChange={(e) => setVoiceSearch(e.target.value)}
+                    placeholder="Search voices"
+                    className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full mb-2"
+                  />
                   <select
                     value={selectedVoiceUri ?? ""}
                     onChange={(e) => {
@@ -404,11 +412,15 @@ function StudentPage() {
                     className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 min-w-[200px]"
                   >
                     {voices.length === 0 && <option value="">Loading voices…</option>}
-                    {voices.map((v) => (
-                      <option key={v.voiceURI} value={v.voiceURI}>
-                        {v.name} ({v.lang})
-                      </option>
-                    ))}
+                    {voices
+                      .filter((v) =>
+                        `${v.name} ${v.lang}`.toLowerCase().includes(voiceSearch.toLowerCase())
+                      )
+                      .map((v) => (
+                        <option key={v.voiceURI} value={v.voiceURI}>
+                          {v.name} ({v.lang})
+                        </option>
+                      ))}
                   </select>
                 </label>
                 <label className="text-sm">
