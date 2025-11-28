@@ -10,13 +10,23 @@ const authEnabled =
 export default function Login() {
   const router = useRouter();
   const skipAuth = router.query.skipAuth === "1";
+  const hasAuthParams = Boolean(router.query.code || router.query.state || router.query.error);
 
-  // When auth is enabled (e.g. staging/production), forward to Google sign-in unless skipping.
   useEffect(() => {
-    if (authEnabled && !skipAuth) {
+    if (!authEnabled) return;
+
+    // If Google returned with code/state, forward to NextAuth callback to finish login.
+    if (hasAuthParams) {
+      const search = typeof window !== "undefined" ? window.location.search : "";
+      void router.replace(`/api/auth/callback/google${search}`);
+      return;
+    }
+
+    // Otherwise, initiate sign-in unless explicitly skipping auth.
+    if (!skipAuth) {
       void signIn("google");
     }
-  }, [skipAuth]);
+  }, [hasAuthParams, skipAuth, router]);
 
   if (authEnabled) {
     return (
@@ -37,8 +47,10 @@ export default function Login() {
                 Continue with Google
               </button>
             </>
+          ) : hasAuthParams ? (
+            <p>Finishing login…</p>
           ) : (
-            <p>Redirecting to secure loginâ€¦</p>
+            <p>Redirecting to secure login…</p>
           )}
         </div>
       </main>
@@ -53,7 +65,7 @@ export default function Login() {
         <h1 className="text-2xl font-semibold">
           Accessible Education Platform
         </h1>
-        <p className="text-lg font-medium">Login â€“ Coming Soon</p>
+        <p className="text-lg font-medium">Login – Coming Soon</p>
         <p className="text-sm text-gray-700">
           The secure login experience for students, teachers, and admins will be
           enabled here once the platform is ready for pilot testing. This
