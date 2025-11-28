@@ -16,7 +16,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 ## Table of Contents
 
 - [Features](#features)
-- [Status (Day 5)](#status-day-5)
+- [Status (v1.0.0)](#status-day-5)
 - [Roles](#roles)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -27,9 +27,9 @@ The system helps **students**, **teachers**, and **site admins** work with handw
   - [Install dependencies](#install-dependencies)
 - [Environment variables](#environment-variables)
 - [Run the apps](#run-the-apps)
-- [Mock Data (Day 2)](#mock-data-day-2)
-- [Math handling (Day 3)](#math-handling-day-3)
-- [Braille path (Day 4)](#braille-path-day-4)
+- [Mock Data (alpha)](#mock-data-day-2)
+- [Math handling](#math-handling-day-3)
+- [Braille path](#braille-path-day-4)
 - [APIs & Database](#apis--database)
 - [Security & Code Scanning](#security--code-scanning)
 - [Accessibility](#accessibility)
@@ -301,7 +301,7 @@ npm run test:ocr
 
 ---
 
-## Mock Data (Day 2)
+## Mock Data (alpha)
 
 For early development, the app uses mock data and stubbed APIs:
 
@@ -314,7 +314,7 @@ These will be replaced with real database and OCR-service-backed implementations
 
 ---
 
-## Math handling (Day 3)
+## Math handling
 
 Early plan for representing and rendering math from OCR output:
 
@@ -325,7 +325,7 @@ Early plan for representing and rendering math from OCR output:
 
 ---
 
-## Braille path (Day 4)
+## Braille path
 
 - A lightweight Grade 1 Braille mapper lives at `apps/web/lib/braille.ts`, converting ASCII text into Unicode Braille cells and `.brf`-friendly output.
 - A liblouis/Nemeth hook is available via `/api/braille` (server-side only). Enable it by installing `liblouis`, setting `BRAILLE_ENGINE=liblouis`, and optionally `BRAILLE_LIBLOUIS_TABLE` (default `nemeth`) / `BRAILLE_LIBLOUIS_BIN` (`lou_translate` by default).
