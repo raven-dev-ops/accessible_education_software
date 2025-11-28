@@ -452,7 +452,7 @@ function StudentPage() {
     <Layout title="Student Dashboard" secondaryNav={previewNav}>
       <div
         className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
-        style={{ fontSize: `${fontScale}rem` }}
+        style={{ fontSize: `${fontScale}rem`, lineHeight: 1.6 }}
       >
         <section
           aria-labelledby="student-profile"
@@ -884,9 +884,18 @@ function StudentPage() {
         </section>
       </div>
 
-      <div className="fixed right-4 bottom-4 z-40">
+      <div
+        className="fixed right-4 bottom-4 z-40"
+        style={{ fontSize: `${fontScale}rem` }}
+      >
         {widgetOpen ? (
-          <div className="rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-2 w-64">
+          <div
+            className={`rounded-2xl shadow-lg border p-3 space-y-2 w-72 ${
+              highContrast
+                ? "bg-black text-yellow-100 border-yellow-300"
+                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Vision & Reader</p>
               <button
@@ -951,6 +960,30 @@ function StudentPage() {
                 ))}
               </select>
             </label>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-200">
+                <span>Vol</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={volume}
+                  onChange={(e) => {
+                    const vol = parseFloat(e.target.value);
+                    setVolume(vol);
+                    if (typeof window !== "undefined") {
+                      window.localStorage.setItem(
+                        "tts-prefs",
+                        JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined })
+                      );
+                    }
+                  }}
+                  className="w-24 accent-blue-600"
+                />
+                <span>{Math.round(volume * 100)}%</span>
+              </label>
+            </div>
             <div className="flex gap-2">
               <button
                 type="button"
