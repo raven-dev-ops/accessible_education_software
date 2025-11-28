@@ -92,6 +92,8 @@ function TeacherPage() {
       attachmentUrl?: string | null;
     }[]
   >([]);
+  const [ticketsLoading, setTicketsLoading] = useState(true);
+  const [ticketsError, setTicketsError] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<
     { role: "teacher" | "assistant"; text: string }[]
@@ -104,6 +106,7 @@ function TeacherPage() {
       { fileName?: string; score?: number | null; status: "pending" | "pass" | "fail"; editableText?: string }
     >
   >({});
+  const [eqCollapsed, setEqCollapsed] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -162,6 +165,50 @@ function TeacherPage() {
       cancelled = true;
     };
   }, [unauthorized, session]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadTickets() {
+      try {
+        const res = await fetch("/api/support-tickets");
+        if (!res.ok) {
+          throw new Error(`Failed with status ${res.status}`);
+        }
+        const data = (await res.json()) as {
+          id: string;
+          detail: string;
+          createdAt: string;
+          score?: number | null;
+          userEmail?: string | null;
+          attachmentUrl?: string | null;
+        }[];
+        if (!cancelled) {
+          setTicketList(
+            data.map((t) => ({
+              id: t.id,
+              detail: t.detail,
+              createdAt: t.createdAt,
+              studentEmail: t.userEmail ?? null,
+              status: (t.score ?? 0) >= 80 ? "pass" : "pending review",
+              score: t.score ?? null,
+              attachmentUrl: t.attachmentUrl ?? null,
+            }))
+          );
+          setTicketsError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setTicketsError("Failed to load support tickets.");
+        }
+      } finally {
+        if (!cancelled) setTicketsLoading(false);
+      }
+    }
+    if (!unauthorized) void loadTickets();
+    return () => {
+      cancelled = true;
+    };
+  }, [unauthorized]);
 
   if (unauthorized) {
     return (
@@ -326,18 +373,31 @@ function TeacherPage() {
           </p>
           <div className="space-y-3">
             {training.equations.map((eq, idx) => {
-              const progress = equationProgress[`${selectedModuleId}-${idx}`] || {
+              const key = `${selectedModuleId}-${idx}`;
+              const progress = equationProgress[key] || {
                 status: "pending" as const,
                 score: null,
                 editableText: "",
               };
+              const collapsed = eqCollapsed[key] ?? false;
               return (
                 <div
                   key={idx}
                   className="border rounded p-3 bg-slate-50 dark:bg-slate-800 flex flex-col gap-2"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="font-semibold text-sm">{idx + 1}. {eq}</div>
+                    <button
+                      type="button"
+                      className="font-semibold text-sm text-left flex-1"
+                      onClick={() =>
+                        setEqCollapsed((prev) => ({
+                          ...prev,
+                          [key]: !collapsed,
+                        }))
+                      }
+                    >
+                      {collapsed ? "▶" : "▼"} {idx + 1}. {eq}
+                    </button>
                     <span
                       className={`text-xs px-2 py-1 rounded ${
                         progress.status === "pass"
@@ -354,47 +414,50 @@ function TeacherPage() {
                         : "Pending"}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <input type="file" accept=".pdf,image/*" className="text-sm" />
-                    <button
-                      type="button"
-                      className="px-3 py-2 rounded bg-blue-600 text-white text-xs"
-                      onClick={() => {
-                        // Placeholder: pretend OCR result
-                        const mockScore = 82;
-                        const mockText = `OCR result for ${eq}`;
-                        setEquationProgress((prev) => ({
-                          ...prev,
-                          [`${selectedModuleId}-${idx}`]: {
-                            status: mockScore >= 80 ? "pass" : "fail",
-                            score: mockScore,
-                            editableText: mockText,
-                          },
-                        }));
-                      }}
-                    >
-                      Upload & OCR
-                    </button>
-                  </div>
-                  {progress.editableText !== undefined && (
-                    <label className="text-xs">
-                      <span className="block mb-1">Recognized text (edit before saving)</span>
-                      <textarea
-                        className="w-full border rounded p-2 text-sm"
-                        rows={3}
-                        value={progress.editableText}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setEquationProgress((prev) => ({
-                            ...prev,
-                            [`${selectedModuleId}-${idx}`]: {
-                              ...progress,
-                              editableText: val,
-                            },
-                          }));
-                        }}
-                      />
-                    </label>
+                  {!collapsed && (
+                    <>
+                      <div className="flex flex-wrap gap-2">
+                        <input type="file" accept=".pdf,image/*" className="text-sm" />
+                        <button
+                          type="button"
+                          className="px-3 py-2 rounded bg-blue-600 text-white text-xs"
+                          onClick={() => {
+                            const mockScore = 82;
+                            const mockText = `OCR result for ${eq}`;
+                            setEquationProgress((prev) => ({
+                              ...prev,
+                              [key]: {
+                                status: mockScore >= 80 ? "pass" : "fail",
+                                score: mockScore,
+                                editableText: mockText,
+                              },
+                            }));
+                          }}
+                        >
+                          Upload & OCR
+                        </button>
+                      </div>
+                      {progress.editableText !== undefined && (
+                        <label className="text-xs">
+                          <span className="block mb-1">Recognized text (edit before saving)</span>
+                          <textarea
+                            className="w-full border rounded p-2 text-sm"
+                            rows={3}
+                            value={progress.editableText}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setEquationProgress((prev) => ({
+                                ...prev,
+                                [key]: {
+                                  ...progress,
+                                  editableText: val,
+                                },
+                              }));
+                            }}
+                          />
+                        </label>
+                      )}
+                    </>
                   )}
                 </div>
               );
@@ -507,3 +570,4 @@ function TeacherPage() {
 }
 
 export default TeacherPage;
+
