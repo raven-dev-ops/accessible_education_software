@@ -115,8 +115,15 @@ function StudentPage() {
     }
   }, [selectedVoiceUri]);
 
-  const sampleText =
-    "This is a sample Calculus I note. It describes a function f of x equals x squared, and explains how to find the derivative using the limit definition.";
+  const sampleParagraphs = [
+    "This is a sample Calculus I note. It describes a function f of x equals x squared, and explains how to find the derivative using the limit definition.",
+    "To compute the derivative, we consider the limit as h approaches zero of the difference quotient f of x plus h minus f of x over h. For x squared, this simplifies to two x when h goes to zero.",
+    "In practice, derivatives let us measure instantaneous rates of change. They are foundational for optimization problems, motion analysis, and curve sketching. This course will build intuition through examples and exercises."
+  ];
+  const sampleTLDR =
+    "Summary: For f(x)=x², the derivative is 2x via the limit definition. Derivatives measure instantaneous change and power many applications.";
+  const [sampleParagraphIndex, setSampleParagraphIndex] = useState(0);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const runSpeech = (text: string, label: string, speechId: string) => {
     if (!ttsSupported) {
@@ -133,17 +140,30 @@ function StudentPage() {
         setIsSpeaking(true);
         setActiveSpeechId(speechId);
         setSpeechStatus(`Reading ${label}...`);
+        setCountdown(Math.max(3, Math.ceil(text.length / 15)));
+        const interval = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev === null) return null;
+            if (prev <= 1) {
+              clearInterval(interval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
       },
       onEnd: () => {
         setIsSpeaking(false);
         setActiveSpeechId(null);
         setSpeechStatus(`Finished reading ${label}.`);
+        setCountdown(null);
       },
       onError: () => {
         setIsSpeaking(false);
         setActiveSpeechId(null);
         setSpeechStatus(null);
         setSpeechError(`Text-to-speech could not play ${label}.`);
+        setCountdown(null);
       },
     });
 
@@ -153,7 +173,8 @@ function StudentPage() {
   };
 
   const handlePlaySample = () => {
-    runSpeech(sampleText, "a sample Calculus note", "sample-note");
+    const text = sampleParagraphs[sampleParagraphIndex] ?? sampleParagraphs[0];
+    runSpeech(text, "a sample Calculus note", "sample-note");
   };
 
   const handleSpeakNote = (note: ReleasedNote) => {
@@ -166,12 +187,13 @@ function StudentPage() {
     setIsSpeaking(false);
     setActiveSpeechId(null);
     setSpeechStatus("Playback stopped.");
+    setCountdown(null);
   };
 
   const brailleSourceText =
     notes.length > 0
       ? `${notes[0].title}. ${notes[0].excerpt}`
-      : sampleText;
+      : sampleParagraphs[0];
 
   const handleDownloadBraille = () => {
     if (typeof window === "undefined") return;
@@ -388,6 +410,18 @@ function StudentPage() {
                 Use the controls below to hear a sample Calculus I note read out loud. This simulates how your own notes
                 will sound once OCR and TTS are fully wired.
               </p>
+              <div className="text-sm text-gray-800 dark:text-gray-200 mb-2 space-y-2">
+                <p className="font-semibold">Sample paragraphs</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  {sampleParagraphs.map((p, idx) => (
+                    <li key={idx} className={idx === sampleParagraphIndex ? "font-semibold" : ""}>
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 font-semibold">TL;DR</p>
+                <p>{sampleTLDR}</p>
+              </div>
               <div className="flex flex-wrap gap-4 mb-4">
                 <label className="text-sm">
                   <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
@@ -454,12 +488,32 @@ function StudentPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="button"
+                  onClick={() => setSampleParagraphIndex((i) => Math.max(0, i - 1))}
+                  className="px-4 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
+                  disabled={sampleParagraphIndex === 0}
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
                   onClick={handlePlaySample}
                   className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60"
                   aria-pressed={activeSpeechId === "sample-note"}
                   disabled={isSpeaking && activeSpeechId === "sample-note"}
                 >
-                  {activeSpeechId === "sample-note" ? "Playing sample..." : "Play sample"}
+                  {activeSpeechId === "sample-note"
+                    ? `Playing… ${countdown !== null ? `${countdown}s` : ""}`
+                    : "Play sample"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSampleParagraphIndex((i) => Math.min(sampleParagraphs.length - 1, i + 1))
+                  }
+                  className="px-4 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
+                  disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
+                >
+                  Next
                 </button>
                 <button
                   type="button"
