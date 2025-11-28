@@ -116,7 +116,6 @@ function AdminPage() {
     };
   }, [unauthorized, session]);
 
-
   const handleTestOcr = async () => {
     setOcrLoading(true);
     setOcrMessage(null);
@@ -195,183 +194,231 @@ function AdminPage() {
     }
   };
 
-
   if (unauthorized) {
     return (
       <Layout title="Admin Dashboard">
-        <p role="alert">You do not have access to this page. Redirecting...</p>
+        <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6">
+          <div className="max-w-xl w-full bg-white shadow-lg rounded-2xl p-6 text-center">
+            <h1 className="text-2xl font-semibold text-slate-900 mb-2">
+              Admin dashboard
+            </h1>
+            <p className="text-slate-600 mb-4" role="alert">
+              You do not have access to this page. Redirecting…
+            </p>
+          </div>
+        </main>
       </Layout>
     );
   }
 
   return (
     <Layout title="Admin Dashboard">
-      <section aria-labelledby="admin-students">
-        <h2 id="admin-students" className="text-lg font-semibold mb-4">
-          Students
-        </h2>
-        {studentsLoading && <p>Loading students...</p>}
-        {studentsError && (
-          <p role="alert" className="text-red-700">
-            {studentsError}
-          </p>
-        )}
-        {!studentsLoading && !studentsError && (
-          <table className="min-w-full border text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="border px-2 py-1 text-left">Name</th>
-                <th className="border px-2 py-1 text-left">Email</th>
-                <th className="border px-2 py-1 text-left">Course</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((s) => (
-                <tr key={s.id}>
-                  <td className="border px-2 py-1">{s.name}</td>
-                  <td className="border px-2 py-1">{s.email}</td>
-                  <td className="border px-2 py-1">{s.course}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-
-
-      <section className="mt-8" aria-labelledby="admin-upload">
-        <h2 id="admin-upload" className="text-lg font-semibold mb-2">
-          Upload PDF or image for OCR
-        </h2>
-        <p className="mb-2 text-sm text-gray-700">
-          Upload a PDF or image to send it to the OCR service. A short text preview
-          will appear inline when available.
-        </p>
-        <form onSubmit={handleUpload} aria-describedby="admin-upload-help">
-          <label className="block mb-2">
-            <span className="block mb-1">Choose PDF or image</span>
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              name="file"
-              className="block w-full"
-            />
-          </label>
-          <p id="admin-upload-help" className="text-xs text-gray-600 mb-2">
-            Choose a file and select Upload to send it to the OCR API. A short
-            text preview will be shown when available.
-          </p>
-          <button
-            type="submit"
-            className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
-            disabled={uploading}
-            aria-busy={uploading}
-          >
-            {uploading ? "Uploading..." : "Upload"}
-          </button>
-        </form>
-
-        <div className="mt-3" aria-live="polite" role="status">
-          {uploadStatus && (
-            <p className="text-sm text-green-700">{uploadStatus}</p>
-          )}
-          {uploadError && (
-            <p className="text-sm text-red-700" role="alert">
-              {uploadError}
-            </p>
-          )}
-          <span className="sr-only">
-            {uploadError
-              ? `Upload failed: ${uploadError}`
-              : uploadStatus
-              ? `Upload status: ${uploadStatus}`
-              : ""}
-          </span>
-        </div>
-
-        {ocrMessage && (
-          <section
-            className="mt-4"
-            aria-labelledby="admin-ocr-preview"
-            aria-live="polite"
-          >
-            <h3 id="admin-ocr-preview" className="font-semibold mb-1">
-              OCR text preview
-            </h3>
-            <p className="text-xs text-gray-600 mb-2">
-              {ocrSource === "ocr_service"
-                ? "This text came from the live OCR service."
-                : "OCR_SERVICE_URL is not configured; this is a stub preview."}
-            </p>
-            <p className="whitespace-pre-wrap text-sm border rounded p-2 bg-gray-50">
-              {ocrMessage}
-            </p>
-          </section>
-        )}
-
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={handleTestOcr}
-            className="px-4 py-2 rounded bg-green-700 text-white mr-2"
-          >
-            {ocrLoading ? "Running OCR test..." : "Run sample OCR test"}
-          </button>
-        </div>
-      </section>
-
-      <section className="mt-10" aria-labelledby="admin-uploads">
-        <h2 id="admin-uploads" className="text-lg font-semibold mb-3">
-          Recent uploads
-        </h2>
-        {uploadsLoading && <p>Loading uploads...</p>}
-        {uploadsError && (
-          <p role="alert" className="text-red-700">
-            {uploadsError}
-          </p>
-        )}
-        {!uploadsLoading && !uploadsError && uploads.length === 0 && (
-          <p>No uploads yet.</p>
-        )}
-        {!uploadsLoading && !uploadsError && uploads.length > 0 && (
-          <div className="overflow-auto">
-            <table className="min-w-full border text-sm">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="border px-2 py-1 text-left">Filename</th>
-                  <th className="border px-2 py-1 text-left">MIME type</th>
-                  <th className="border px-2 py-1 text-left">Size</th>
-                  <th className="border px-2 py-1 text-left">Status</th>
-                  <th className="border px-2 py-1 text-left">Created</th>
-                </tr>
-              </thead>
-              <tbody>
-                {uploads.map((u) => (
-                  <tr key={u.id}>
-                    <td className="border px-2 py-1">
-                      {u.filename || "—"}
-                    </td>
-                    <td className="border px-2 py-1">
-                      {u.mimetype || "—"}
-                    </td>
-                    <td className="border px-2 py-1">
-                      {typeof u.size === "number"
-                        ? `${(u.size / 1024).toFixed(1)} KB`
-                        : "—"}
-                    </td>
-                    <td className="border px-2 py-1">{u.status}</td>
-                    <td className="border px-2 py-1">
-                      {u.createdAt
-                        ? new Date(u.createdAt).toLocaleString()
-                        : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="bg-white rounded-2xl shadow-md p-6 border border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <p className="text-sm uppercase tracking-wide text-slate-500">
+                  Admin dashboard
+                </p>
+                <h1 className="text-2xl font-semibold text-slate-900">
+                  Accessible Education Platform
+                </h1>
+              </div>
+              <div className="text-sm text-slate-600">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  Signed in as admin
+                </span>
+              </div>
+            </div>
           </div>
-        )}
-      </section>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <section
+              aria-labelledby="admin-students"
+              className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h2 id="admin-students" className="text-lg font-semibold">
+                  Students
+                </h2>
+                {studentsLoading && (
+                  <span className="text-xs text-slate-500">Loading…</span>
+                )}
+              </div>
+              {studentsError && (
+                <p role="alert" className="text-red-600 text-sm">
+                  {studentsError}
+                </p>
+              )}
+              {!studentsLoading && !studentsError && (
+                <div className="overflow-auto rounded-lg border border-slate-100">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-slate-50 text-slate-700">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Name</th>
+                        <th className="px-3 py-2 text-left">Email</th>
+                        <th className="px-3 py-2 text-left">Course</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map((s) => (
+                        <tr key={s.id} className="border-t border-slate-100">
+                          <td className="px-3 py-2">{s.name}</td>
+                          <td className="px-3 py-2">{s.email}</td>
+                          <td className="px-3 py-2">{s.course}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+
+            <section
+              className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5"
+              aria-labelledby="admin-upload"
+            >
+              <h2 id="admin-upload" className="text-lg font-semibold mb-2">
+                Upload for OCR
+              </h2>
+              <p className="text-sm text-slate-600 mb-3">
+                Upload a PDF or image to send it to the OCR service. A short text
+                preview will appear when available.
+              </p>
+              <form onSubmit={handleUpload} aria-describedby="admin-upload-help">
+                <label className="block mb-2">
+                  <span className="block mb-1 text-sm text-slate-700">
+                    Choose PDF or image
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    name="file"
+                    className="block w-full text-sm"
+                  />
+                </label>
+                <p id="admin-upload-help" className="text-xs text-slate-500 mb-3">
+                  Choose a file and select Upload. A short text preview will be
+                  shown when available.
+                </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-sm disabled:opacity-60"
+                    disabled={uploading}
+                    aria-busy={uploading}
+                  >
+                    {uploading ? "Uploading..." : "Upload"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTestOcr}
+                    className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm shadow-sm"
+                  >
+                    {ocrLoading ? "Running OCR test..." : "Run sample OCR test"}
+                  </button>
+                </div>
+              </form>
+
+              <div className="mt-3" aria-live="polite" role="status">
+                {uploadStatus && (
+                  <p className="text-sm text-emerald-700">{uploadStatus}</p>
+                )}
+                {uploadError && (
+                  <p className="text-sm text-red-700" role="alert">
+                    {uploadError}
+                  </p>
+                )}
+                <span className="sr-only">
+                  {uploadError
+                    ? `Upload failed: ${uploadError}`
+                    : uploadStatus
+                    ? `Upload status: ${uploadStatus}`
+                    : ""}
+                </span>
+              </div>
+
+              {ocrMessage && (
+                <section
+                  className="mt-4 border border-slate-100 rounded-lg bg-slate-50 p-3"
+                  aria-labelledby="admin-ocr-preview"
+                  aria-live="polite"
+                >
+                  <h3 id="admin-ocr-preview" className="font-semibold mb-1">
+                    OCR text preview
+                  </h3>
+                  <p className="text-xs text-slate-500 mb-2">
+                    {ocrSource === "ocr_service"
+                      ? "This text came from the live OCR service."
+                      : "OCR_SERVICE_URL is not configured; this is a stub preview."}
+                  </p>
+                  <p className="whitespace-pre-wrap text-sm text-slate-800">
+                    {ocrMessage}
+                  </p>
+                </section>
+              )}
+            </section>
+          </div>
+
+          <section
+            className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5"
+            aria-labelledby="admin-uploads"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 id="admin-uploads" className="text-lg font-semibold">
+                Recent uploads
+              </h2>
+              {uploadsLoading && (
+                <span className="text-xs text-slate-500">Loading…</span>
+              )}
+            </div>
+            {uploadsError && (
+              <p role="alert" className="text-red-700 text-sm">
+                {uploadsError}
+              </p>
+            )}
+            {!uploadsLoading && !uploadsError && uploads.length === 0 && (
+              <p className="text-sm text-slate-600">No uploads yet.</p>
+            )}
+            {!uploadsLoading && !uploadsError && uploads.length > 0 && (
+              <div className="overflow-auto rounded-lg border border-slate-100">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-50 text-slate-700">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Filename</th>
+                      <th className="px-3 py-2 text-left">MIME type</th>
+                      <th className="px-3 py-2 text-left">Size</th>
+                      <th className="px-3 py-2 text-left">Status</th>
+                      <th className="px-3 py-2 text-left">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {uploads.map((u) => (
+                      <tr key={u.id} className="border-t border-slate-100">
+                        <td className="px-3 py-2">{u.filename || ""}</td>
+                        <td className="px-3 py-2">{u.mimetype || ""}</td>
+                        <td className="px-3 py-2">
+                          {typeof u.size === "number"
+                            ? `${(u.size / 1024).toFixed(1)} KB`
+                            : ""}
+                        </td>
+                        <td className="px-3 py-2">{u.status}</td>
+                        <td className="px-3 py-2">
+                          {u.createdAt
+                            ? new Date(u.createdAt).toLocaleString()
+                            : ""}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
     </Layout>
   );
 }
