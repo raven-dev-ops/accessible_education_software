@@ -12,7 +12,8 @@
     "test": "echo \"No frontend tests defined yet\"",
     "a11y:smoke": "playwright install --with-deps chromium && node scripts/a11y-smoke.js",
     "a11y:pa11y": "pa11y-ci",
-    "lhci:autorun": "lhci autorun --config=./lighthouserc.json"
+    "lhci:autorun": "lhci autorun --config=./lighthouserc.json",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
@@ -38,6 +39,7 @@
     "@axe-core/playwright": "^4.9.1",
     "pa11y-ci": "^3.1.0",
     "@lhci/cli": "^0.13.0",
-    "wait-on": "^7.0.1"
+    "wait-on": "^7.0.1",
+    "@playwright/test": "^1.48.0"
   }
 }

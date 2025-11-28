@@ -15,7 +15,8 @@
     "seed:dev": "node apps/web/prisma/seed.cjs",
     "a11y:smoke": "npm --workspace apps/web run a11y:smoke",
     "test:a11y": "npm --workspace apps/web run a11y:pa11y",
-    "test:lhci": "npm --workspace apps/web run lhci:autorun"
+    "test:lhci": "npm --workspace apps/web run lhci:autorun",
+    "test:e2e": "npm --workspace apps/web run test:e2e"
   },
   "workspaces": [
     "apps/*",
