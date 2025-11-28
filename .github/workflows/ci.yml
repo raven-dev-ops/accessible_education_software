@@ -20,11 +20,26 @@ jobs:
         run: |
           npm run lint:web || npm --workspace apps/web run lint
           npm --workspace apps/web run build
-      - name: A11y smoke (axe via Playwright)
+      - name: Start Next server for tests
         run: |
-          npm --workspace apps/web run a11y:smoke
+          npm --workspace apps/web run start -- --hostname 0.0.0.0 --port 3000 &
+          npx wait-on http://localhost:3000
         env:
-          NEXT_PUBLIC_AUTH_ENABLED: "false" # allow preview pages without login
+          NEXT_PUBLIC_AUTH_ENABLED: "false"
+      - name: A11y smoke (axe via Playwright)
+        run: npm --workspace apps/web run a11y:smoke
+        env:
+          BASE_URL: "http://localhost:3000"
+          TAKE_SCREENSHOTS: "false"
+          NEXT_PUBLIC_AUTH_ENABLED: "false"
+      - name: Pa11y (WCAG2AA)
+        run: npm --workspace apps/web run a11y:pa11y
+        env:
+          NEXT_PUBLIC_AUTH_ENABLED: "false"
+      - name: Lighthouse CI (budgets)
+        run: npm --workspace apps/web run lhci:autorun
+        env:
+          NEXT_PUBLIC_AUTH_ENABLED: "false"
 
   ocr:
     runs-on: ubuntu-latest

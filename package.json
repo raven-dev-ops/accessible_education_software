@@ -13,7 +13,9 @@
     "test": "npm run lint:web",
     "prisma:generate": "npm --workspace apps/web run prisma generate",
     "seed:dev": "node apps/web/prisma/seed.cjs",
-    "a11y:smoke": "npm --workspace apps/web run a11y:smoke"
+    "a11y:smoke": "npm --workspace apps/web run a11y:smoke",
+    "test:a11y": "npm --workspace apps/web run a11y:pa11y",
+    "test:lhci": "npm --workspace apps/web run lhci:autorun"
   },
   "workspaces": [
     "apps/*",
