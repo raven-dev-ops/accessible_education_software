@@ -5,6 +5,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { prisma } from "../../lib/db";
+import { rateLimit } from "../../lib/rateLimiter";
 
 export const config = {
   api: {
@@ -73,6 +74,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<UploadResponse>
 ) {
+  const allowed = rateLimit(req, res, { limit: 30, windowMs: 5 * 60 * 1000 });
+  if (!allowed) return;
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res

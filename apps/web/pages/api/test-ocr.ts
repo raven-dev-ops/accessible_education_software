@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { rateLimit } from "../../lib/rateLimiter";
 
 type TestOcrResponse = {
   ok: boolean;
@@ -10,6 +11,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<TestOcrResponse>
 ) {
+  const allowed = rateLimit(req, res, { limit: 60, windowMs: 5 * 60 * 1000 });
+  if (!allowed) return;
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res
@@ -59,4 +63,3 @@ export default async function handler(
     });
   }
 }
-
