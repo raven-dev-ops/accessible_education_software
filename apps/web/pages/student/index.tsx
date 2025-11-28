@@ -527,17 +527,15 @@ function StudentPage() {
           aria-labelledby="student-upload"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <h2 id="student-upload" className="text-xl font-semibold mb-3">
-            Upload handwritten notes (beta)
-          </h2>
-          <div className="space-y-3">
-            <label className="block text-lg">
-              <span className="block mb-1">Choose image or PDF</span>
-              <div className="flex flex-col md:flex-row gap-3 items-start">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-3">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Upload & process</h3>
+              <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
+                Choose image or PDF
                 <input
                   type="file"
                   accept=".pdf,image/*"
-                  className="block w-full text-base border rounded p-2 bg-white dark:bg-slate-800"
+                  className="mt-2 block w-full text-sm border rounded p-3 bg-white dark:bg-slate-800"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setUploadFileName(file ? file.name : null);
@@ -554,175 +552,167 @@ function StudentPage() {
                     }
                   }}
                 />
-                <div className="min-w-[180px] w-full md:w-48">
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mb-1">Selected image</p>
-                  {uploadImageUrl ? (
-                    <div className="relative w-full h-32 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded">
-                      <Image src={uploadImageUrl} alt="Uploaded preview" fill className="object-contain rounded" />
-                    </div>
-                  ) : (
-                    <div className="h-32 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 rounded border border-dashed border-slate-300 dark:border-slate-700">
-                      No image selected
-                    </div>
+              </label>
+
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Selected image</p>
+                  {uploadFileName && (
+                    <span className="text-xs text-slate-600 dark:text-slate-300">{uploadFileName}</span>
                   )}
                 </div>
-              </div>
-            </label>
-
-            <label className="block text-lg">
-              <span className="block mb-1">
-                Optional note (caption, up to 500 characters)
-              </span>
-              <textarea
-                className="block w-full border rounded p-3 text-base bg-white dark:bg-slate-800"
-                rows={4}
-                maxLength={500}
-                value={uploadNote}
-                onChange={(e) => setUploadNote(e.target.value)}
-              />
-            </label>
-
-            <button
-              type="button"
-              className="px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
-              disabled={!uploadFileName}
-              onClick={() => {
-                if (!uploadFileName) {
-                  setUploadError("Please choose a file first.");
-                  return;
-                }
-                setUploadStatus("Processing handwritten note...");
-                setUploadError(null);
-                // Simulate OCR + math formatting
-                setTimeout(() => {
-                  const preview =
-                    "f(x) = x^2 + 3x - 5\n\nDerivative: f'(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
-                  setUploadPreview(preview);
-                  setUploadStatus("Formatted for TTS. You can listen to the preview below.");
-                  setUploadScore(72);
-                  setCorrectionText(preview);
-                  announce("Uploaded sample note processed. Ready to play.", "success");
-                }, 800);
-              }}
-            >
-              Upload & format for TTS
-            </button>
-
-            {(uploadStatus || uploadError || uploadPreview) && (
-              <div className="rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
-                <h3 className="text-sm font-semibold mb-2">Review OCR + formatting</h3>
-                {uploadPreview ? (
-                  <div className="grid gap-2 md:grid-cols-2">
-                    <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-white dark:bg-slate-900 md:col-span-1">
-                      {uploadPreview}
-                    </pre>
-                    <div className="md:col-span-1 space-y-2">
-                      <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
-                        {uploadImageUrl ? (
-                          <div className="relative h-full w-full">
-                            <Image src={uploadImageUrl} alt="Scanned region" fill className="object-contain rounded" />
-                            <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-                              Scanned region
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-slate-500 dark:text-slate-300">Region preview</span>
-                        )}
-                      </div>
-                    </div>
+                {uploadImageUrl ? (
+                  <div className="relative w-full h-48 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded">
+                    <Image src={uploadImageUrl} alt="Uploaded preview" fill className="object-contain rounded" />
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
-                    Upload to see OCR and formatting preview.
-                  </p>
+                  <div className="h-48 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 rounded border border-dashed border-slate-300 dark:border-slate-700">
+                    No image selected
+                  </div>
                 )}
               </div>
-            )}
 
-            {(uploadStatus || uploadError) && (
-              <div
-                className={`text-sm rounded border px-3 py-2 ${
-                  uploadError
-                    ? "text-red-800 bg-red-50 border-red-200 dark:bg-red-900/40 dark:text-red-100 dark:border-red-800"
-                    : "text-emerald-800 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800"
-                }`}
+              <button
+                type="button"
+                className="w-full px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
+                disabled={!uploadFileName}
+                onClick={() => {
+                  if (!uploadFileName) {
+                    setUploadError("Please choose a file first.");
+                    return;
+                  }
+                  setUploadStatus("Processing handwritten note...");
+                  setUploadError(null);
+                  // Simulate OCR + math formatting
+                  setTimeout(() => {
+                    const preview =
+                      "f(x) = x^2 + 3x - 5\n\nDerivative: f'(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
+                    const score = 72;
+                    setUploadPreview(preview);
+                    setUploadStatus("Formatted for TTS. You can listen to the preview below.");
+                    setUploadScore(score);
+                    setCorrectionText(preview);
+                    announce("Uploaded sample note processed. Ready to play.", "success");
+                  }, 800);
+                }}
               >
-                {uploadError || uploadStatus}
-              </div>
-            )}
+                Upload & format for TTS
+              </button>
 
-            {uploadPreview && (
-              <div className="mt-3 border rounded p-3 bg-slate-50 dark:bg-slate-800">
-                <h3 className="text-base font-semibold mb-2">Preview (OCR + formatting)</h3>
-                <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100">
-                  {uploadPreview}
-                </pre>
-                <div className="mt-3 space-y-2">
-                  <label className="block text-sm">
-                    <span className="block mb-1">Correction (edit if OCR is wrong)</span>
-                    <textarea
-                      className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
-                      rows={4}
-                      value={correctionText}
-                      onChange={(e) => setCorrectionText(e.target.value)}
-                    />
-                  </label>
-                  {uploadScore != null && (
-                    <p className="text-sm text-slate-700 dark:text-slate-200">
-                      OCR score: {uploadScore}% {uploadScore < 80 ? "(will auto-report to teachers)" : ""}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded bg-amber-600 text-white text-sm disabled:opacity-60"
-                    disabled={uploadScore == null}
-                    onClick={() => {
-                      const now = new Date().toISOString();
-                      const ticket = {
-                        id: `upload-${Date.now()}`,
-                        detail: `OCR below 80% for ${uploadFileName || "handwritten note"}.`,
-                        createdAt: now,
-                        studentEmail: session?.user?.email || "sample.student@example.com",
-                        status: "pending review",
-                        score: uploadScore ?? 70,
-                        attachmentUrl: "#",
-                        scannedText: uploadPreview,
-                        correctedText: correctionText || uploadPreview,
-                        fileName: uploadFileName || "handwritten-note.png",
-                      };
-                      if (typeof window !== "undefined") {
-                        try {
-                          window.localStorage.setItem("preview-ticket-student", JSON.stringify(ticket));
-                        } catch {
-                          // ignore
+              {(uploadStatus || uploadError) && (
+                <div
+                  className={`text-sm rounded border px-3 py-2 ${
+                    uploadError
+                      ? "text-red-800 bg-red-50 border-red-200 dark:bg-red-900/40 dark:text-red-100 dark:border-red-800"
+                      : "text-emerald-800 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800"
+                  }`}
+                >
+                  {uploadError || uploadStatus}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Review OCR + formatting</h3>
+              {uploadPreview ? (
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">Accuracy grade</span>
+                    {uploadScore != null && (
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          uploadScore >= 80
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                            : uploadScore >= 70
+                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
+                            : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                        }`}
+                      >
+                        {uploadScore}% {uploadScore < 80 ? "(will auto-report to teachers)" : ""}
+                      </span>
+                    )}
+                  </div>
+                  <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
+                    {uploadPreview}
+                  </pre>
+                  <div className="space-y-2">
+                    <label className="block text-sm">
+                      <span className="block mb-1">Correction (edit if OCR is wrong)</span>
+                      <textarea
+                        className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
+                        rows={4}
+                        value={correctionText}
+                        onChange={(e) => setCorrectionText(e.target.value)}
+                      />
+                    </label>
+                    <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
+                      {uploadImageUrl ? (
+                        <div className="relative h-full w-full">
+                          <Image src={uploadImageUrl} alt="Scanned region" fill className="object-contain rounded" />
+                          <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
+                            Scanned region
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-slate-500 dark:text-slate-300">Region preview</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-2 flex gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded bg-indigo-700 text-white text-sm disabled:opacity-60"
+                      onClick={() => handleSpeakNote({ id: "upload-preview", title: "Uploaded note", excerpt: uploadPreview })}
+                      disabled={!ttsSupported}
+                    >
+                      Play preview
+                    </button>
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded border text-sm"
+                      onClick={handleStop}
+                      disabled={!isSpeaking}
+                    >
+                      Stop
+                    </button>
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded bg-amber-600 text-white text-sm disabled:opacity-60"
+                      disabled={uploadScore == null}
+                      onClick={() => {
+                        const now = new Date().toISOString();
+                        const ticket = {
+                          id: `upload-${Date.now()}`,
+                          detail: `OCR below 80% for ${uploadFileName || "handwritten note"}.`,
+                          createdAt: now,
+                          studentEmail: session?.user?.email || "sample.student@example.com",
+                          status: "pending review",
+                          score: uploadScore ?? 70,
+                          attachmentUrl: "#",
+                          scannedText: uploadPreview,
+                          correctedText: correctionText || uploadPreview,
+                          fileName: uploadFileName || "handwritten-note.png",
+                        };
+                        if (typeof window !== "undefined") {
+                          try {
+                            window.localStorage.setItem("preview-ticket-student", JSON.stringify(ticket));
+                          } catch {
+                            // ignore
+                          }
                         }
-                      }
-                      announce("Reported to teacher (preview). Check teacher/admin previews for the ticket.", "success");
-                    }}
-                  >
-                    Submit correction & report
-                  </button>
+                        announce("Reported to teacher (preview). Check teacher/admin previews for the ticket.", "success");
+                      }}
+                    >
+                      Submit correction & report
+                    </button>
+                  </div>
                 </div>
-                <div className="mt-2 flex gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded bg-indigo-700 text-white text-sm disabled:opacity-60"
-                    onClick={() => handleSpeakNote({ id: "upload-preview", title: "Uploaded note", excerpt: uploadPreview })}
-                    disabled={!ttsSupported}
-                  >
-                    Play preview
-                  </button>
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded border text-sm"
-                    onClick={handleStop}
-                    disabled={!isSpeaking}
-                  >
-                    Stop
-                  </button>
+              ) : (
+                <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-300">
+                  Upload to see OCR and formatting preview.
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </section>
 
