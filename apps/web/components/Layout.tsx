@@ -37,7 +37,7 @@ export function Layout({ title, children }: LayoutProps) {
                   callbackUrl: "/",
                 });
               }}
-              className="px-3 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+              className="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition shadow-sm dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
             >
               Logout
             </Link>
