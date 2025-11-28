@@ -126,7 +126,16 @@ function TeacherPage() {
       { fileName?: string; score?: number | null; status: "pending" | "pass" | "fail"; editableText?: string }
     >
   >({});
-  const [eqCollapsed, setEqCollapsed] = useState<Record<string, boolean>>({});
+  const [eqCollapsed, setEqCollapsed] = useState<Record<string, boolean>>(() => {
+    // default collapsed
+    const init: Record<string, boolean> = {};
+    Object.keys(trainingSets).forEach((mid) => {
+      trainingSets[mid].equations.forEach((_, idx) => {
+        init[`${mid}-${idx}`] = true;
+      });
+    });
+    return init;
+  });
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -302,21 +311,40 @@ function TeacherPage() {
             {modulesError && <p role="alert" className="text-red-700">{modulesError}</p>}
             {!modulesLoading && (
               <ul className="space-y-2 text-sm">
-                {modules.map((m) => (
-                  <li key={m.id} className="flex items-center justify-between border rounded p-2 bg-slate-50 dark:bg-slate-800">
-                    <div>
-                      <span className="font-medium">{m.title}</span>
-                      {m.course && <span className="ml-1 text-gray-600">({m.course})</span>}
-                    </div>
-                    <button
-                      type="button"
-                      className="px-3 py-1 rounded bg-blue-600 text-white text-xs"
-                      onClick={() => setSelectedModuleId(m.id)}
-                    >
-                      Select
-                    </button>
-                  </li>
-                ))}
+                {modules.map((m) => {
+                  const eqs = trainingSets[m.id as string]?.equations?.length || 0;
+                  const passed = Object.entries(equationProgress).filter(
+                    ([key, val]) => key.startsWith(`${m.id}-`) && val.status === "pass"
+                  ).length;
+                  const pct = eqs ? Math.round((passed / eqs) * 100) : 0;
+                  return (
+                    <li key={m.id} className="flex flex-col gap-2 border rounded p-3 bg-slate-50 dark:bg-slate-800">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium">{m.title}</span>
+                          {m.course && <span className="ml-1 text-gray-600">({m.course})</span>}
+                        </div>
+                        <button
+                          type="button"
+                          className="px-3 py-1 rounded bg-blue-600 text-white text-xs"
+                          onClick={() => setSelectedModuleId(m.id)}
+                        >
+                          Select
+                        </button>
+                      </div>
+                      <div className="text-xs text-slate-600 dark:text-slate-300">
+                        Training progress: {passed}/{eqs || 10} ({pct}%)
+                      </div>
+                      <div className="w-full h-2 rounded bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                        <div
+                          className="h-full bg-emerald-500"
+                          style={{ width: `${pct}%` }}
+                          aria-label={`Training progress ${pct}%`}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
