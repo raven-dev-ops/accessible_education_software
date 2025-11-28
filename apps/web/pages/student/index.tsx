@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { Layout } from "../../components/Layout";
@@ -38,6 +39,7 @@ function StudentPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const preview = router.query.preview === "1";
+  const showPreviewNav = router.query.showPreviewNav === "1";
   const allowSamples = preview || allowSampleEnv;
   const [unauthorized, setUnauthorized] = useState(false);
   const [fontScale, setFontScale] = useState(1.05);
@@ -429,6 +431,25 @@ function StudentPage() {
 
   return (
     <Layout title="Student Dashboard">
+      {showPreviewNav && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-3">
+          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Preview navigation</div>
+          <div className="flex flex-wrap gap-2">
+            <Link className="px-3 py-2 rounded bg-blue-600 text-white text-sm" href="/student?preview=1&showPreviewNav=1">
+              Student
+            </Link>
+            <Link className="px-3 py-2 rounded bg-emerald-600 text-white text-sm" href="/teacher?preview=1&showPreviewNav=1">
+              Teacher
+            </Link>
+            <Link className="px-3 py-2 rounded bg-amber-600 text-white text-sm" href="/admin?preview=1&showPreviewNav=1">
+              Admin
+            </Link>
+            <Link className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 text-sm" href="/login?skipAuth=1">
+              Back to login
+            </Link>
+          </div>
+        </div>
+      )}
       <div
         className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
         style={{ fontSize: `${fontScale}rem` }}

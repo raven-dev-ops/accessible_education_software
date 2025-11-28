@@ -103,16 +103,24 @@ export default function Login() {
         )}
 
         {showDevLogin && (
-          <div className="pt-2">
-            <p className="text-xs text-gray-500 dark:text-slate-300 mb-2">
-              Development only: continue to Google login.
+          <div className="pt-2 space-y-2">
+            <p className="text-xs text-gray-500 dark:text-slate-300">
+              Development only options
             </p>
-            <Link
-              href="/api/auth/signin"
-              className="inline-block px-4 py-2 rounded bg-blue-600 text-white text-sm dark:bg-blue-500"
-            >
-              Developer login
-            </Link>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link
+                href="/api/auth/signin"
+                className="inline-block px-4 py-2 rounded bg-blue-600 text-white text-sm dark:bg-blue-500"
+              >
+                Go to login
+              </Link>
+              <Link
+                href="/student?preview=1&showPreviewNav=1"
+                className="inline-block px-4 py-2 rounded bg-emerald-600 text-white text-sm dark:bg-emerald-500"
+              >
+                Preview all dashboards
+              </Link>
+            </div>
           </div>
         )}
       </div>
