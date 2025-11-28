@@ -79,6 +79,11 @@ function StudentPage() {
     { message: string; tone: "info" | "success" | "error" } | null
   >(null);
   const defaultRootFontSize = useRef<string | null>(null);
+  const [uploadFileName, setUploadFileName] = useState<string | null>(null);
+  const [uploadNote, setUploadNote] = useState<string>("");
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
     setLiveAlert({ message, tone });
@@ -465,6 +470,21 @@ function StudentPage() {
 
   return (
     <Layout title="Student Dashboard" secondaryNav={previewNav}>
+      {liveAlert && (
+        <div
+          role={liveAlert.tone === "error" ? "alert" : "status"}
+          aria-live="polite"
+          className={`mb-4 px-4 py-3 rounded-lg text-sm border ${
+            liveAlert.tone === "error"
+              ? "bg-red-50 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-100 dark:border-red-800"
+              : liveAlert.tone === "success"
+              ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800"
+              : "bg-slate-50 text-slate-800 border-slate-200 dark:bg-slate-800/60 dark:text-slate-100 dark:border-slate-700"
+          }`}
+        >
+          {liveAlert.message}
+        </div>
+      )}
       <div
         className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
         style={{ fontSize: `${fontScale}rem`, lineHeight: 1.6 }}
@@ -499,28 +519,12 @@ function StudentPage() {
           </p>
         </section>
 
-        {liveAlert && (
-          <div
-            role={liveAlert.tone === "error" ? "alert" : "status"}
-            aria-live="polite"
-            className={`mt-3 px-4 py-3 rounded-lg text-sm border ${
-              liveAlert.tone === "error"
-                ? "bg-red-50 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-100 dark:border-red-800"
-                : liveAlert.tone === "success"
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800"
-                : "bg-slate-50 text-slate-800 border-slate-200 dark:bg-slate-800/60 dark:text-slate-100 dark:border-slate-700"
-            }`}
-          >
-            {liveAlert.message}
-          </div>
-        )}
-
         <section
           aria-labelledby="student-upload"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
           <h2 id="student-upload" className="text-xl font-semibold mb-3">
-            Upload handwritten notes (placeholder)
+            Upload handwritten notes (beta)
           </h2>
           <div className="space-y-3">
             <label className="block text-lg">
@@ -529,6 +533,12 @@ function StudentPage() {
                 type="file"
                 accept=".pdf,image/*"
                 className="block w-full text-base border rounded p-2 bg-white dark:bg-slate-800"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setUploadFileName(file ? file.name : null);
+                  setUploadStatus(null);
+                  setUploadError(null);
+                }}
               />
             </label>
 
@@ -540,15 +550,73 @@ function StudentPage() {
                 className="block w-full border rounded p-3 text-base bg-white dark:bg-slate-800"
                 rows={4}
                 maxLength={500}
+                value={uploadNote}
+                onChange={(e) => setUploadNote(e.target.value)}
               />
             </label>
 
             <button
               type="button"
-              className="px-5 py-3 rounded bg-blue-700 text-white text-base"
+              className="px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
+              disabled={!uploadFileName}
+              onClick={() => {
+                if (!uploadFileName) {
+                  setUploadError("Please choose a file first.");
+                  return;
+                }
+                setUploadStatus("Processing handwritten note...");
+                setUploadError(null);
+                // Simulate OCR + math formatting
+                setTimeout(() => {
+                  const preview =
+                    "f(x) = x^2 + 3x - 5\n\nDerivative: f'(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
+                  setUploadPreview(preview);
+                  setUploadStatus("Formatted for TTS. You can listen to the preview below.");
+                  announce("Uploaded sample note processed. Ready to play.", "success");
+                }, 800);
+              }}
             >
-              Upload (disabled placeholder)
+              Upload & format for TTS
             </button>
+
+            {(uploadStatus || uploadError) && (
+              <div
+                className={`text-sm rounded border px-3 py-2 ${
+                  uploadError
+                    ? "text-red-800 bg-red-50 border-red-200 dark:bg-red-900/40 dark:text-red-100 dark:border-red-800"
+                    : "text-emerald-800 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800"
+                }`}
+              >
+                {uploadError || uploadStatus}
+              </div>
+            )}
+
+            {uploadPreview && (
+              <div className="mt-3 border rounded p-3 bg-slate-50 dark:bg-slate-800">
+                <h3 className="text-base font-semibold mb-2">Preview (OCR + formatting)</h3>
+                <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100">
+                  {uploadPreview}
+                </pre>
+                <div className="mt-2 flex gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded bg-indigo-700 text-white text-sm disabled:opacity-60"
+                    onClick={() => handleSpeakNote({ id: "upload-preview", title: "Uploaded note", excerpt: uploadPreview })}
+                    disabled={!ttsSupported}
+                  >
+                    Play preview
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded border text-sm"
+                    onClick={handleStop}
+                    disabled={!isSpeaking}
+                  >
+                    Stop
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -974,6 +1042,13 @@ function StudentPage() {
                   </option>
                 ))}
               </select>
+              <button
+                type="button"
+                className="mt-2 px-3 py-2 rounded border text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 disabled:opacity-60"
+                disabled
+              >
+                Upload custom voice (coming soon)
+              </button>
             </label>
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-200">
