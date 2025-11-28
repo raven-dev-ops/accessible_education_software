@@ -216,15 +216,42 @@ function StudentPage() {
     e.preventDefault();
     if (!ticketDescription.trim()) return;
     const now = new Date().toISOString();
-    const newTicket = {
-      id: `ticket-${ticketList.length + 1}`,
-      title: "OCR quality issue (<80%)",
+    const payload = {
       detail: ticketDescription.trim(),
-      createdAt: now,
+      score: 75, // placeholder score; real value would come from OCR result
+      userEmail: session?.user?.email ?? null,
     };
-    setTicketList((prev) => [newTicket, ...prev].slice(0, 5));
-    setTicketDescription("");
-    // Stub: here we would POST to a support API and attach last OCR log/screenshot.
+
+    void fetch("/api/support-tickets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`Failed with status ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        const newTicket = {
+          id: data.id ?? `ticket-${ticketList.length + 1}`,
+          title: "OCR quality issue (<80%)",
+          detail: payload.detail,
+          createdAt: data.createdAt ?? now,
+        };
+        setTicketList((prev) => [newTicket, ...prev].slice(0, 5));
+        setTicketDescription("");
+      })
+      .catch(() => {
+        // Fallback local insert on failure
+        const newTicket = {
+          id: `ticket-${ticketList.length + 1}`,
+          title: "OCR quality issue (<80%)",
+          detail: payload.detail,
+          createdAt: now,
+        };
+        setTicketList((prev) => [newTicket, ...prev].slice(0, 5));
+        setTicketDescription("");
+      });
   };
 
   useEffect(() => {

@@ -58,6 +58,11 @@ function AdminPage() {
   const [uploads, setUploads] = useState<UploadSummary[]>([]);
   const [uploadsError, setUploadsError] = useState<string | null>(null);
   const [uploadsLoading, setUploadsLoading] = useState(true);
+  const [tickets, setTickets] = useState<
+    { id: string; detail: string; createdAt: string; score?: number | null; userEmail?: string | null }[]
+  >([]);
+  const [ticketsError, setTicketsError] = useState<string | null>(null);
+  const [ticketsLoading, setTicketsLoading] = useState(true);
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -135,6 +140,35 @@ function AdminPage() {
     }
 
     void loadUploads();
+    async function loadTickets() {
+      if (authEnabled && (!session || !session.user || unauthorized)) return;
+      if (unauthorized) return;
+      try {
+        const res = await fetch("/api/support-tickets");
+        if (!res.ok) {
+          setTickets(sampleTickets as any);
+          setTicketsError(null);
+          setTicketsLoading(false);
+          return;
+        }
+        const data = (await res.json()) as typeof sampleTickets;
+        if (!cancelled) {
+          setTickets(data.length ? data : (sampleTickets as any));
+          setTicketsError(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setTickets(sampleTickets as any);
+          setTicketsError(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setTicketsLoading(false);
+        }
+      }
+    }
+
+    void loadTickets();
 
     return () => {
       cancelled = true;
@@ -610,32 +644,43 @@ function AdminPage() {
               <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
                 Recent tickets submitted when OCR failed or scored under 80%. Includes the reported detail and score.
               </p>
-              <ul className="space-y-3 text-sm">
-                {sampleTickets.map((t) => (
-                  <li
-                    key={t.id}
-                    className="p-3 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold text-slate-900 dark:text-slate-100">{t.title}</div>
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          t.score < 80
-                            ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
-                        }`}
-                      >
-                        Score: {t.score}%
-                      </span>
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {new Date(t.createdAt).toLocaleString()}
-                    </div>
-                    <p className="mt-1 text-slate-800 dark:text-slate-100">{t.detail}</p>
-                    <p className="text-xs text-slate-500 mt-1">Flagged for review</p>
-                  </li>
-                ))}
-              </ul>
+              {ticketsError && (
+                <p role="alert" className="text-red-600 dark:text-red-300 text-sm">
+                  {ticketsError}
+                </p>
+              )}
+              {ticketsLoading && <p className="text-sm text-slate-500">Loading tickets…</p>}
+              {!ticketsLoading && !ticketsError && (
+                <ul className="space-y-3 text-sm">
+                  {tickets.map((t) => (
+                    <li
+                      key={t.id}
+                      className="p-3 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="font-semibold text-slate-900 dark:text-slate-100">
+                          OCR quality issue (&lt;80%)
+                        </div>
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${
+                            (t.score ?? 0) < 80
+                              ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                              : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                          }`}
+                        >
+                          Score: {t.score ?? "N/A"}%
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {new Date(t.createdAt).toLocaleString()}
+                        {t.userEmail ? ` • ${t.userEmail}` : ""}
+                      </div>
+                      <p className="mt-1 text-slate-800 dark:text-slate-100">{t.detail}</p>
+                      <p className="text-xs text-slate-500 mt-1">Flagged for review</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           </div>
         </div>
