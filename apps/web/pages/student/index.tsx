@@ -88,6 +88,7 @@ function StudentPage() {
   const [uploadScore, setUploadScore] = useState<number | null>(null);
   const [correctionText, setCorrectionText] = useState<string>("");
   const [uploadImageUrl, setUploadImageUrl] = useState<string | null>(null);
+  const [brailleOpen, setBrailleOpen] = useState(false);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
     setLiveAlert({ message, tone });
@@ -544,6 +545,49 @@ function StudentPage() {
         </section>
 
         <section
+          aria-labelledby="student-released"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <h2 id="student-released" className="text-xl font-semibold mb-3">
+            Released materials from your instructors
+          </h2>
+          {notesLoading && <p className="text-base">Loading released materials...</p>}
+          {!notesLoading && notes.length === 0 && (
+            <p className="text-base">No new notes from your instructors yet.</p>
+          )}
+          {!notesLoading && notes.length > 0 && (
+            <ul className="space-y-3 text-base">
+              {notes.map((note) => (
+                <li key={note.id} className="border rounded p-4 bg-gray-50 dark:bg-slate-800">
+                  <div className="font-semibold text-lg">
+                    {note.title}
+                    {note.course && <span className="ml-1 text-gray-600">({note.course})</span>}
+                  </div>
+                  {note.module && <div className="text-sm text-gray-600">Module: {note.module}</div>}
+                  {note.createdAt && (
+                    <div className="text-sm text-gray-500">Released: {new Date(note.createdAt).toLocaleString()}</div>
+                  )}
+                  <p className="mt-2 leading-relaxed">{note.excerpt}</p>
+                  {ttsSupported && (
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        onClick={() => handleSpeakNote(note)}
+                        className="px-4 py-2 rounded bg-indigo-700 text-white text-sm disabled:opacity-60"
+                        aria-pressed={activeSpeechId === String(note.id)}
+                        disabled={isSpeaking && activeSpeechId !== String(note.id)}
+                      >
+                        {activeSpeechId === String(note.id) ? "Playing excerpt..." : "Listen to excerpt"}
+                      </button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section
           aria-labelledby="student-welcome"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
@@ -979,182 +1023,106 @@ function StudentPage() {
           aria-labelledby="student-braille"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <h2 id="student-braille" className="text-xl font-semibold mb-3">
-            Braille preview (prototype)
-          </h2>
-          <p className="text-lg leading-relaxed">
-            Early Braille rendering of the most recent note to exercise the Braille path. When the liblouis/Nemeth
-            pipeline is available server-side, this preview will use it automatically; otherwise it falls back to Grade 1.
-          </p>
-          <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-            Preview source: {notes.length > 0 ? "Latest released note" : "Sample note"}
-          </p>
-          <div className="flex flex-wrap gap-4 items-end mb-3">
-            <label className="text-base">
-              <span className="block text-sm text-gray-700 dark:text-gray-300">Engine</span>
-              <select
-                value={braillePreferredEngine}
-                onChange={(e) => setBraillePreferredEngine(e.target.value as "liblouis" | "fallback")}
-                className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
-              >
-                <option value="liblouis">liblouis (Nemeth)</option>
-                <option value="fallback">Grade 1 fallback</option>
-              </select>
-            </label>
-            <label className="text-base">
-              <span className="block text-sm text-gray-700 dark:text-gray-300">liblouis table</span>
-              <select
-                value={brailleTable}
-                onChange={(e) => setBrailleTable(e.target.value)}
-                className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
-                aria-disabled={braillePreferredEngine !== "liblouis"}
-                disabled={braillePreferredEngine !== "liblouis"}
-              >
-                {brailleTables.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <div className="flex items-center justify-between mb-2">
+            <h2 id="student-braille" className="text-xl font-semibold mb-0">
+              Braille preview (prototype)
+            </h2>
             <button
               type="button"
-              onClick={() => setBrailleSourceVersion((v) => v + 1)}
-              className="px-4 py-2 rounded bg-blue-700 text-white text-sm"
+              onClick={() => setBrailleOpen((open) => !open)}
+              className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800"
+              aria-expanded={brailleOpen}
+              aria-controls="student-braille-panel"
             >
-              Refresh Braille
+              {brailleOpen ? "Hide preview" : "Show preview"}
             </button>
           </div>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-            Available tables: nemeth, en-us-g1, en-us-g2. Switch to Grade 1 fallback if liblouis is not installed on the
-            server.
+            Early Braille rendering of the most recent note. Expand to see the generated Braille and download a .brf
+            file for a display or simulator.
           </p>
-          <div className="text-sm text-gray-800 dark:text-gray-200 mb-2" aria-live="polite">
-            <p>
-              Engine: {brailleEngine === "liblouis" ? `liblouis (${brailleTable || "nemeth"})` : "Grade 1 fallback"}
-            </p>
-            {brailleLoading && <p>Generating Braille...</p>}
-            {brailleStatus && <p>{brailleStatus}</p>}
-            {brailleError && (
-              <p className="text-red-700" role="alert">
-                {brailleError}
+          {brailleOpen && (
+            <div id="student-braille-panel">
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                Preview source: {notes.length > 0 ? "Latest released note" : "Sample note"}
               </p>
-            )}
-            {brailleEngine === "fallback" && braillePreferredEngine === "liblouis" && !brailleLoading && (
-              <p className="text-yellow-700">
-                liblouis not available; showing fallback Grade 1 output.
+              <div className="flex flex-wrap gap-4 items-end mb-3">
+                <label className="text-base">
+                  <span className="block text-sm text-gray-700 dark:text-gray-300">Engine</span>
+                  <select
+                    value={braillePreferredEngine}
+                    onChange={(e) => setBraillePreferredEngine(e.target.value as "liblouis" | "fallback")}
+                    className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
+                  >
+                    <option value="liblouis">liblouis (Nemeth)</option>
+                    <option value="fallback">Grade 1 fallback</option>
+                  </select>
+                </label>
+                <label className="text-base">
+                  <span className="block text-sm text-gray-700 dark:text-gray-300">liblouis table</span>
+                  <select
+                    value={brailleTable}
+                    onChange={(e) => setBrailleTable(e.target.value)}
+                    className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
+                    aria-disabled={braillePreferredEngine !== "liblouis"}
+                    disabled={braillePreferredEngine !== "liblouis"}
+                  >
+                    {brailleTables.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setBrailleSourceVersion((v) => v + 1)}
+                  className="px-4 py-2 rounded bg-blue-700 text-white text-sm"
+                >
+                  Refresh Braille
+                </button>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                Available tables: nemeth, en-us-g1, en-us-g2. Switch to Grade 1 fallback if liblouis is not installed on
+                the server.
               </p>
-            )}
-          </div>
-          <div className="mt-3 border rounded p-4 bg-gray-50 dark:bg-slate-800 font-mono text-base whitespace-pre-wrap" aria-live="polite">
-            {braillePreview || "Generating preview..."}
-          </div>
-          <div className="mt-3 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleDownloadBraille}
-              className="px-4 py-2 rounded bg-gray-800 text-white text-sm"
-            >
-              Download .brf preview
-            </button>
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              Load this into a Braille display simulator to validate spacing and line breaks.
-            </span>
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="student-released"
-          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
-        >
-          <h2 id="student-released" className="text-xl font-semibold mb-3">
-            Released materials from your instructors
-          </h2>
-          {notesLoading && <p className="text-base">Loading released materials...</p>}
-          {!notesLoading && notes.length === 0 && (
-            <p className="text-base">No new notes from your instructors yet.</p>
-          )}
-          {!notesLoading && notes.length > 0 && (
-            <ul className="space-y-3 text-base">
-              {notes.map((note) => (
-                <li key={note.id} className="border rounded p-4 bg-gray-50 dark:bg-slate-800">
-                  <div className="font-semibold text-lg">
-                    {note.title}
-                    {note.course && <span className="ml-1 text-gray-600">({note.course})</span>}
-                  </div>
-                  {note.module && <div className="text-sm text-gray-600">Module: {note.module}</div>}
-                  {note.createdAt && (
-                    <div className="text-sm text-gray-500">Released: {new Date(note.createdAt).toLocaleString()}</div>
-                  )}
-                  <p className="mt-2 leading-relaxed">{note.excerpt}</p>
-                  {ttsSupported && (
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        onClick={() => handleSpeakNote(note)}
-                        className="px-4 py-2 rounded bg-indigo-700 text-white text-sm disabled:opacity-60"
-                        aria-pressed={activeSpeechId === String(note.id)}
-                        disabled={isSpeaking && activeSpeechId !== String(note.id)}
-                      >
-                        {activeSpeechId === String(note.id) ? "Playing excerpt..." : "Listen to excerpt"}
-                      </button>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section
-          aria-labelledby="student-support"
-          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
-        >
-          <h2 id="student-support" className="text-xl font-semibold mb-3">
-            Report a problem (OCR quality/support)
-          </h2>
-          <p className="text-base mb-3">
-            If an OCR attempt failed or scored below 80% accuracy, you can file a support ticket. Attach a screenshot or
-            describe the issue; the admin dashboard will flag these for follow-up.
-          </p>
-          <form onSubmit={handleSubmitTicket} className="space-y-3">
-            <label className="block text-sm">
-              <span className="block mb-1">Attach screenshot or recent file (optional)</span>
-              <input type="file" accept=".png,.jpg,.jpeg,.pdf" className="block w-full text-base" />
-            </label>
-            <label className="block text-sm">
-              <span className="block mb-1">Describe the issue</span>
-              <textarea
-                className="w-full border rounded p-3 text-base bg-white dark:bg-slate-800"
-                rows={4}
-                value={ticketDescription}
-                onChange={(e) => setTicketDescription(e.target.value)}
-                placeholder="Example: OCR missed math symbols; below 80% accuracy on my derivatives notes."
-              />
-            </label>
-            <button
-              type="submit"
-              className="px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
-              disabled={!ticketDescription.trim()}
-            >
-              Submit ticket
-            </button>
-          </form>
-          {ticketList.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <p className="text-sm font-semibold">Recent tickets (local preview)</p>
-              <ul className="space-y-2 text-sm">
-                {ticketList.map((t) => (
-                  <li key={t.id} className="p-2 rounded border border-slate-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
-                    <div className="font-semibold">{t.title}</div>
-                    <div className="text-xs text-gray-500">{new Date(t.createdAt).toLocaleString()}</div>
-                    <p className="mt-1">{t.detail}</p>
-                  </li>
-                ))}
-              </ul>
+              <div className="text-sm text-gray-800 dark:text-gray-200 mb-2" aria-live="polite">
+                <p>
+                  Engine: {brailleEngine === "liblouis" ? `liblouis (${brailleTable || "nemeth"})` : "Grade 1 fallback"}
+                </p>
+                {brailleLoading && <p>Generating Braille...</p>}
+                {brailleStatus && <p>{brailleStatus}</p>}
+                {brailleError && (
+                  <p className="text-red-700" role="alert">
+                    {brailleError}
+                  </p>
+                )}
+                {brailleEngine === "fallback" && braillePreferredEngine === "liblouis" && !brailleLoading && (
+                  <p className="text-yellow-700">
+                    liblouis not available; showing fallback Grade 1 output.
+                  </p>
+                )}
+              </div>
+              <div className="mt-3 border rounded p-4 bg-gray-50 dark:bg-slate-800 font-mono text-base whitespace-pre-wrap" aria-live="polite">
+                {braillePreview || "Generating preview..."}
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleDownloadBraille}
+                  className="px-4 py-2 rounded bg-gray-800 text-white text-sm"
+                >
+                  Download .brf preview
+                </button>
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  Load this into a Braille display simulator to validate spacing and line breaks.
+                </span>
+              </div>
             </div>
           )}
         </section>
+
+        {/* Report-a-problem block removed per requirements; ticket flow now demo-only in teacher/admin views */}
       </div>
 
       <div
