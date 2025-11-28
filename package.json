@@ -12,7 +12,8 @@
     "test:ocr": "python apps/ocr_service/sample_ocr_test.py",
     "test": "npm run lint:web",
     "prisma:generate": "npm --workspace apps/web run prisma generate",
-    "seed:dev": "node apps/web/prisma/seed.cjs"
+    "seed:dev": "node apps/web/prisma/seed.cjs",
+    "a11y:smoke": "npm --workspace apps/web run a11y:smoke"
   },
   "workspaces": [
     "apps/*",

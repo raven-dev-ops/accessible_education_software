@@ -20,6 +20,11 @@ jobs:
         run: |
           npm run lint:web || npm --workspace apps/web run lint
           npm --workspace apps/web run build
+      - name: A11y smoke (axe via Playwright)
+        run: |
+          npm --workspace apps/web run a11y:smoke
+        env:
+          NEXT_PUBLIC_AUTH_ENABLED: "false" # allow preview pages without login
 
   ocr:
     runs-on: ubuntu-latest
@@ -30,4 +35,3 @@ jobs:
           python-version: "3.11"
       - name: Syntax check OCR service
         run: python -m compileall apps/ocr_service
-

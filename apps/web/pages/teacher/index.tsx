@@ -11,7 +11,7 @@ type ModuleSummary = {
 };
 
 const sampleModules: ModuleSummary[] = [
-  { id: "calc-1", title: "Calculus I – OCR Module", course: "Math 101" },
+  { id: "calc-1", title: "Calculus I  OCR Module", course: "Math 101" },
   { id: "calc-deriv", title: "Derivatives Workshop", course: "Math 101" },
   { id: "limits", title: "Limits & Continuity", course: "Math 101" },
 ];
@@ -21,17 +21,17 @@ const trainingSets: Record<
   { title: string; equations: string[] }
 > = {
   "calc-1": {
-    title: "Calculus I – OCR Module",
+    title: "Calculus I  OCR Module",
     equations: [
       "f(x) = x^2",
       "f'(x) = 2x",
-      "∫ x^2 dx = x^3/3 + C",
-      "lim_{h→0} (f(x+h) - f(x))/h",
+      " x^2 dx = x^3/3 + C",
+      "lim_{h0} (f(x+h) - f(x))/h",
       "sin^2 x + cos^2 x = 1",
       "d/dx (sin x) = cos x",
       "d/dx (e^x) = e^x",
-      "∫ 1/x dx = ln|x| + C",
-      "f''(x) < 0 ⇒ concave down",
+      " 1/x dx = ln|x| + C",
+      "f''(x) < 0  concave down",
       "Mean Value Theorem: f'(c) = (f(b)-f(a))/(b-a)",
     ],
   },
@@ -45,7 +45,7 @@ const trainingSets: Record<
       "Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x)",
       "d/dx (ln x) = 1/x",
       "d/dx (a^x) = a^x ln a",
-      "f''(x) sign ⇒ concavity",
+      "f''(x) sign  concavity",
       "Critical points: f'(x)=0 or undefined",
       "d/dx (tan x) = sec^2 x",
     ],
@@ -53,16 +53,16 @@ const trainingSets: Record<
   limits: {
     title: "Limits & Continuity",
     equations: [
-      "lim_{x→0} sin x / x = 1",
-      "lim_{x→∞} (1 + 1/x)^x = e",
-      "lim_{x→a} f(x) exists ↔ left=right",
-      "Continuity: lim_{x→a} f(x) = f(a)",
-      "lim_{x→0} (1 - cos x)/x^2 = 1/2",
-      "Squeeze theorem example: x^2 sin(1/x) → 0",
+      "lim_{x0} sin x / x = 1",
+      "lim_{x} (1 + 1/x)^x = e",
+      "lim_{xa} f(x) exists  left=right",
+      "Continuity: lim_{xa} f(x) = f(a)",
+      "lim_{x0} (1 - cos x)/x^2 = 1/2",
+      "Squeeze theorem example: x^2 sin(1/x)  0",
       "Removable discontinuity: hole at x=a",
       "Infinite limit: vertical asymptote at x=a",
-      "lim_{x→∞} (ax^n + …)/(bx^m + …)",
-      "lim_{x→0} (e^x - 1)/x = 1",
+      "lim_{x} (ax^n + )/(bx^m + )",
+      "lim_{x0} (e^x - 1)/x = 1",
     ],
   },
 };
@@ -247,7 +247,7 @@ function TeacherPage() {
   if (unauthorized) {
     return (
       <Layout title="Teacher Dashboard">
-        <p role="alert">You do not have access to this page. Redirecting…</p>
+        <p role="alert">You do not have access to this page. Redirecting</p>
       </Layout>
     );
   }
@@ -307,7 +307,7 @@ function TeacherPage() {
             <div className="flex items-center justify-between mb-3">
               <h2 id="teacher-modules" className="text-xl font-semibold">Your modules</h2>
             </div>
-            {modulesLoading && <p>Loading modules…</p>}
+            {modulesLoading && <p>Loading modules</p>}
             {modulesError && <p role="alert" className="text-red-700">{modulesError}</p>}
             {!modulesLoading && (
               <ul className="space-y-2 text-sm">
@@ -449,7 +449,7 @@ function TeacherPage() {
                         }))
                       }
                     >
-                      {collapsed ? "▶" : "▼"} {idx + 1}. {eq}
+                      {collapsed ? "" : ""} {idx + 1}. {eq}
                     </button>
                     <span
                       className={`text-xs px-2 py-1 rounded ${
@@ -564,7 +564,7 @@ function TeacherPage() {
                       {new Date(t.createdAt).toLocaleString()}
                     </td>
                     <td className="px-3 py-2 text-sm">
-                      {t.score != null ? `${t.score}%` : "—"}
+                      {t.score != null ? `${t.score}%` : ""}
                     </td>
                     <td className="px-3 py-2 text-sm">
                       {t.status || "pending review"}
@@ -618,7 +618,7 @@ function TeacherPage() {
             <div className="p-3 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
               <span>
                 {ticketsLoading
-                  ? "Loading tickets…"
+                  ? "Loading tickets"
                   : ticketsError
                   ? "Using sample tickets (failed to load live data)."
                   : "Loaded tickets from /api/support-tickets."}
@@ -651,4 +651,7 @@ function TeacherPage() {
 }
 
 export default TeacherPage;
+
+
+
 
