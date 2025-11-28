@@ -93,7 +93,7 @@ function TeacherPage() {
   const { data: session, status } = useSession();
   const preview = router.query.preview === "1";
   const showPreviewNav = router.query.showPreviewNav === "1";
-  const allowSamples = preview || allowSampleEnv;
+  const allowSamples = preview || showPreviewNav || allowSampleEnv;
   const [unauthorized, setUnauthorized] = useState(false);
   const [modules, setModules] = useState<ModuleSummary[]>([]);
   const [modulesLoading, setModulesLoading] = useState(true);
@@ -523,7 +523,7 @@ function TeacherPage() {
             {modulesError && <p role="alert" className="text-red-700">{modulesError}</p>}
             {!modulesLoading && (
               <ul className="space-y-2 text-sm">
-                {modules.map((m) => {
+                {(modules.length ? modules : allowSamples ? sampleModules : []).map((m) => {
                   const eqs = trainingSets[m.id as string]?.equations?.length || 0;
                   const passed = Object.entries(equationProgress).filter(
                     ([key, val]) => key.startsWith(`${m.id}-`) && val.status === "pass"
