@@ -1,4 +1,5 @@
 const express = require('express');
+const RateLimit = require('express-rate-limit');
 const { Connector } = require('@google-cloud/cloud-sql-connector');
 const { Pool } = require('pg');
 
@@ -8,6 +9,13 @@ const INSTANCE_CONNECTION_NAME = process.env.INSTANCE_CONNECTION_NAME; // e.g. c
 const DB_USER = process.env.DB_USER || 'appuser';
 const DB_PASS = process.env.DB_PASS;
 const DB_NAME = process.env.DB_NAME || 'appdb';
+
+// Rate limiter: max 100 requests per 15 minutes per IP for DB-backed routes
+const dbLimiter = RateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Too many requests, please try again later.' },
+});
 
 if (!API_KEY) {
   console.warn('WARNING: API_KEY is not set. Set API_KEY to protect the Cloud Run endpoint.');
@@ -59,7 +67,7 @@ app.get('/health', (req, res) => {
   return res.json({ ok: true, status: 'healthy' });
 });
 
-app.get('/db-ping', async (req, res) => {
+app.get('/db-ping', dbLimiter, async (req, res) => {
   try {
     if (!pool) {
       await initPool();
@@ -73,7 +81,7 @@ app.get('/db-ping', async (req, res) => {
 });
 
 // Placeholder profile read (you can adapt to your schema)
-app.get('/profile', async (req, res) => {
+app.get('/profile', dbLimiter, async (req, res) => {
   try {
     if (!pool) {
       await initPool();
