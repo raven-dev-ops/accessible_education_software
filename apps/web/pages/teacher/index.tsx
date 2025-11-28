@@ -16,18 +16,56 @@ const sampleModules: ModuleSummary[] = [
   { id: "limits", title: "Limits & Continuity", course: "Math 101" },
 ];
 
-const trainingEquations = [
-  "f(x) = x^2",
-  "f'(x) = 2x",
-  "∫ x^2 dx = x^3/3 + C",
-  "lim_{h→0} (f(x+h) - f(x))/h",
-  "sin^2 x + cos^2 x = 1",
-  "d/dx (sin x) = cos x",
-  "d/dx (e^x) = e^x",
-  "∫ 1/x dx = ln|x| + C",
-  "f''(x) < 0 ⇒ concave down",
-  "Mean Value Theorem: f'(c) = (f(b)-f(a))/(b-a)",
-];
+const trainingSets: Record<
+  string,
+  { title: string; equations: string[] }
+> = {
+  "calc-1": {
+    title: "Calculus I – OCR Module",
+    equations: [
+      "f(x) = x^2",
+      "f'(x) = 2x",
+      "∫ x^2 dx = x^3/3 + C",
+      "lim_{h→0} (f(x+h) - f(x))/h",
+      "sin^2 x + cos^2 x = 1",
+      "d/dx (sin x) = cos x",
+      "d/dx (e^x) = e^x",
+      "∫ 1/x dx = ln|x| + C",
+      "f''(x) < 0 ⇒ concave down",
+      "Mean Value Theorem: f'(c) = (f(b)-f(a))/(b-a)",
+    ],
+  },
+  "calc-deriv": {
+    title: "Derivatives Workshop",
+    equations: [
+      "f(x) = 3x^3 - 5x + 2",
+      "f'(x) = 9x^2 - 5",
+      "Product rule: (fg)' = f'g + fg'",
+      "Quotient rule: (f/g)' = (f'g - fg')/g^2",
+      "Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x)",
+      "d/dx (ln x) = 1/x",
+      "d/dx (a^x) = a^x ln a",
+      "f''(x) sign ⇒ concavity",
+      "Critical points: f'(x)=0 or undefined",
+      "d/dx (tan x) = sec^2 x",
+    ],
+  },
+  limits: {
+    title: "Limits & Continuity",
+    equations: [
+      "lim_{x→0} sin x / x = 1",
+      "lim_{x→∞} (1 + 1/x)^x = e",
+      "lim_{x→a} f(x) exists ↔ left=right",
+      "Continuity: lim_{x→a} f(x) = f(a)",
+      "lim_{x→0} (1 - cos x)/x^2 = 1/2",
+      "Squeeze theorem example: x^2 sin(1/x) → 0",
+      "Removable discontinuity: hole at x=a",
+      "Infinite limit: vertical asymptote at x=a",
+      "lim_{x→∞} (ax^n + …)/(bx^m + …)",
+      "lim_{x→0} (e^x - 1)/x = 1",
+    ],
+  },
+};
 
 const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
@@ -52,6 +90,12 @@ function TeacherPage() {
   >([
     { role: "assistant", text: "Hi! Ask anything about your module or OCR results." },
   ]);
+  const [equationProgress, setEquationProgress] = useState<
+    Record<
+      string,
+      { fileName?: string; score?: number | null; status: "pending" | "pass" | "fail"; editableText?: string }
+    >
+  >({});
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -163,6 +207,7 @@ function TeacherPage() {
   };
 
   const selectedModule = modules.find((m) => m.id === selectedModuleId) ?? modules[0];
+  const training = trainingSets[selectedModule?.id as string] ?? Object.values(trainingSets)[0];
 
   return (
     <Layout title="Teacher Dashboard">
@@ -291,28 +336,94 @@ function TeacherPage() {
 
         <section aria-labelledby="teacher-training" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
           <h2 id="teacher-training" className="text-xl font-semibold mb-3">
-            Training: Calculus I – OCR Module
+            Training: {training.title}
           </h2>
           <p className="text-sm mb-3">
-            Handwrite these equations, snap a photo (camera/gallery/file), and upload. The AI will use them to improve OCR on this module. You can add your own use cases below.
+            Complete all 10 equations. Upload one handwritten image per equation. OCR scores above 80% are marked passing; you can edit the recognized text before saving.
           </p>
-          <ol className="list-decimal pl-5 space-y-1 text-sm mb-3">
-            {trainingEquations.map((eq, idx) => (
-              <li key={idx}>{eq}</li>
-            ))}
-          </ol>
-          <div className="space-y-2">
-            <label className="block text-sm">
-              <span className="block mb-1">Upload handwritten set (PDF/image)</span>
-              <input type="file" accept=".pdf,image/*" className="block w-full text-sm" />
-            </label>
-            <label className="block text-sm">
-              <span className="block mb-1">Add custom equation/use case (optional)</span>
-              <textarea className="w-full border rounded p-2 text-sm" rows={3} placeholder="Equation + expected handwritten example" />
-            </label>
-            <button type="button" className="px-4 py-2 rounded bg-emerald-600 text-white text-sm">
-              Submit training sample
-            </button>
+          <div className="space-y-3">
+            {training.equations.map((eq, idx) => {
+              const progress = equationProgress[`${selectedModuleId}-${idx}`] || {
+                status: "pending" as const,
+                score: null,
+                editableText: "",
+              };
+              return (
+                <div
+                  key={idx}
+                  className="border rounded p-3 bg-slate-50 dark:bg-slate-800 flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-semibold text-sm">{idx + 1}. {eq}</div>
+                    <span
+                      className={`text-xs px-2 py-1 rounded ${
+                        progress.status === "pass"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : progress.status === "fail"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-slate-200 text-slate-700"
+                      }`}
+                    >
+                      {progress.status === "pass"
+                        ? `Pass (${progress.score ?? ""}%)`
+                        : progress.status === "fail"
+                        ? `Below 80% (${progress.score ?? ""}%)`
+                        : "Pending"}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <input type="file" accept=".pdf,image/*" className="text-sm" />
+                    <button
+                      type="button"
+                      className="px-3 py-2 rounded bg-blue-600 text-white text-xs"
+                      onClick={() => {
+                        // Placeholder: pretend OCR result
+                        const mockScore = 82;
+                        const mockText = `OCR result for ${eq}`;
+                        setEquationProgress((prev) => ({
+                          ...prev,
+                          [`${selectedModuleId}-${idx}`]: {
+                            status: mockScore >= 80 ? "pass" : "fail",
+                            score: mockScore,
+                            editableText: mockText,
+                          },
+                        }));
+                      }}
+                    >
+                      Upload & OCR
+                    </button>
+                  </div>
+                  {progress.editableText !== undefined && (
+                    <label className="text-xs">
+                      <span className="block mb-1">Recognized text (edit before saving)</span>
+                      <textarea
+                        className="w-full border rounded p-2 text-sm"
+                        rows={3}
+                        value={progress.editableText}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setEquationProgress((prev) => ({
+                            ...prev,
+                            [`${selectedModuleId}-${idx}`]: {
+                              ...progress,
+                              editableText: val,
+                            },
+                          }));
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+              );
+            })}
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Checklist: {Object.values(equationProgress).filter((p) => p.status === "pass").length} / {training.equations.length} passed.
+              </p>
+              <button type="button" className="px-4 py-2 rounded bg-emerald-600 text-white text-sm">
+                Save training to profile
+              </button>
+            </div>
           </div>
         </section>
 
