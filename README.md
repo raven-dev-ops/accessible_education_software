@@ -16,7 +16,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 ## Table of Contents
 
 - [Features](#features)
-- [Status (v1.0.0)](#status-day-5)
+- [Status (v1.0.0 / v1.0.0-4)](#status-day-5)
 - [Roles](#roles)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -506,4 +506,5 @@ Draft legal and policy documents live under `docs/`:
 
 These will be expanded and finalized before any real student data is processed
 or the system is deployed in a production environment.
+
 
