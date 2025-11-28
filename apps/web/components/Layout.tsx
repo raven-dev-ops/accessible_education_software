@@ -12,6 +12,8 @@ type LayoutProps = {
 const showStagingBanner =
   process.env.NEXT_PUBLIC_SHOW_STAGING_BANNER === "true" ||
   process.env.NEXT_PUBLIC_SHOW_STAGING_BANNER === "1";
+const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || "v1.0.0";
+const appStage = process.env.NEXT_PUBLIC_APP_STAGE || "Alpha";
 
 export function Layout({ title, children, secondaryNav }: LayoutProps) {
   return (
@@ -27,9 +29,14 @@ export function Layout({ title, children, secondaryNav }: LayoutProps) {
         role="banner"
       >
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 px-6 py-4">
-          <Link href="/dashboard" className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-            {title}
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              {title}
+            </Link>
+            <span className="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-100">
+              {appVersion} · {appStage}
+            </span>
+          </div>
           <nav className="flex flex-wrap items-center gap-3 text-sm" aria-label="Primary">
             <ThemeToggle />
             {secondaryNav && <div className="flex items-center gap-2">{secondaryNav}</div>}
@@ -65,8 +72,13 @@ export function Layout({ title, children, secondaryNav }: LayoutProps) {
         className="bg-white/90 border-t border-slate-200 dark:bg-slate-900/80 dark:border-slate-800"
         role="contentinfo"
       >
-        <div className="max-w-6xl mx-auto px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-          Accessible Education Platform
+        <div className="max-w-6xl mx-auto px-6 py-4 text-sm text-slate-600 dark:text-slate-300 flex flex-wrap gap-4 items-center justify-between">
+          <span>Accessible Education Platform</span>
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="hover:text-slate-900 dark:hover:text-slate-100">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-slate-900 dark:hover:text-slate-100">Privacy Policy</Link>
+            <span>All rights reserved · Releases: {appVersion} ({appStage})</span>
+          </div>
         </div>
       </footer>
     </div>

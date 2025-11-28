@@ -81,7 +81,6 @@ function StudentPage() {
   >(null);
   const defaultRootFontSize = useRef<string | null>(null);
   const [uploadFileName, setUploadFileName] = useState<string | null>(null);
-  const [uploadNote, setUploadNote] = useState<string>("");
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -527,9 +526,14 @@ function StudentPage() {
           aria-labelledby="student-upload"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 items-start">
             <div className="space-y-3">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Upload & process</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Upload & process</h3>
+                <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100">
+                  OCR MVP Demo
+                </span>
+              </div>
               <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
                 Choose image or PDF
                 <input
@@ -713,6 +717,12 @@ function StudentPage() {
                 </div>
               )}
             </div>
+          </div>
+          <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 p-4">
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Formatting preview</h3>
+            <p className="text-sm text-slate-700 dark:text-slate-300">
+              Additional layout and Braille region overlays will appear here in the next iteration.
+            </p>
           </div>
         </section>
 
