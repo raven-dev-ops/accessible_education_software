@@ -1,12 +1,13 @@
 import type { AppProps } from "next/app";
-import { UserProvider } from "@auth0/nextjs-auth0/client";
+import { SessionProvider } from "next-auth/react";
 import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const { session, ...restPageProps } = pageProps as any;
   return (
-    <UserProvider>
-      <Component {...pageProps} />
-    </UserProvider>
+    <SessionProvider session={session}>
+      <Component {...restPageProps} />
+    </SessionProvider>
   );
 }
 

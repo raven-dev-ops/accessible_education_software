@@ -16,7 +16,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 ## Table of Contents
 
 - [Features](#features)
-- [Status (Day 3)](#status-day-3)
+- [Status (Day 5)](#status-day-5)
 - [Roles](#roles)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -29,6 +29,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 - [Run the apps](#run-the-apps)
 - [Mock Data (Day 2)](#mock-data-day-2)
 - [Math handling (Day 3)](#math-handling-day-3)
+- [Braille path (Day 4)](#braille-path-day-4)
 - [APIs & Database](#apis--database)
 - [Security & Code Scanning](#security--code-scanning)
 - [Accessibility](#accessibility)
@@ -69,9 +70,9 @@ The system helps **students**, **teachers**, and **site admins** work with handw
     - View student information
     - Monitor system logs and analytics (planned)
 
-- **Authentication with Auth0**
-  - Auth0-backed login
-  - Role-based routing (Student / Teacher / Admin)
+- **Authentication with Google (NextAuth)**
+  - Google-backed login via NextAuth
+  - Role-based routing (Student / Teacher / Admin) derived from email allowlists
 
 - **Monorepo architecture**
   - **Next.js** frontend: lightweight, accessible UI (target deployment on Netlify)
@@ -87,17 +88,17 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 ---
 
-## Status (Day 3)
+## Status (Day 5)
 
-- Version **0.1.2** (Day 3): Admin uploads now forward to the OCR service when `OCR_SERVICE_URL` is set and show inline previews with accessible status messaging.
-- Upload API writes to a configurable temp directory and guards file types/size before relaying to OCR.
-- Math handling plan captured (MathML-first with plain-text fallbacks) for upcoming OCR/renderer work.
+- Version **0.2.0** (Day 5): Swapped Auth0 for Google OAuth via NextAuth, added email-based role mapping, and refreshed Netlify env templates. Cloud SQL (Postgres) is provisioned with private IP and ready for proxy-based access.
+- OAuth client configured with redirect URIs for Netlify + localhost; NextAuth now drives login/logout/callbacks.
+- Docs updated for NextAuth/Google env vars, Netlify deployment, and Cloud SQL connection requirements.
 
-### Issue updates (Day 3)
+### Issue updates (Day 5)
 
-- [x] M3: Wire `/api/upload` to the OCR service with temp-dir safeguards (`apps/web/pages/api/upload.ts`).
-- [x] M3: Admin OCR upload UI shows inline preview and live status messaging (`apps/web/pages/admin/index.tsx`).
-- [x] M3: Document math handling approach for OCR output (`README.md#math-handling-day-3`).
+- [x] Replace Auth0 integration with NextAuth + Google provider (`apps/web/lib/authOptions.ts`, `/api/auth/[...nextauth].ts`, updated pages/layout).
+- [x] Add email allowlists for admin/teacher roles (`ADMIN_EMAILS`, `TEACHER_EMAILS`) and NextAuth session role wiring.
+- [x] Refresh env examples and Netlify guidance for Google OAuth and private Cloud SQL.
 
 ---
 
@@ -107,7 +108,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 - Log in securely
 - Upload handwritten notes for OCR
-- Attach short context notes (≤ 500 words)
+- Attach short context notes (up to 500 words)
 - Access released course material from professors
 - Listen to audio versions of notes (planned)
 
@@ -132,7 +133,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 **Frontend**
 
 - Next.js (React)
-- Auth0 (authentication)
+- NextAuth (authentication via Google)
 - Tailwind CSS or similar (utility-first styling, to be wired in)
 - Light/Dark mode with pastel theming
 
@@ -148,9 +149,9 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 **Infrastructure / Deployment**
 
-- Frontend: Netlify (planned)
+- Frontend: Netlify (auto-deploy on main)
 - Backend: Google Cloud (Cloud Run / App Engine) or Heroku (planned)
-- Auth: Auth0 (Google Cloud integration)
+- Auth: Google OAuth client via NextAuth
 
 ---
 
@@ -159,7 +160,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 At a high level:
 
 - **Next.js frontend**
-  - Handles login via Auth0
+  - Handles login via NextAuth (Google)
   - Routes users to `/student`, `/teacher`, or `/admin` dashboards
   - Provides file upload forms and displays processed content
 
@@ -176,10 +177,9 @@ At a high level:
   - Notes and OCR outputs
   - Release schedules and logs
 
-- **Auth0**
-  - Handles authentication flows (login, logout, callback)
-  - Stores identity & roles
-  - Provides tokens used by frontend/backend
+- **Authentication (NextAuth + Google)**
+  - Handles authentication flows (sign-in, sign-out, callback)
+  - Uses a Google OAuth client; roles are derived from email allowlists (`ADMIN_EMAILS`, `TEACHER_EMAILS`)
 
 ---
 
@@ -247,22 +247,26 @@ pip install -r apps/ocr_service/requirements.txt
 
 ### Environment variables
 
-Frontend (`apps/web/.env.local`, copy from `.env.local.example`):
+Frontend (`apps/web/.env.local` for local, `.env` for Netlify):
 
-- `AUTH0_SECRET` – random long secret used by Auth0 SDK for session encryption.
-- `AUTH0_BASE_URL` – e.g. `http://localhost:3000` in development.
-- `AUTH0_ISSUER_BASE_URL` – your Auth0 tenant URL, e.g. `https://YOUR_DOMAIN.auth0.com`.
-- `AUTH0_CLIENT_ID` – Auth0 application Client ID.
-- `AUTH0_CLIENT_SECRET` – Auth0 application Client Secret.
-- `NEXT_PUBLIC_AUTH0_ROLES_CLAIM` – optional claim name where Auth0 places roles (e.g. `https://your-domain.com/roles`); falls back to `roles` if omitted.
+- `NEXTAUTH_URL` – site origin (e.g. `http://localhost:3000` or `https://accessibilitysoftware.netlify.app`).
+- `NEXTAUTH_SECRET` – random long secret for NextAuth session encryption.
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` – Google OAuth client credentials.
+- `ADMIN_EMAILS` / `TEACHER_EMAILS` – optional comma-separated allowlists; everyone else is treated as `student`.
+- `NEXT_PUBLIC_AUTH_ENABLED` – `true` to require Google login; `false` shows the "Coming Soon" placeholder.
+- `NEXT_PUBLIC_SHOW_STAGING_BANNER` – show a visible "staging" banner on that deploy.
+- `NEXT_PUBLIC_ENV_LABEL` – optional label shown on `/status` (e.g. `staging`, `prod-coming-soon`, `local`).
 - `OCR_SERVICE_URL` – base URL for the Python OCR service (e.g. `http://localhost:8000`).
-- `DATABASE_URL` – PostgreSQL connection string used by Prisma (optional for Day 2; the app will fall back to mock data if not configured).
+- `DATABASE_URL` – PostgreSQL connection string used by Prisma. Cloud SQL is private-IP only; use Cloud SQL Auth Proxy/connector from Netlify/functions or a reachable proxy endpoint.
+- `BRAILLE_ENGINE` (optional) – set to `liblouis` to enable server-side liblouis/Nemeth output for `/api/braille`; defaults to the fallback Grade 1 mapper.
+- `BRAILLE_LIBLOUIS_TABLE` (optional) – liblouis table to use (e.g. `nemeth`); defaults to `nemeth` when `BRAILLE_ENGINE=liblouis`.
+- `BRAILLE_LIBLOUIS_BIN` (optional) – path to the `lou_translate` binary if it is not on your PATH.
 
 ### Run the apps
 
 Additional frontend env flags (set in `apps/web/.env.local` for local development, and in Netlify environment variables for the deployed web app):
 
-- `NEXT_PUBLIC_AUTH_ENABLED` - controls whether the frontend uses the real Auth0 login flow (`true`/`1`) or shows the "Login – Coming Soon" placeholder (`false`/unset).
+- `NEXT_PUBLIC_AUTH_ENABLED` - `true`/`1` enables Google login; `false`/unset shows the "Login – Coming Soon" placeholder.
 - `NEXT_PUBLIC_SHOW_STAGING_BANNER` - when enabled, displays a visible "Staging environment – for testing only" banner (use this on the staging Netlify site).
 - `NEXT_PUBLIC_ENV_LABEL` - optional string used by `/status` to identify the environment (for example `staging`, `prod-coming-soon`, or `local`).
 
@@ -286,29 +290,18 @@ npm run test:ocr
 
 ---
 
-### Auth0 setup (development)
+### Google OAuth / NextAuth setup
 
-High-level steps to get Auth0 working with the Next.js app:
-
-1. **Create a tenant and application**
-   - In the Auth0 dashboard, create a Regular Web Application (or reuse an existing one).
-   - Note the **Domain**, **Client ID**, and **Client Secret**.
-2. **Configure allowed URLs**
-   - Allowed Callback URLs: `http://localhost:3000/api/auth/callback`
-   - Allowed Logout URLs: `http://localhost:3000/`
-   - Allowed Web Origins: `http://localhost:3000`
-3. **Configure roles**
-   - Enable Role-Based Access Control (RBAC) in Auth0.
-   - Create roles such as `admin`, `teacher`, and `student`.
-   - Assign roles to your test users.
-4. **Expose roles as a token claim**
-   - In the Auth0 Dashboard under API / Permissions or via an Action/Rule, configure roles to be added to ID tokens.
-   - Either:
-     - Use the built-in `roles` claim and leave `NEXT_PUBLIC_AUTH0_ROLES_CLAIM` empty, or
-     - Use a custom namespaced claim like `https://your-domain.com/roles` and set `NEXT_PUBLIC_AUTH0_ROLES_CLAIM` accordingly.
-5. **Set `apps/web/.env.local` values**
-   - Fill in the Auth0 values from step 1 and any custom roles claim from step 4.
-   - Restart `npm run dev:web` so the environment changes take effect.
+1. **OAuth client (already provisioned)**
+   - Client ID: `a7e9753a3-293b-4ea2-b108-ba02da5b041e`
+   - Redirect URIs: `https://accessibilitysoftware.netlify.app/api/auth/callback`, `https://accessibilitysoftware.netlify.app/api/auth/callback/google`, `http://localhost:3000/api/auth/callback`, `http://localhost:3000/api/auth/callback/google`
+2. **Configure env vars**
+   - Set `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` in Netlify and `.env.local`.
+   - Turn on `NEXT_PUBLIC_AUTH_ENABLED=true` when you want login enforced; leave false for the public placeholder.
+   - Set `ADMIN_EMAILS` / `TEACHER_EMAILS` (comma-separated) to grant elevated roles; all others default to `student`.
+3. **Local login**
+   - Ensure the localhost redirect URIs above are set on the OAuth client (already applied).
+   - Run `npm run dev:web`, visit `http://localhost:3000/login`, and sign in with a Google account that matches your allowlist if testing admin/teacher routes.
 
 ---
 
@@ -336,44 +329,49 @@ Early plan for representing and rendering math from OCR output:
 
 ---
 
+## Braille path (Day 4)
+
+- A lightweight Grade 1 Braille mapper lives at `apps/web/lib/braille.ts`, converting ASCII text into Unicode Braille cells and `.brf`-friendly output.
+- A liblouis/Nemeth hook is available via `/api/braille` (server-side only). Enable it by installing `liblouis`, setting `BRAILLE_ENGINE=liblouis`, and optionally `BRAILLE_LIBLOUIS_TABLE` (default `nemeth`) / `BRAILLE_LIBLOUIS_BIN` (`lou_translate` by default).
+- The student dashboard shows a Braille preview of the latest released note (or a sample) and offers a `.brf` download; it prefers liblouis output when available and falls back to Grade 1 otherwise.
+- Next steps: refine math parsing and evaluate a full Nemeth pipeline once OCR math extraction stabilizes.
+
+---
+
 ## APIs & Database
   
   Several Next.js API routes power the dashboards:
 
-- `GET /api/students` – returns a list of students for the admin dashboard. Uses the `User` table when the database is configured; otherwise falls back to `apps/web/data/sampleStudents.json`.
-- `GET /api/modules` – returns a list of modules for the teacher dashboard. Uses the `Module` and `Course` tables when available; otherwise falls back to `apps/web/data/sampleModules.json`.
-- `GET /api/notes` – returns “released materials” for the student dashboard. Uses the `Note`, `Module`, and `Course` tables when available; otherwise falls back to `apps/web/data/sampleNotes.json`.
-- `POST /api/upload` – accepts a file upload and, if `OCR_SERVICE_URL` is configured, forwards the file to the Python OCR service `/ocr` endpoint. Returns basic file metadata and any OCR text received.
-- `POST /api/test-ocr` – calls the OCR service `/health` endpoint (when `OCR_SERVICE_URL` is set) and reports whether OCR is available; otherwise returns a stub message.
+- `GET /api/students` - returns a list of students for the admin dashboard. Uses the `User` table when the database is configured; otherwise falls back to `apps/web/data/sampleStudents.json`.
+- `GET /api/modules` - returns a list of modules for the teacher dashboard. Uses the `Module` and `Course` tables when available; otherwise falls back to `apps/web/data/sampleModules.json`.
+- `GET /api/notes` - returns "released materials" for the student dashboard. Uses the `Note`, `Module`, and `Course` tables when available; otherwise falls back to `apps/web/data/sampleNotes.json`.
+- `POST /api/upload` - accepts a file upload and, if `OCR_SERVICE_URL` is configured, forwards the file to the Python OCR service `/ocr` endpoint. Returns basic file metadata and any OCR text received.
+- `POST /api/test-ocr` - calls the OCR service `/health` endpoint (when `OCR_SERVICE_URL` is set) and reports whether OCR is available; otherwise returns a stub message.
+- `POST /api/braille` - converts text to Braille using liblouis/Nemeth when enabled (`BRAILLE_ENGINE=liblouis`) and falls back to the Grade 1 mapper otherwise.
 
 ### Database & Prisma
 
-The Next.js app uses Prisma to talk to PostgreSQL (see `apps/web/prisma/schema.prisma`).
+Day 4 adds the Prisma schema for the core data model (see `apps/web/prisma/schema.prisma`):
 
-Configure the database connection in `apps/web/.env.local`:
+- `User` (with logical roles)
+- `Course` and `Module`
+- `Note` (linked to modules and users, with optional `ocrText`)
+- `Log` (reserved for future observability)
+- `Upload` (file metadata, OCR text snapshot, status)
 
-  ```bash
-  DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/accessible_education?schema=public
-  ```
+Set up Postgres locally:
 
-  Generate the Prisma client:
-  
-  ```bash
-  npm run prisma:generate
-  ```
+1. Configure `DATABASE_URL` in `apps/web/.env.local`, e.g.  
+   `DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/accessible_education?schema=public`
+2. Apply the checked-in baseline migration (`apps/web/prisma/migrations`):  
+   `npx prisma migrate deploy --schema apps/web/prisma/schema.prisma`
+3. Generate the Prisma client:  
+   `npm run prisma:generate`
+4. Seed development data (course, modules, teacher + students, sample note):  
+   `npm run seed:dev`
 
-Run the development seed script once your database and migrations are in place:
+API routes still fall back to mock data when `DATABASE_URL` is not set, so the app runs without a local Postgres instance during early development.
 
-```bash
-npm run seed:dev
-```
-
-  This creates:
-
-- A `Course` for “Calculus I” with a few `Module` entries.
-- A teacher user (`teacher@example.com`) and a few sample student users.
-  - One sample `Note` attached to the first Calculus I module, which surfaces through `/api/notes` and the student "Released materials" section.
-  
 ---
 
 ## Security & Code Scanning
@@ -383,15 +381,15 @@ Security is treated as a first-class concern even during the MVP phase:
 - A dedicated security policy lives in `SECURITY.md`, including how to report vulnerabilities and the current MVP security posture.
 - GitHub CodeQL is configured via `.github/workflows/codeql.yml` to automatically scan the JavaScript/TypeScript (Next.js) and Python (OCR service) code for common vulnerabilities and coding errors on pushes, pull requests, and a weekly schedule.
 - Dependencies are monitored with `npm audit`; production dependencies are currently free of known vulnerabilities, and the `glob` advisory affecting a dev-only ESLint toolchain is mitigated by a top-level override in `package.json`.
-- Secrets such as Auth0 credentials, database URLs, and OCR service endpoints are injected only via environment variables and are never committed to the repository.
-- The `NEXT_PUBLIC_AUTH_ENABLED` flag controls whether the deployed Netlify frontend uses the real Auth0 login flow (`true`/`1`) or shows the "Login – Coming Soon" placeholder (`false`/unset), which should be used for public staging until Auth0 wiring is ready.
+- Secrets such as OAuth credentials, database URLs, and OCR service endpoints are injected only via environment variables and are never committed to the repository.
+- The `NEXT_PUBLIC_AUTH_ENABLED` flag controls whether the deployed Netlify frontend uses the real Google login flow (`true`/`1`) or shows the "Login – Coming Soon" placeholder (`false`/unset), which should be used for public staging until auth wiring is ready.
 
 Before any real student data is processed in production, the plan is to harden API-level authorization, tighten file upload limits and validation, and perform a focused configuration/dependency review as described in `SECURITY.md`.
 
 Additionally, in this repository:
 
 - The CodeQL workflow installs JavaScript/TypeScript dependencies (`npm install` from the monorepo root) before analysis so that the Next.js app and its TypeScript configuration are available to the analyzer.
-- Key API routes such as `/api/students`, `/api/modules`, and `/api/notes` are also protected server-side using Auth0 session/roles (when `NEXT_PUBLIC_AUTH_ENABLED` is true), complementing the frontend page guards.
+- Key API routes such as `/api/students`, `/api/modules`, and `/api/notes` are also protected server-side using NextAuth sessions/roles (when `NEXT_PUBLIC_AUTH_ENABLED` is true), complementing the frontend page guards.
 
   ---
   
@@ -412,8 +410,8 @@ See issues labeled `a11y` in GitHub for specific accessibility tasks and audits.
 
 The project follows a milestone-based plan:
 
-- **M1–M2** – Foundation, repo hygiene, Auth0 integration, basic dashboards, theming.
-- **M3–M4** – Auth + OCR wiring, upload UX, student TTS, database foundation.
+- **M1–M2** – Foundation, repo hygiene, initial auth integration, basic dashboards, theming.
+- **M3–M4** – Auth + OCR wiring (now Google/NextAuth), upload UX, student TTS, database foundation.
 - **M5–M7** – Persistence, CI hardening, accessibility polish, OCR robustness, Beta.
 - **M8–M10** – Testing, performance, packaging, deployment, and MVP client handover.
 

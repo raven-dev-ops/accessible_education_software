@@ -6,8 +6,8 @@ type StatusProps = {
   nodeEnv: string;
   authEnabled: boolean;
   stagingBanner: boolean;
-  auth0IssuerBaseUrl: string | null;
-  auth0BaseUrl: string | null;
+  nextauthUrl: string | null;
+  googleClientIdConfigured: boolean;
   hasDatabaseUrl: boolean;
   hasOcrServiceUrl: boolean;
 };
@@ -37,8 +37,8 @@ export const getServerSideProps: GetServerSideProps<StatusProps> = async () => {
       nodeEnv,
       authEnabled,
       stagingBanner,
-      auth0IssuerBaseUrl: process.env.AUTH0_ISSUER_BASE_URL ?? null,
-      auth0BaseUrl: process.env.AUTH0_BASE_URL ?? null,
+      nextauthUrl: process.env.NEXTAUTH_URL ?? null,
+      googleClientIdConfigured: Boolean(process.env.GOOGLE_CLIENT_ID),
       hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
       hasOcrServiceUrl: Boolean(process.env.OCR_SERVICE_URL),
     },
@@ -70,12 +70,12 @@ export default function StatusPage(props: StatusProps) {
             <dd>{props.stagingBanner ? "Visible" : "Hidden"}</dd>
           </div>
           <div className="flex gap-2">
-            <dt className="font-medium w-48">Auth0 issuer base URL</dt>
-            <dd>{props.auth0IssuerBaseUrl ?? "Not configured"}</dd>
+            <dt className="font-medium w-48">NEXTAUTH_URL</dt>
+            <dd>{props.nextauthUrl ?? "Not configured"}</dd>
           </div>
           <div className="flex gap-2">
-            <dt className="font-medium w-48">Auth0 base URL</dt>
-            <dd>{props.auth0BaseUrl ?? "Not configured"}</dd>
+            <dt className="font-medium w-48">Google client configured</dt>
+            <dd>{props.googleClientIdConfigured ? "Yes" : "No"}</dd>
           </div>
           <div className="flex gap-2">
             <dt className="font-medium w-48">Database URL configured</dt>
@@ -90,4 +90,3 @@ export default function StatusPage(props: StatusProps) {
     </Layout>
   );
 }
-

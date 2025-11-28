@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useSession } from "next-auth/react";
 import { Layout } from "../../components/Layout";
 import { getRoleFromUser } from "../../lib/roleUtils";
 
@@ -10,25 +10,33 @@ type ModuleSummary = {
   course?: string;
 };
 
+const authEnabled =
+  process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
+  process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
+
 function TeacherPage() {
   const router = useRouter();
-  const { user, isLoading } = useUser();
+  const { data: session, status } = useSession();
   const [unauthorized, setUnauthorized] = useState(false);
   const [modules, setModules] = useState<ModuleSummary[]>([]);
   const [modulesLoading, setModulesLoading] = useState(true);
   const [modulesError, setModulesError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isLoading) return;
-    if (!user) return;
+    if (!authEnabled) return;
+    if (status === "loading") return;
+    if (!session || !session.user) {
+      void router.replace("/login");
+      return;
+    }
 
-    const role = getRoleFromUser(user);
+    const role = getRoleFromUser(session.user);
 
     if (role !== "teacher") {
       setUnauthorized(true);
       void router.replace("/dashboard");
     }
-  }, [user, isLoading, router]);
+  }, [session, status, router]);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,14 +63,14 @@ function TeacherPage() {
       }
     }
 
-    if (!unauthorized) {
+    if (!unauthorized && (!authEnabled || (session && session.user))) {
       void loadModules();
     }
 
     return () => {
       cancelled = true;
     };
-  }, [unauthorized]);
+  }, [unauthorized, authEnabled, session]);
 
   if (unauthorized) {
     return (
@@ -150,4 +158,3 @@ function TeacherPage() {
 }
 
 export default TeacherPage;
-

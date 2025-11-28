@@ -22,7 +22,7 @@ export function Layout({ title, children }: LayoutProps) {
             Dashboard
           </Link>
           <Link
-            href="/api/auth/logout"
+            href="/api/auth/signout"
             className="px-3 py-1 rounded bg-gray-800 text-white text-sm"
           >
             Logout

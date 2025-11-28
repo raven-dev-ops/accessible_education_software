@@ -1,54 +1,39 @@
-import type { UserProfile } from "@auth0/nextjs-auth0/client";
-
 export type AppRole = "admin" | "teacher" | "student";
+export type AppSessionUser = {
+  email?: string | null;
+  name?: string | null;
+  role?: AppRole;
+};
 
-function extractRawRoles(user: UserProfile): string[] {
-  const anyUser = user as any;
-  const claimKey = process.env.NEXT_PUBLIC_AUTH0_ROLES_CLAIM;
-  const candidateKeys = claimKey ? [claimKey, "roles"] : ["roles"];
-
-  const roles: string[] = [];
-  for (const key of candidateKeys) {
-    const value = anyUser?.[key];
-    if (!value) continue;
-
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        roles.push(String(item));
-      }
-    } else {
-      roles.push(String(value));
-    }
-  }
-
-  return roles;
+function parseEmailList(envValue: string | undefined): string[] {
+  return (envValue ?? "")
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
 }
 
-export function getRoleFromUser(user: UserProfile | undefined): AppRole {
-  if (!user) {
-    return "student";
-  }
+const adminEmails = parseEmailList(process.env.ADMIN_EMAILS);
+const teacherEmails = parseEmailList(process.env.TEACHER_EMAILS);
 
-  const rawRoles = extractRawRoles(user).map((r) => r.toLowerCase());
-
-  if (rawRoles.includes("admin")) {
+export function deriveRoleFromEmail(email?: string | null): AppRole {
+  const normalized = email?.toLowerCase() ?? "";
+  if (normalized && adminEmails.includes(normalized)) {
     return "admin";
   }
-
-  if (rawRoles.includes("teacher")) {
+  if (normalized && teacherEmails.includes(normalized)) {
     return "teacher";
   }
-
-  if (rawRoles.includes("student")) {
-    return "student";
-  }
-
-  // If no recognized roles are present, default to student.
   return "student";
 }
 
+export function getRoleFromUser(user: AppSessionUser | null | undefined): AppRole {
+  if (!user) return "student";
+  if (user.role) return user.role;
+  return deriveRoleFromEmail(user.email);
+}
+
 export function userHasRole(
-  user: UserProfile | undefined,
+  user: AppSessionUser | undefined,
   allowed: AppRole[]
 ): boolean {
   const role = getRoleFromUser(user);

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "@auth0/nextjs-auth0";
-import { getRoleFromUser, type AppRole } from "./roleUtils";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./authOptions";
+import { getRoleFromUser, type AppRole, type AppSessionUser } from "./roleUtils";
 
 type AuthContext = {
   role: AppRole;
@@ -29,7 +30,7 @@ export async function requireRole(
   }
 
   try {
-    const session = await getSession(req, res);
+    const session = await getServerSession(req, res, authOptions);
 
     if (!session || !session.user) {
       res
@@ -38,7 +39,7 @@ export async function requireRole(
       return null;
     }
 
-    const role = getRoleFromUser(session.user as any);
+    const role = getRoleFromUser(session.user as AppSessionUser);
 
     if (!allowed.includes(role)) {
       res
@@ -56,4 +57,3 @@ export async function requireRole(
     return null;
   }
 }
-

@@ -1,6 +1,6 @@
 {
   "name": "@raven-dev-ops/accessible-education-web",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,10 +11,10 @@
     "test": "echo \"No frontend tests defined yet\""
   },
   "dependencies": {
-    "@auth0/nextjs-auth0": "^3.5.0",
     "@prisma/client": "^5.20.0",
     "formidable": "^3.5.0",
     "next": "^14.2.0",
+    "next-auth": "^4.24.13",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

@@ -11,13 +11,12 @@
     X-Frame-Options = "SAMEORIGIN"
 
 # Netlify environment variables to configure in the UI:
-# - AUTH0_SECRET
-# - AUTH0_BASE_URL (e.g. https://your-netlify-site.netlify.app)
-# - AUTH0_ISSUER_BASE_URL
-# - AUTH0_CLIENT_ID
-# - AUTH0_CLIENT_SECRET
-# - NEXT_PUBLIC_AUTH_ENABLED (set "false" for the public "Coming Soon" login placeholder; set "true" only when wired to a staging/production Auth0 tenant)
-# - NEXT_PUBLIC_SHOW_STAGING_BANNER (set "true" on the staging site to show a clear "Staging environment" banner in the UI)
-# - NEXT_PUBLIC_AUTH0_ROLES_CLAIM
+# - NEXTAUTH_URL (e.g. https://your-netlify-site.netlify.app)
+# - NEXTAUTH_SECRET (long random string)
+# - GOOGLE_CLIENT_ID
+# - GOOGLE_CLIENT_SECRET
+# - NEXT_PUBLIC_AUTH_ENABLED ("true" to require Google login; "false" to show the public placeholder)
+# - NEXT_PUBLIC_SHOW_STAGING_BANNER (set "true" on staging to show a banner)
+# - ADMIN_EMAILS / TEACHER_EMAILS (comma-separated email allowlists for elevated roles)
 # - OCR_SERVICE_URL (pointing at deployed OCR service)
 # - DATABASE_URL (if using a managed Postgres instance)

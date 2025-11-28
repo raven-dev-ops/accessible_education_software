@@ -1,26 +1,35 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser, withPageAuthRequired } from "@auth0/nextjs-auth0/client";
+import { useSession } from "next-auth/react";
 import { getRoleFromUser } from "../lib/roleUtils";
 
 const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
 
-function DashboardRedirect() {
+export default function DashboardRedirect() {
   const router = useRouter();
-  const { user, isLoading } = useUser();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (isLoading) return;
-    if (!user) return;
+    if (!authEnabled) {
+      void router.replace("/student");
+      return;
+    }
 
-    const role = getRoleFromUser(user);
+    if (status === "loading") return;
+
+    if (!session || !session.user) {
+      void router.replace("/login");
+      return;
+    }
+
+    const role = getRoleFromUser(session.user);
     const target =
       role === "admin" ? "/admin" : role === "teacher" ? "/teacher" : "/student";
 
     void router.replace(target);
-  }, [user, isLoading, router]);
+  }, [session, status, router]);
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
@@ -28,8 +37,3 @@ function DashboardRedirect() {
     </main>
   );
 }
-
-export default authEnabled
-  ? withPageAuthRequired(DashboardRedirect)
-  : DashboardRedirect;
-

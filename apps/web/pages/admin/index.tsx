@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useSession } from "next-auth/react";
 import { Layout } from "../../components/Layout";
 import { getRoleFromUser } from "../../lib/roleUtils";
 
@@ -11,9 +11,22 @@ type Student = {
   course: string;
 };
 
+type UploadSummary = {
+  id: string;
+  filename?: string | null;
+  mimetype?: string | null;
+  size?: number | null;
+  status: string;
+  createdAt?: string | null;
+};
+
+const authEnabled =
+  process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
+  process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
+
 function AdminPage() {
   const router = useRouter();
-  const { user, isLoading } = useUser();
+  const { data: session, status } = useSession();
   const [unauthorized, setUnauthorized] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [studentsError, setStudentsError] = useState<string | null>(null);
@@ -24,23 +37,31 @@ function AdminPage() {
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploads, setUploads] = useState<UploadSummary[]>([]);
+  const [uploadsError, setUploadsError] = useState<string | null>(null);
+  const [uploadsLoading, setUploadsLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoading) return;
-    if (!user) return;
+    if (!authEnabled) return;
+    if (status === "loading") return;
+    if (!session || !session.user) {
+      void router.replace("/login");
+      return;
+    }
 
-    const role = getRoleFromUser(user);
+    const role = getRoleFromUser(session.user);
 
     if (role !== "admin") {
       setUnauthorized(true);
       void router.replace("/dashboard");
     }
-  }, [user, isLoading, router]);
+  }, [session, status, router]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadStudents() {
+      if (authEnabled && (!session || !session.user || unauthorized)) return;
       if (unauthorized) return;
       try {
         const res = await fetch("/api/students");
@@ -64,11 +85,36 @@ function AdminPage() {
     }
 
     void loadStudents();
+    async function loadUploads() {
+      if (authEnabled && (!session || !session.user || unauthorized)) return;
+      if (unauthorized) return;
+      try {
+        const res = await fetch("/api/uploads");
+        if (!res.ok) {
+          throw new Error(`Request failed with status ${res.status}`);
+        }
+        const data = (await res.json()) as UploadSummary[];
+        if (!cancelled) {
+          setUploads(data);
+          setUploadsError(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setUploadsError("Failed to load uploads.");
+        }
+      } finally {
+        if (!cancelled) {
+          setUploadsLoading(false);
+        }
+      }
+    }
+
+    void loadUploads();
 
     return () => {
       cancelled = true;
     };
-  }, [unauthorized]);
+  }, [unauthorized, authEnabled, session]);
 
 
   const handleTestOcr = async () => {
@@ -272,6 +318,59 @@ function AdminPage() {
             {ocrLoading ? "Running OCR test..." : "Run sample OCR test"}
           </button>
         </div>
+      </section>
+
+      <section className="mt-10" aria-labelledby="admin-uploads">
+        <h2 id="admin-uploads" className="text-lg font-semibold mb-3">
+          Recent uploads
+        </h2>
+        {uploadsLoading && <p>Loading uploads...</p>}
+        {uploadsError && (
+          <p role="alert" className="text-red-700">
+            {uploadsError}
+          </p>
+        )}
+        {!uploadsLoading && !uploadsError && uploads.length === 0 && (
+          <p>No uploads yet.</p>
+        )}
+        {!uploadsLoading && !uploadsError && uploads.length > 0 && (
+          <div className="overflow-auto">
+            <table className="min-w-full border text-sm">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border px-2 py-1 text-left">Filename</th>
+                  <th className="border px-2 py-1 text-left">MIME type</th>
+                  <th className="border px-2 py-1 text-left">Size</th>
+                  <th className="border px-2 py-1 text-left">Status</th>
+                  <th className="border px-2 py-1 text-left">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {uploads.map((u) => (
+                  <tr key={u.id}>
+                    <td className="border px-2 py-1">
+                      {u.filename || "—"}
+                    </td>
+                    <td className="border px-2 py-1">
+                      {u.mimetype || "—"}
+                    </td>
+                    <td className="border px-2 py-1">
+                      {typeof u.size === "number"
+                        ? `${(u.size / 1024).toFixed(1)} KB`
+                        : "—"}
+                    </td>
+                    <td className="border px-2 py-1">{u.status}</td>
+                    <td className="border px-2 py-1">
+                      {u.createdAt
+                        ? new Date(u.createdAt).toLocaleString()
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </Layout>
   );
