@@ -24,12 +24,13 @@ export default async function handler(
       orderBy: { createdAt: "desc" },
       take: 50,
     });
+    type DbUpload = (typeof uploads)[number];
 
     if (!uploads.length) {
       return res.status(200).json(fallbackUploads as UploadSummary[]);
     }
 
-    const mapped: UploadSummary[] = uploads.map((u): UploadSummary => ({
+    const mapped: UploadSummary[] = uploads.map((u: DbUpload): UploadSummary => ({
       id: u.id,
       filename: u.filename,
       mimetype: u.mimetype,
