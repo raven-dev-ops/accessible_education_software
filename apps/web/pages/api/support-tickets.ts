@@ -63,8 +63,15 @@ export default async function handler(
   res: NextApiResponse<SupportTicket[] | SupportTicket | { error: string }>
 ) {
   if (req.method === "POST") {
-    const auth = await requireRole(req, res, ["admin", "teacher", "student"]);
-    if (!auth) return;
+    const apiKey = req.headers["x-api-key"];
+    const hasApiKey =
+      process.env.SUPPORT_TICKET_API_KEY &&
+      apiKey === process.env.SUPPORT_TICKET_API_KEY;
+
+    if (!hasApiKey) {
+      const auth = await requireRole(req, res, ["admin", "teacher", "student"]);
+      if (!auth) return;
+    }
 
     const form = formidable({
       multiples: false,
