@@ -68,7 +68,11 @@ function AdminPage() {
       try {
         const res = await fetch("/api/students");
         if (!res.ok) {
-          throw new Error(`Request failed with status ${res.status}`);
+            // Fall back to local sample if unauthorized or error
+            setStudents(sampleStudents as Student[]);
+            setStudentsError(null);
+            setStudentsLoading(false);
+            return;
         }
         const data: Student[] = await res.json();
         if (!cancelled) {
@@ -93,7 +97,10 @@ function AdminPage() {
       try {
         const res = await fetch("/api/uploads");
         if (!res.ok) {
-          throw new Error(`Request failed with status ${res.status}`);
+            setUploads(sampleUploads as UploadSummary[]);
+            setUploadsError(null);
+            setUploadsLoading(false);
+            return;
         }
         const data = (await res.json()) as UploadSummary[];
         if (!cancelled) {
