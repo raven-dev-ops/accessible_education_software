@@ -10,6 +10,12 @@ All notable changes to this project will be documented in this file.
 - Secured temp-file cleanup in support ticket uploads and normalized admin ticket previews (attachment-aware).
 - Version bumps to 0.2.2 to mark M4 completion.
 
+## [0.2.3-alpha] - Accessible alerts & CI
+
+- Student dashboard now surfaces live, screen-reader-friendly alerts for database note loading, Braille fallback, and support ticket submission outcomes.
+- Admin ticket previews use `next/image` for optimized loading.
+- Added CI workflow (`.github/workflows/ci.yml`) to lint/build the web app and syntax-check the OCR service on pushes and PRs.
+
 ## [0.2.1] - Cloud Run proxy + WIF
 
 - Add a Cloud Run API scaffold (`apps/cloud-run-api`) that connects to the private-IP Cloud SQL instance via the Cloud SQL Connector, guarded by an `X-API-Key`.

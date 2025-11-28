@@ -69,6 +69,12 @@ function StudentPage() {
   const [ticketList, setTicketList] = useState<
     { id: string; title: string; detail: string; createdAt: string }[]
   >([]);
+  const [liveAlert, setLiveAlert] = useState<
+    { message: string; tone: "info" | "success" | "error" } | null
+  >(null);
+
+  const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
+    setLiveAlert({ message, tone });
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -255,6 +261,7 @@ function StudentPage() {
         };
         setTicketList((prev) => [newTicket, ...prev].slice(0, 5));
         setTicketDescription("");
+        announce("Support ticket submitted. We will review the OCR issue.", "success");
       })
       .catch(() => {
         // Fallback local insert on failure
@@ -266,6 +273,7 @@ function StudentPage() {
         };
         setTicketList((prev) => [newTicket, ...prev].slice(0, 5));
         setTicketDescription("");
+        announce("Could not submit the ticket online; saved locally.", "error");
       });
   };
 
@@ -277,18 +285,27 @@ function StudentPage() {
         const res = await fetch("/api/notes");
         if (!res.ok) {
           setNotes(fallbackNotes);
-          setNotesError(null);
+          setNotesError("Showing sample notes; database unavailable.");
+          announce("Showing sample notes because the database could not be reached.", "info");
           return;
         }
         const data = (await res.json()) as ReleasedNote[];
         if (!cancelled) {
-          setNotes(data.length ? data : fallbackNotes);
+          const usedFallback = data.length === 0;
+          setNotes(usedFallback ? fallbackNotes : data);
           setNotesError(null);
+          announce(
+            usedFallback
+              ? "No database notes yet; showing sample notes."
+              : "Loaded notes from the database.",
+            "info"
+          );
         }
       } catch (error) {
         if (!cancelled) {
           setNotes(fallbackNotes);
-          setNotesError(null);
+          setNotesError("Could not load notes; showing sample notes.");
+          announce("Could not load notes; showing sample notes instead.", "error");
         }
       } finally {
         if (!cancelled) {
@@ -349,6 +366,12 @@ function StudentPage() {
                 ? "Using liblouis (Nemeth) output."
                 : "Using fallback Grade 1 Braille.")
           );
+          announce(
+            data.source === "liblouis"
+              ? "Braille generated with liblouis."
+              : "Braille generated with fallback Grade 1.",
+            "info"
+          );
         }
       } catch (error) {
         if (!cancelled) {
@@ -358,6 +381,7 @@ function StudentPage() {
           setBrailleError(
             "Advanced Braille service is unavailable; falling back."
           );
+          announce("Braille service unavailable; using fallback output.", "error");
         }
       } finally {
         if (!cancelled) {
@@ -416,6 +440,22 @@ function StudentPage() {
             listenable content.
           </p>
         </section>
+
+        {liveAlert && (
+          <div
+            role={liveAlert.tone === "error" ? "alert" : "status"}
+            aria-live="polite"
+            className={`mt-3 px-4 py-3 rounded-lg text-sm border ${
+              liveAlert.tone === "error"
+                ? "bg-red-50 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-100 dark:border-red-800"
+                : liveAlert.tone === "success"
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800"
+                : "bg-slate-50 text-slate-800 border-slate-200 dark:bg-slate-800/60 dark:text-slate-100 dark:border-slate-700"
+            }`}
+          >
+            {liveAlert.message}
+          </div>
+        )}
 
         <section
           aria-labelledby="student-upload"
