@@ -6,13 +6,14 @@ import { ThemeToggle } from "./ThemeToggle";
 type LayoutProps = {
   title: string;
   children: ReactNode;
+  secondaryNav?: ReactNode;
 };
 
 const showStagingBanner =
   process.env.NEXT_PUBLIC_SHOW_STAGING_BANNER === "true" ||
   process.env.NEXT_PUBLIC_SHOW_STAGING_BANNER === "1";
 
-export function Layout({ title, children }: LayoutProps) {
+export function Layout({ title, children, secondaryNav }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100 transition-colors">
       <a
@@ -25,11 +26,11 @@ export function Layout({ title, children }: LayoutProps) {
         className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm dark:bg-slate-900/80 dark:border-slate-800"
         role="banner"
       >
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 px-6 py-4">
           <Link href="/dashboard" className="text-xl font-semibold text-slate-900 dark:text-slate-100">
             {title}
           </Link>
-          <nav className="flex items-center gap-3 text-sm" aria-label="Primary">
+          <nav className="flex flex-wrap items-center gap-3 text-sm" aria-label="Primary">
             <ThemeToggle />
             <Link
               href="/dashboard"
@@ -50,6 +51,11 @@ export function Layout({ title, children }: LayoutProps) {
             >
               Logout
             </Link>
+            {secondaryNav && (
+              <div className="flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-700">
+                {secondaryNav}
+              </div>
+            )}
           </nav>
         </div>
       </header>

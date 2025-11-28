@@ -332,28 +332,26 @@ function AdminPage() {
     );
   }
 
+  const previewNav = showPreviewNav ? (
+    <>
+      <Link className="px-3 py-2 rounded bg-blue-600 text-white text-sm" href="/student?preview=1&showPreviewNav=1">
+        Student
+      </Link>
+      <Link className="px-3 py-2 rounded bg-emerald-600 text-white text-sm" href="/teacher?preview=1&showPreviewNav=1">
+        Teacher
+      </Link>
+      <Link className="px-3 py-2 rounded bg-amber-600 text-white text-sm" href="/admin?preview=1&showPreviewNav=1">
+        Admin
+      </Link>
+      <Link className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 text-sm" href="/login?skipAuth=1">
+        Back to login
+      </Link>
+    </>
+  ) : undefined;
+
   return (
-    <Layout title="Admin Dashboard">
+    <Layout title="Admin Dashboard" secondaryNav={previewNav}>
       <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-6 transition-colors">
-        {showPreviewNav && (
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-3">
-            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Preview navigation</div>
-            <div className="flex flex-wrap gap-2">
-              <Link className="px-3 py-2 rounded bg-blue-600 text-white text-sm" href="/student?preview=1&showPreviewNav=1">
-                Student
-              </Link>
-              <Link className="px-3 py-2 rounded bg-emerald-600 text-white text-sm" href="/teacher?preview=1&showPreviewNav=1">
-                Teacher
-              </Link>
-              <Link className="px-3 py-2 rounded bg-amber-600 text-white text-sm" href="/admin?preview=1&showPreviewNav=1">
-                Admin
-              </Link>
-              <Link className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 text-sm" href="/login?skipAuth=1">
-                Back to login
-              </Link>
-            </div>
-          </div>
-        )}
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-md p-6 border border-slate-100 dark:border-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
