@@ -5,6 +5,22 @@ import { Layout } from "../../components/Layout";
 import { getRoleFromUser } from "../../lib/roleUtils";
 import sampleStudents from "../../data/sampleStudents.json";
 import sampleUploads from "../../data/sampleUploads.json";
+const sampleTickets = [
+  {
+    id: "ticket-1",
+    title: "OCR quality issue (<80%)",
+    detail: "OCR missed math symbols on derivatives notes.",
+    createdAt: "2025-11-28T08:00:00Z",
+    score: 72,
+  },
+  {
+    id: "ticket-2",
+    title: "OCR failed to read handwriting",
+    detail: "Handwriting not recognized on calculus PDF.",
+    createdAt: "2025-11-27T15:30:00Z",
+    score: 65,
+  },
+];
 
 type Student = {
   id: number;
@@ -576,6 +592,50 @@ function AdminPage() {
               <p className="text-xs text-slate-500 dark:text-slate-300 mt-3">
                 Analytics are illustrative until we wire real OCR scoring.
               </p>
+            </section>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <section className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                    Support tickets
+                  </p>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    OCR issues (&lt;80%)
+                  </h2>
+                </div>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
+                Recent tickets submitted when OCR failed or scored under 80%. Includes the reported detail and score.
+              </p>
+              <ul className="space-y-3 text-sm">
+                {sampleTickets.map((t) => (
+                  <li
+                    key={t.id}
+                    className="p-3 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="font-semibold text-slate-900 dark:text-slate-100">{t.title}</div>
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${
+                          t.score < 80
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                        }`}
+                      >
+                        Score: {t.score}%
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {new Date(t.createdAt).toLocaleString()}
+                    </div>
+                    <p className="mt-1 text-slate-800 dark:text-slate-100">{t.detail}</p>
+                    <p className="text-xs text-slate-500 mt-1">Flagged for review</p>
+                  </li>
+                ))}
+              </ul>
             </section>
           </div>
         </div>

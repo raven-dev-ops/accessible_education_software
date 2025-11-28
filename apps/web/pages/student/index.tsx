@@ -64,6 +64,10 @@ function StudentPage() {
   const [brailleError, setBrailleError] = useState<string | null>(null);
   const [brailleLoading, setBrailleLoading] = useState(false);
   const [widgetOpen, setWidgetOpen] = useState(true);
+  const [ticketDescription, setTicketDescription] = useState("");
+  const [ticketList, setTicketList] = useState<
+    { id: string; title: string; detail: string; createdAt: string }[]
+  >([]);
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -206,6 +210,21 @@ function StudentPage() {
     link.download = "sample_note.brf";
     link.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleSubmitTicket: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+    if (!ticketDescription.trim()) return;
+    const now = new Date().toISOString();
+    const newTicket = {
+      id: `ticket-${ticketList.length + 1}`,
+      title: "OCR quality issue (<80%)",
+      detail: ticketDescription.trim(),
+      createdAt: now,
+    };
+    setTicketList((prev) => [newTicket, ...prev].slice(0, 5));
+    setTicketDescription("");
+    // Stub: here we would POST to a support API and attach last OCR log/screenshot.
   };
 
   useEffect(() => {
@@ -665,6 +684,56 @@ function StudentPage() {
                 </li>
               ))}
             </ul>
+          )}
+        </section>
+
+        <section
+          aria-labelledby="student-support"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <h2 id="student-support" className="text-xl font-semibold mb-3">
+            Report a problem (OCR quality/support)
+          </h2>
+          <p className="text-base mb-3">
+            If an OCR attempt failed or scored below 80% accuracy, you can file a support ticket. Attach a screenshot or
+            describe the issue; the admin dashboard will flag these for follow-up.
+          </p>
+          <form onSubmit={handleSubmitTicket} className="space-y-3">
+            <label className="block text-sm">
+              <span className="block mb-1">Attach screenshot or recent file (optional)</span>
+              <input type="file" accept=".png,.jpg,.jpeg,.pdf" className="block w-full text-base" />
+            </label>
+            <label className="block text-sm">
+              <span className="block mb-1">Describe the issue</span>
+              <textarea
+                className="w-full border rounded p-3 text-base bg-white dark:bg-slate-800"
+                rows={4}
+                value={ticketDescription}
+                onChange={(e) => setTicketDescription(e.target.value)}
+                placeholder="Example: OCR missed math symbols; below 80% accuracy on my derivatives notes."
+              />
+            </label>
+            <button
+              type="submit"
+              className="px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
+              disabled={!ticketDescription.trim()}
+            >
+              Submit ticket
+            </button>
+          </form>
+          {ticketList.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <p className="text-sm font-semibold">Recent tickets (local preview)</p>
+              <ul className="space-y-2 text-sm">
+                {ticketList.map((t) => (
+                  <li key={t.id} className="p-2 rounded border border-slate-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
+                    <div className="font-semibold">{t.title}</div>
+                    <div className="text-xs text-gray-500">{new Date(t.createdAt).toLocaleString()}</div>
+                    <p className="mt-1">{t.detail}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </section>
       </div>
