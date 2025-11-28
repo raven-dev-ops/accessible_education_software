@@ -34,7 +34,7 @@ export function Layout({ title, children }: LayoutProps) {
                 e.preventDefault();
                 void signOut({
                   redirect: true,
-                  callbackUrl: "/login?skipAuth=1",
+                  callbackUrl: "/",
                 });
               }}
               className="px-3 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm"
