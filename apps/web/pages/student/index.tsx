@@ -1242,7 +1242,7 @@ function StudentPage() {
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 id="student-tts-ai" className="text-xl font-semibold mb-0">AI-to-speech demo</h2>
+            <h2 id="student-tts-ai" className="text-xl font-semibold mb-0">AI-To-Speech Demo</h2>
             <button
               type="button"
               onClick={() => setAiTtsOpen((open) => !open)}
@@ -1261,7 +1261,7 @@ function StudentPage() {
               id="student-tts-ai-panel"
               className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-3"
             >
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-[18rem] md:h-[24rem] flex flex-col gap-3 overflow-hidden">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-[27rem] md:h-[36rem] flex flex-col gap-3 overflow-hidden">
                 <div className="flex-1 space-y-3 overflow-auto text-sm text-slate-700 dark:text-slate-200">
                   <div className="flex flex-col gap-1">
                     <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">OCR text (from uploaded image)</span>
@@ -1312,7 +1312,7 @@ function StudentPage() {
                 </div>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Placeholder AI-to-speech demo. The module selection above controls the sample OCR text shown here.
+                Placeholder AI-To-Speech Demo. The module selection above controls the sample OCR text shown here.
               </p>
             </div>
           )}
