@@ -105,6 +105,7 @@ function StudentPage() {
   const [brailleOpen, setBrailleOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [ttsOpen, setTtsOpen] = useState(false);
+  const [aiTtsOpen, setAiTtsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
@@ -1045,252 +1046,200 @@ function StudentPage() {
         </section>
 
 
-                        <section
+                                <section
           aria-labelledby="student-tts"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <div className="flex items-center justify-between mb-3">
-            <h2 id="student-tts" className="text-xl font-semibold mb-0">
-              Text-to-speech sample
-            </h2>
-            <button
-              type="button"
-              onClick={() => setTtsOpen((open) => !open)}
-              className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
-              aria-expanded={ttsOpen}
-              aria-controls="student-tts-panel"
-            >
-              {ttsOpen ? "▲" : "▼"}
-            </button>
-          </div>
-          {!ttsSupported && (
-            <p className="text-base">
-              Text-to-speech is not available in this browser. You can still use your screen reader to read the notes.
-            </p>
-          )}
-          {ttsSupported && ttsOpen && (
-            <div id="student-tts-panel" className="max-w-6xl mx-auto grid gap-6">
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-4">
-                <p className="text-lg leading-relaxed">
-                  Use the controls below to hear a sample Calculus I note read aloud. This simulates how your own notes
-                  will sound once OCR and TTS are fully wired.
-                </p>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Live reading preview</p>
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Now reading</p>
-                    <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 text-base leading-7 min-h-[160px]">
-                      {sampleParagraphs[sampleParagraphIndex].split(' ').map((w, wi, arr) => {
-                        const isActive = highlightIndex === wi && activeSpeechId === 'sample-note';
-                        return (
-                          <span
-                            key={`live-${wi}`}
-                            className={`mr-1 inline-block transition-all duration-200 ${
-                              isActive
-                                ? 'bg-yellow-200 dark:bg-yellow-500/50 font-semibold text-lg border-2 border-amber-500 rounded px-1.5 shadow transform scale-[1.14]'
-                                : ''
-                            }`}
-                          >
-                            {w}
-                            {wi < arr.length - 1 ? ' ' : ''}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="text-sm">
-                      <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
-                      <select
-                        value={selectedVoiceUri ?? ''}
-                        onChange={(e) => {
-                          setSelectedVoiceUri(e.target.value);
-                          if (typeof window !== 'undefined') {
-                            window.localStorage.setItem(
-                              'tts-prefs',
-                              JSON.stringify({ volume, voiceURI: e.target.value, rate })
-                            );
-                          }
-                        }}
-                        className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
-                      >
-                        {voices.length === 0 && <option value="">Loading voices...</option>}
-                        {voices.map((v) => (
-                          <option key={v.voiceURI} value={v.voiceURI}>
-                            {v.name} ({v.lang})
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="text-sm">
-                      <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Speed</span>
-                      <select
-                        value={rate}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          setRate(val);
-                          if (typeof window !== 'undefined') {
-                            window.localStorage.setItem(
-                              'tts-prefs',
-                              JSON.stringify({ volume, voiceURI: selectedVoiceUri ?? undefined, rate: val })
-                            );
-                          }
-                        }}
-                        className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
-                      >
-                        <option value={0.5}>0.5x</option>
-                        <option value={1}>1.0x</option>
-                        <option value={1.5}>1.5x</option>
-                        <option value={2}>2.0x</option>
-                      </select>
-                    </label>
-                  </div>
-                  <div className="w-full max-w-md mx-auto text-sm">
-                    <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1 text-center">
-                      Volume (starts at 50%)
-                    </span>
-                    <div className="flex items-center gap-3 justify-center">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={volume}
-                        onChange={(e) => {
-                          const vol = parseFloat(e.target.value);
-                          setVolume(vol);
-                          if (typeof window !== 'undefined') {
-                            window.localStorage.setItem(
-                              'tts-prefs',
-                              JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined, rate })
-                            );
-                          }
-                        }}
-                        className="w-full accent-blue-600"
-                        aria-valuemin={0}
-                        aria-valuemax={1}
-                        aria-valuenow={volume}
-                      />
-                      <span className="text-xs text-slate-700 dark:text-slate-200">{Math.round(volume * 100)}%</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 justify-center">
-                    <button
-                      type="button"
-                      className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                      onClick={() => setSampleParagraphIndex(0)}
-                      disabled={sampleParagraphIndex === 0}
-                    >
-                      First
-                    </button>
-                    <button
-                      type="button"
-                      className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                      onClick={() => setSampleParagraphIndex((i) => Math.max(0, i - 1))}
-                      disabled={sampleParagraphIndex === 0}
-                    >
-                      Prev
-                    </button>
-                    {isSpeaking && activeSpeechId === 'sample-note' ? (
-                      <button
-                        type="button"
-                        onClick={handleStop}
-                        className="px-5 py-3 rounded bg-red-700 text-white text-base disabled:opacity-60"
-                      >
-                        Stop {countdown !== null ? `(${countdown}s)` : ''}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handlePlaySample}
-                        className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60"
-                        aria-pressed={activeSpeechId === 'sample-note'}
-                        disabled={isSpeaking && activeSpeechId === 'sample-note'}
-                      >
-                        READ
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                      onClick={() =>
-                        setSampleParagraphIndex((i) => Math.min(sampleParagraphs.length - 1, i + 1))
-                      }
-                      disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
-                    >
-                      Next
-                    </button>
-                    <button
-                      type="button"
-                      className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                      onClick={() => setSampleParagraphIndex(sampleParagraphs.length - 1)}
-                      disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
-                    >
-                      Last
-                    </button>
-                  </div>
-                  <div className="text-sm space-y-1 text-center" aria-live="polite" role="status">
-                    {speechStatus && <p className="text-emerald-700">{speechStatus}</p>}
-                    {speechError && (
-                      <p className="text-red-700" role="alert">
-                        {speechError}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-
-        <section
-          aria-labelledby="student-tts-ai"
-          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <h2 id="student-tts-ai" className="text-xl font-semibold mb-0">
-              AI-to-speech sample
-            </h2>
-          </div>
-          <div className="max-w-5xl mx-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Module</p>
-              <select className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800">
-                <option>Calculus I - Limits</option>
-                <option>Calculus I - Derivatives</option>
-                <option>Calculus I - Integrals</option>
-              </select>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-64 flex flex-col gap-3 overflow-hidden">
-              <div className="flex-1 space-y-2 overflow-auto text-sm text-slate-700 dark:text-slate-200">
-                <div className="bg-slate-100 dark:bg-slate-800 rounded p-2">
-                  <p className="font-semibold">Teacher prompt</p>
-                  <p>Read the derivative section aloud with a calm tone.</p>
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-900/40 rounded p-2">
-                  <p className="font-semibold">AI voice</p>
-                  <p>f of x equals x squared. The derivative is two x. Here is the short summary for class.</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="Type a prompt or paste note text..."
-                  className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800"
-                />
+          <div className="max-w-6xl mx-auto grid gap-6 lg:grid-cols-2">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 id="student-tts" className="text-xl font-semibold mb-0">Text-to-speech sample</h2>
                 <button
                   type="button"
-                  className="px-4 py-2 rounded bg-blue-700 text-white text-sm"
+                  onClick={() => setTtsOpen((open) => !open)}
+                  className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                  aria-expanded={ttsOpen}
+                  aria-controls="student-tts-panel"
                 >
-                  Send
+                  {ttsOpen ? '?' : '?'}
                 </button>
               </div>
+              {!ttsSupported && (
+                <p className="text-base">Text-to-speech is not available in this browser. You can still use your screen reader.</p>
+              )}
+              {ttsSupported && ttsOpen && (
+                <div id="student-tts-panel" className="space-y-4">
+                  <p className="text-lg leading-relaxed">Use the controls below to hear a sample Calculus I note read aloud.</p>
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Live reading preview</p>
+                    <div className="space-y-2">
+                      <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Now reading</p>
+                      <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 text-base leading-7 min-h-[160px]">
+                        {sampleParagraphs[sampleParagraphIndex].split(' ').map((w, wi, arr) => {
+                          const isActive = highlightIndex === wi && activeSpeechId === 'sample-note';
+                          return (
+                            <span
+                              key={`live-${wi}`}
+                              className={`mr-1 inline-block transition-all duration-200 ${
+                                isActive
+                                  ? 'bg-yellow-200 dark:bg-yellow-500/50 font-semibold text-lg border-2 border-amber-500 rounded px-1.5 shadow transform scale-[1.14]'
+                                  : ''
+                              }`}
+                            >
+                              {w}
+                              {wi < arr.length - 1 ? ' ' : ''}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="text-sm">
+                        <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
+                        <select
+                          value={selectedVoiceUri ?? ''}
+                          onChange={(e) => {
+                            setSelectedVoiceUri(e.target.value);
+                            if (typeof window !== 'undefined') {
+                              window.localStorage.setItem('tts-prefs', JSON.stringify({ volume, voiceURI: e.target.value, rate }));
+                            }
+                          }}
+                          className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
+                        >
+                          {voices.length === 0 && <option value="">Loading voices...</option>}
+                          {voices.map((v) => (
+                            <option key={v.voiceURI} value={v.voiceURI}>
+                              {v.name} ({v.lang})
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="text-sm">
+                        <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Speed</span>
+                        <select
+                          value={rate}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            setRate(val);
+                            if (typeof window !== 'undefined') {
+                              window.localStorage.setItem('tts-prefs', JSON.stringify({ volume, voiceURI: selectedVoiceUri ?? undefined, rate: val }));
+                            }
+                          }}
+                          className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
+                        >
+                          <option value={0.5}>0.5x</option>
+                          <option value={1}>1.0x</option>
+                          <option value={1.5}>1.5x</option>
+                          <option value={2}>2.0x</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div className="w-full max-w-md mx-auto text-sm">
+                      <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1 text-center">Volume (starts at 50%)</span>
+                      <div className="flex items-center gap-3 justify-center">
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.05"
+                          value={volume}
+                          onChange={(e) => {
+                            const vol = parseFloat(e.target.value);
+                            setVolume(vol);
+                            if (typeof window !== 'undefined') {
+                              window.localStorage.setItem('tts-prefs', JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined, rate }));
+                            }
+                          }}
+                          className="w-full accent-blue-600"
+                          aria-valuemin={0}
+                          aria-valuemax={1}
+                          aria-valuenow={volume}
+                        />
+                        <span className="text-xs text-slate-700 dark:text-slate-200">{Math.round(volume * 100)}%</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 justify-center">
+                      <button type="button" className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50" onClick={() => setSampleParagraphIndex(0)} disabled={sampleParagraphIndex === 0}>First</button>
+                      <button type="button" className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50" onClick={() => setSampleParagraphIndex((i) => Math.max(0, i - 1))} disabled={sampleParagraphIndex === 0}>Prev</button>
+                      {isSpeaking && activeSpeechId === 'sample-note' ? (
+                        <button type="button" onClick={handleStop} className="px-5 py-3 rounded bg-red-700 text-white text-base disabled:opacity-60">
+                          Stop {countdown !== null ? `(${countdown}s)` : ""}
+                        </button>
+                      ) : (
+                        <button type="button" onClick={handlePlaySample} className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60" aria-pressed={activeSpeechId === 'sample-note'} disabled={isSpeaking && activeSpeechId === 'sample-note'}>READ</button>
+                      )}
+                      <button type="button" className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50" onClick={() => setSampleParagraphIndex((i) => Math.min(sampleParagraphs.length - 1, i + 1))} disabled={sampleParagraphIndex === sampleParagraphs.length - 1}>Next</button>
+                      <button type="button" className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50" onClick={() => setSampleParagraphIndex(sampleParagraphs.length - 1)} disabled={sampleParagraphIndex === sampleParagraphs.length - 1}>Last</button>
+                    </div>
+                    <div className="text-sm space-y-1 text-center" aria-live="polite" role="status">
+                      {speechStatus && <p className="text-emerald-700">{speechStatus}</p>}
+                      {speechError && <p className="text-red-700" role="alert">{speechError}</p>}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Placeholder AI-to-speech preview. This will connect to the production AI reader in a later iteration.
-            </p>
+
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 id="student-tts-ai" className="text-xl font-semibold mb-0">AI-to-speech sample</h2>
+                <button
+                  type="button"
+                  onClick={() => setAiTtsOpen((open) => !open)}
+                  className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                  aria-expanded={aiTtsOpen}
+                  aria-controls="student-tts-ai-panel"
+                >
+                  {aiTtsOpen ? "▲" : "▼"}
+                </button>
+              </div>
+              {aiTtsOpen && (
+                <div
+                  id="student-tts-ai-panel"
+                  className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Module</p>
+                    <select className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800">
+                      <option>Calculus I - Limits</option>
+                      <option>Calculus I - Derivatives</option>
+                      <option>Calculus I - Integrals</option>
+                    </select>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-64 flex flex-col gap-3 overflow-hidden">
+                    <div className="flex-1 space-y-2 overflow-auto text-sm text-slate-700 dark:text-slate-200">
+                      <div className="bg-slate-100 dark:bg-slate-800 rounded p-2">
+                        <p className="font-semibold">Teacher prompt</p>
+                        <p>Read the derivative section aloud with a calm tone.</p>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-900/40 rounded p-2">
+                        <p className="font-semibold">AI voice</p>
+                        <p>f of x equals x squared. The derivative is two x. Here is the short summary for class.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Type a prompt or paste note text..."
+                        className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800"
+                      />
+                      <button
+                        type="button"
+                        className="px-4 py-2 rounded bg-blue-700 text-white text-sm"
+                      >
+                        Send
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    Placeholder AI-to-speech preview. This will connect to the production AI reader in a later iteration.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </section>
+
 
 
 
