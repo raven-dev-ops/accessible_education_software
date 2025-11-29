@@ -349,8 +349,8 @@ function StudentPage() {
     setCorrectionText("");
 
     setTimeout(() => {
-      const previewText =
-        "f(x) = x^2 + 3x - 5\n\nDerivative: f'(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
+                              const previewText =
+                                "f(x) = x^2 + 3x - 5\\n\\nDerivative: f'(x) = 2x + 3\\nIntegral: integral of f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
       const score = 72;
       setUploadPreview(previewText);
       setUploadScore(score);
@@ -633,6 +633,9 @@ function StudentPage() {
     </label>
   ) : undefined;
 
+  const displayName = session?.user?.name?.trim() || "Sample Student";
+  const displayInitial = displayName ? displayName.charAt(0).toUpperCase() : "S";
+
   if (unauthorized) {
     return (
       <Layout title="Student Dashboard" secondaryNav={previewNav}>
@@ -670,11 +673,11 @@ function StudentPage() {
           <div className="grid gap-4 md:grid-cols-2 items-center">
             <div className="flex items-center gap-4 md:max-w-md">
               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
-                {(session?.user?.name?.trim() || "Sample Student").charAt(0).toUpperCase() || "S"}
+                {displayInitial}
               </div>
               <div>
                 <h2 id="student-profile" className="text-xl font-semibold">
-                  {session?.user?.name?.trim() || "Sample Student"}
+                  {displayName}
                 </h2>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {session?.user?.email || "sample.student@example.com"}
@@ -704,520 +707,581 @@ function StudentPage() {
         </section>
         </div>
 
-        <section
+                <section
           aria-labelledby="student-upload"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Upload & process</h3>
+          <div className="space-y-4" id="student-upload-panel">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Upload & process</h3>
+              <div className="flex items-center gap-2">
                 <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100">
                   OCR MVP Demo
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setUploadOpen((open) => !open)}
+                  className="text-xs px-3 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                  aria-expanded={uploadOpen}
+                  aria-controls="student-upload-panel"
+                >
+                  {uploadOpen ? 'Hide' : 'Show'}
+                </button>
               </div>
-                <label className="sr-only">
-                  Choose image or PDF
-                  <input
-                    type="file"
-                    accept=".pdf,image/*"
-                    ref={fileInputRef}
-                    className="mt-2 block w-full text-sm border rounded p-3 bg-white dark:bg-slate-800"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      setUploadFileName(file ? file.name : null);
-                    setUploadStatus(null);
-                    setUploadError(null);
-                    setUploadPreview(null);
-                    setUploadScore(null);
-                    setCorrectionText("");
-                    setUploadImageUrl(null);
-                    if (file && file.type.startsWith("image/")) {
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        const dataUrl = reader.result as string;
-                        const entry: PreviousUpload = {
-                          id: `upload-${Date.now()}`,
-                          name: file.name,
-                          dataUrl,
-                          createdAt: new Date().toISOString(),
-                          history: [],
-                        };
-                        setUploadImageUrl(dataUrl);
-                        setActiveUploadId(entry.id);
-                        setPreviousUploads((prev) => {
-                          const next = [entry, ...prev].slice(0, 6);
-                          persistUploads(next);
-                          return next;
-                        });
+            </div>
 
-                        // Immediately run simulated OCR for the newly uploaded image
-                        setUploadStatus("Processing handwritten note...");
+            {uploadOpen && (
+              <>
+                <div className="space-y-3">
+                  <label className="sr-only">
+                    Choose image or PDF
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      ref={fileInputRef}
+                      className="mt-2 block w-full text-sm border rounded p-3 bg-white dark:bg-slate-800"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setUploadFileName(file ? file.name : null);
+                        setUploadStatus(null);
                         setUploadError(null);
                         setUploadPreview(null);
                         setUploadScore(null);
-                        setCorrectionText("");
-                        setTimeout(() => {
-                          const previewText =
-                            "f(x) = x^2 + 3x - 5\n\nDerivative: f'(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
-                          const score = 72;
-                          setUploadPreview(previewText);
-                          setUploadScore(score);
-                          setCorrectionText(previewText);
-                          setUploadStatus("Formatted for TTS. You can listen to the preview below.");
-                          announce("Uploaded sample note processed. Ready to play.", "success");
+                        setCorrectionText('');
+                        setUploadImageUrl(null);
+                        if (file && file.type.startsWith('image/')) {
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const dataUrl = reader.result as string;
+                            const entry: PreviousUpload = {
+                              id: `upload-${Date.now()}`,
+                              name: file.name,
+                              dataUrl,
+                              createdAt: new Date().toISOString(),
+                              history: [],
+                            };
+                            setUploadImageUrl(dataUrl);
+                            setActiveUploadId(entry.id);
+                            setPreviousUploads((prev) => {
+                              const next = [entry, ...prev].slice(0, 6);
+                              persistUploads(next);
+                              return next;
+                            });
+
+                            setUploadStatus('Processing handwritten note...');
+                            setUploadError(null);
+                            setUploadPreview(null);
+                            setUploadScore(null);
+                            setCorrectionText('');
+                            setTimeout(() => {
+                              const previewText =
+                                "f(x) = x^2 + 3x - 5\\n\\nDerivative: f'(x) = 2x + 3\\nIntegral: integral of f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
+                              const score = 72;
+                              setUploadPreview(previewText);
+                              setUploadScore(score);
+                              setCorrectionText(previewText);
+                              setUploadStatus('Formatted for TTS. You can listen to the preview below.');
+                              announce('Uploaded sample note processed. Ready to play.', 'success');
+                              const now = new Date().toISOString();
+                              setPreviousUploads((prev) => {
+                                const next = prev.map((u) => {
+                                  if (u.id !== entry.id) return u;
+                                  const history = Array.isArray(u.history) ? u.history : [];
+                                  const historyEntry: UploadHistoryEntry = { score, createdAt: now };
+                                  return { ...u, history: [historyEntry, ...history].slice(0, 10) };
+                                });
+                                persistUploads(next);
+                                return next;
+                              });
+                            }, 800);
+                          };
+                          reader.readAsDataURL(file);
+                        } else {
+                          setActiveUploadId(null);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Selected image</p>
+                        {uploadFileName && (
+                          <span className="text-xs text-slate-600 dark:text-slate-300">{uploadFileName}</span>
+                        )}
+                      </div>
+                      {uploadImageUrl ? (
+                        <div className="relative w-full h-48 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded">
+                          <Image src={uploadImageUrl} alt="Uploaded preview" fill className="object-contain rounded" />
+                        </div>
+                      ) : (
+                        <div className="h-48 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 rounded border border-dashed border-slate-300 dark:border-slate-700">
+                          No image selected
+                        </div>
+                      )}
+                    </div>
+                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                        Previous uploads
+                      </p>
+                      {previousUploads.length === 0 ? (
+                        <div className="h-36 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 border border-dashed border-slate-300 dark:border-slate-700 rounded">
+                          No previous uploads yet
+                        </div>
+                      ) : (
+                        <ul className="space-y-2 max-h-40 overflow-auto text-xs text-slate-700 dark:text-slate-200">
+                          {previousUploads.map((u) => {
+                            const isActive = u.id === activeUploadId;
+                            return (
+                              <li
+                                key={u.id}
+                                className={`flex items-center gap-2 rounded px-2 py-1 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                                  isActive
+                                    ? 'ring-2 ring-blue-500 ring-offset-1 ring-offset-slate-50 dark:ring-offset-slate-900'
+                                    : ''
+                                }`}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => handleSelectPreviousUpload(u)}
+                                onKeyDown={(evt) => {
+                                  if (evt.key === 'Enter' || evt.key === ' ') {
+                                    evt.preventDefault();
+                                    handleSelectPreviousUpload(u);
+                                  }
+                                }}
+                              >
+                                <div className="relative h-10 w-10 flex-shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+                                  <Image src={u.dataUrl} alt={u.name} fill className="object-cover" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="truncate font-medium">{u.name}</div>
+                                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                                    {new Date(u.createdAt).toLocaleDateString()}
+                                  </div>
+                                  {u.history && u.history.length > 0 && (
+                                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                                      Last score: {u.history[0].score}% on{' '}
+                                      {new Date(u.history[0].createdAt).toLocaleDateString()}
+                                    </div>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  className="ml-1 text-[11px] px-2 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-red-50 dark:hover:bg-red-900/40 text-red-700 dark:text-red-200"
+                                  onClick={(evt) => {
+                                    evt.stopPropagation();
+                                    handleDeletePreviousUpload(u.id);
+                                  }}
+                                  aria-label={`Delete upload ${u.name}`}
+                                >
+                                  Delete
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="w-full px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
+                    disabled={!uploadFileName}
+                    onClick={() => {
+                      if (fileInputRef.current) {
+                        fileInputRef.current.click();
+                        return;
+                      }
+                      if (!uploadFileName) {
+                        setUploadError('Please choose a file first.');
+                        return;
+                      }
+                      setUploadStatus('Processing handwritten note...');
+                      setUploadError(null);
+                      setTimeout(() => {
+                        const preview =
+                          "f(x) = x^2 + 3x - 5\\n\\nDerivative: f'(x) = 2x + 3\\nIntegral: integral of f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
+                        const score = 72;
+                        setUploadPreview(preview);
+                        setUploadStatus('Formatted for TTS. You can listen to the preview below.');
+                        setUploadScore(score);
+                        setCorrectionText(preview);
+                        announce('Uploaded sample note processed. Ready to play.', 'success');
+                        if (activeUploadId) {
                           const now = new Date().toISOString();
                           setPreviousUploads((prev) => {
                             const next = prev.map((u) => {
-                              if (u.id !== entry.id) return u;
+                              if (u.id !== activeUploadId) return u;
                               const history = Array.isArray(u.history) ? u.history : [];
-                              const historyEntry: UploadHistoryEntry = { score, createdAt: now };
-                              return { ...u, history: [historyEntry, ...history].slice(0, 10) };
+                              const entry: UploadHistoryEntry = { score, createdAt: now };
+                              return { ...u, history: [entry, ...history].slice(0, 10) };
                             });
                             persistUploads(next);
                             return next;
                           });
-                        }, 800);
-                      };
-                      reader.readAsDataURL(file);
-                    } else {
-                      setActiveUploadId(null);
-                    }
-                  }}
-                />
-              </label>
+                        }
+                      }, 800);
+                    }}
+                  >
+                    Upload image
+                  </button>
 
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Selected image</p>
-                    {uploadFileName && (
-                      <span className="text-xs text-slate-600 dark:text-slate-300">{uploadFileName}</span>
-                    )}
-                  </div>
-                  {uploadImageUrl ? (
-                    <div className="relative w-full h-48 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded">
-                      <Image src={uploadImageUrl} alt="Uploaded preview" fill className="object-contain rounded" />
-                    </div>
-                  ) : (
-                    <div className="h-48 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 rounded border border-dashed border-slate-300 dark:border-slate-700">
-                      No image selected
+                  <button
+                    type="button"
+                    className="mt-2 w-full px-5 py-3 rounded border border-blue-700 text-blue-700 dark:text-blue-200 dark:border-blue-300 text-base disabled:opacity-60"
+                    disabled={!uploadPreview}
+                    onClick={handleFormatForTts}
+                  >
+                    Format TTS
+                  </button>
+
+                  {(uploadStatus || uploadError) && (
+                    <div
+                      className={`text-sm rounded border px-3 py-2 ${
+                        uploadError
+                          ? 'text-red-800 bg-red-50 border-red-200 dark:bg-red-900/40 dark:text-red-100 dark:border-red-800'
+                          : 'text-emerald-800 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800'
+                      }`}
+                    >
+                      {uploadError || uploadStatus}
                     </div>
                   )}
                 </div>
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                    Previous uploads
-                  </p>
-                  {previousUploads.length === 0 ? (
-                    <div className="h-36 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 border border-dashed border-slate-300 dark:border-slate-700 rounded">
-                      No previous uploads yet
-                    </div>
-                  ) : (
-                    <ul className="space-y-2 max-h-40 overflow-auto text-xs text-slate-700 dark:text-slate-200">
-                      {previousUploads.map((u) => {
-                        const isActive = u.id === activeUploadId;
-                        return (
-                          <li
-                            key={u.id}
-                            className={`flex items-center gap-2 rounded px-2 py-1 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 ${
-                              isActive
-                                ? "ring-2 ring-blue-500 ring-offset-1 ring-offset-slate-50 dark:ring-offset-slate-900"
-                                : ""
-                            }`}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => handleSelectPreviousUpload(u)}
-                            onKeyDown={(evt) => {
-                              if (evt.key === "Enter" || evt.key === " ") {
-                                evt.preventDefault();
-                                handleSelectPreviousUpload(u);
-                              }
-                            }}
-                          >
-                            <div className="relative h-10 w-10 flex-shrink-0 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
-                              <Image src={u.dataUrl} alt={u.name} fill className="object-cover" />
+
+                <div className="space-y-3">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-3">
+                      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Review OCR result</h3>
+                      {uploadPreview ? (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                              Accuracy grade
+                            </span>
+                            {uploadScore != null && (
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                  uploadScore >= 80
+                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200'
+                                    : uploadScore >= 70
+                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
+                                    : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+                                }`}
+                              >
+                                {uploadScore}% {uploadScore < 80 ? '(will auto-report to teachers)' : ''}
+                              </span>
+                            )}
+                          </div>
+                          <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
+                            {uploadPreview}
+                          </pre>
+                          {activeUploadId && (
+                            <div className="text-xs text-slate-600 dark:text-slate-300">
+                              {(() => {
+                                const selected = previousUploads.find((u) => u.id === activeUploadId);
+                                if (!selected || !selected.history || selected.history.length === 0) return null;
+                                const historyText = selected.history
+                                  .map((h) => `${h.score}% on ${new Date(h.createdAt).toLocaleDateString()}`)
+                                  .join(' | ');
+                                return <p>Previous scores for this image: {historyText}</p>;
+                              })()}
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="truncate font-medium">{u.name}</div>
-                              <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                                {new Date(u.createdAt).toLocaleDateString()}
-                              </div>
-                              {u.history && u.history.length > 0 && (
-                                <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                                  Last score: {u.history[0].score}% on{" "}
-                                  {new Date(u.history[0].createdAt).toLocaleDateString()}
-                                </div>
-                              )}
-                            </div>
-                            <button
-                              type="button"
-                              className="ml-1 text-[11px] px-2 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-red-50 dark:hover:bg-red-900/40 text-red-700 dark:text-red-200"
-                              onClick={(evt) => {
-                                evt.stopPropagation();
-                                handleDeletePreviousUpload(u.id);
-                              }}
-                              aria-label={`Delete upload ${u.name}`}
-                            >
-                              Delete
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="w-full px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
-                disabled={!uploadFileName}
-                onClick={() => {
-                  if (fileInputRef.current) {
-                    fileInputRef.current.click();
-                    return;
-                  }
-                  if (!uploadFileName) {
-                    setUploadError("Please choose a file first.");
-                    return;
-                  }
-                  setUploadStatus("Processing handwritten note...");
-                  setUploadError(null);
-                  // Simulate OCR + math formatting
-                  setTimeout(() => {
-                    const preview =
-                      "f(x) = x^2 + 3x - 5\n\nDerivative: f'(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
-                    const score = 72;
-                    setUploadPreview(preview);
-                    setUploadStatus("Formatted for TTS. You can listen to the preview below.");
-                    setUploadScore(score);
-                    setCorrectionText(preview);
-                    announce("Uploaded sample note processed. Ready to play.", "success");
-                    if (activeUploadId) {
-                      const now = new Date().toISOString();
-                      setPreviousUploads((prev) => {
-                        const next = prev.map((u) => {
-                          if (u.id !== activeUploadId) return u;
-                          const history = Array.isArray(u.history) ? u.history : [];
-                          const entry: UploadHistoryEntry = { score, createdAt: now };
-                          return { ...u, history: [entry, ...history].slice(0, 10) };
-                        });
-                        persistUploads(next);
-                        return next;
-                      });
-                    }
-                  }, 800);
-                }}
-              >
-                Upload image
-              </button>
-
-              <button
-                type="button"
-                className="mt-2 w-full px-5 py-3 rounded border border-blue-700 text-blue-700 dark:text-blue-200 dark:border-blue-300 text-base disabled:opacity-60"
-                disabled={!uploadPreview}
-                onClick={handleFormatForTts}
-              >
-                Format TTS
-              </button>
-
-              {(uploadStatus || uploadError) && (
-                <div
-                  className={`text-sm rounded border px-3 py-2 ${
-                    uploadError
-                      ? "text-red-800 bg-red-50 border-red-200 dark:bg-red-900/40 dark:text-red-100 dark:border-red-800"
-                      : "text-emerald-800 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800"
-                  }`}
-                >
-                  {uploadError || uploadStatus}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-3">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-3">
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Review OCR result</h3>
-                  {uploadPreview ? (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                          Accuracy grade
-                        </span>
-                        {uploadScore != null && (
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              uploadScore >= 80
-                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
-                                : uploadScore >= 70
-                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
-                                : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                            }`}
-                          >
-                            {uploadScore}% {uploadScore < 80 ? "(will auto-report to teachers)" : ""}
-                          </span>
-                        )}
-                      </div>
-                      <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
-                        {uploadPreview}
-                      </pre>
-                      {activeUploadId && (
-                        <div className="text-xs text-slate-600 dark:text-slate-300">
-                          {(() => {
-                            const selected = previousUploads.find((u) => u.id === activeUploadId);
-                            if (!selected || !selected.history || selected.history.length === 0) return null;
-                            const historyText = selected.history
-                              .map(
-                                (h) =>
-                                  `${h.score}% on ${new Date(h.createdAt).toLocaleDateString()}`
-                              )
-                              .join(" · ");
-                            return <p>Previous scores for this image: {historyText}</p>;
-                          })()}
+                          )}
+                          <div className="space-y-2">
+                            <label className="block text-sm">
+                              <span className="block mb-1">Correction (edit if OCR is wrong)</span>
+                              <textarea
+                                className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
+                                rows={4}
+                                value={correctionText}
+                                onChange={(e) => setCorrectionText(e.target.value)}
+                              />
+                            </label>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-300">
+                          Upload a handwritten note to review its OCR text and make corrections.
                         </div>
                       )}
-                      <div className="space-y-2">
-                        <label className="block text-sm">
-                          <span className="block mb-1">Correction (edit if OCR is wrong)</span>
-                          <textarea
-                            className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
-                            rows={4}
-                            value={correctionText}
-                            onChange={(e) => setCorrectionText(e.target.value)}
-                          />
-                        </label>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-300">
-                      Upload a handwritten note to review its OCR text and make corrections.
                     </div>
-                  )}
-                </div>
 
-                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 p-4">
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Formatting preview</h3>
-                  {uploadPreview ? (
-                    <div className="space-y-3">
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        Preview how this note is laid out for reading and where the OCR engine focused.
-                      </p>
-                      <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
-                        {correctionText || uploadPreview}
-                      </pre>
-                      <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
-                        {uploadImageUrl ? (
-                          <div className="relative h-full w-full">
-                            <Image src={uploadImageUrl} alt="Scanned region" fill className="object-contain rounded" />
-                            <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-                              Scanned region
-                            </div>
+                    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 p-4">
+                      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Formatting preview</h3>
+                      {uploadPreview ? (
+                        <div className="space-y-3">
+                          <p className="text-sm text-slate-700 dark:text-slate-300">
+                            Preview how this note is laid out for reading and where the OCR engine focused.
+                          </p>
+                          <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
+                            {correctionText || uploadPreview}
+                          </pre>
+                          <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
+                            {uploadImageUrl ? (
+                              <div className="relative h-full w-full">
+                                <Image src={uploadImageUrl} alt="Scanned region" fill className="object-contain rounded" />
+                                <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
+                                  Scanned region
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-slate-500 dark:text-slate-300">Region preview</span>
+                            )}
                           </div>
-                        ) : (
-                          <span className="text-sm text-slate-500 dark:text-slate-300">Region preview</span>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-slate-700 dark:text-slate-300">
+                          Upload a handwritten note and run OCR to see the formatting preview and scanned region.
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      Upload a handwritten note and run OCR to see the formatting preview and scanned region.
-                    </p>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </section>
 
-        <section
+
+                        <section
           aria-labelledby="student-tts"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <h2 id="student-tts" className="text-xl font-semibold mb-3">
-            Text-to-speech sample
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 id="student-tts" className="text-xl font-semibold mb-0">
+              Text-to-speech sample
+            </h2>
+            <button
+              type="button"
+              onClick={() => setTtsOpen((open) => !open)}
+              className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+              aria-expanded={ttsOpen}
+              aria-controls="student-tts-panel"
+            >
+              {ttsOpen ? 'Hide' : 'Show'}
+            </button>
+          </div>
           {!ttsSupported && (
             <p className="text-base">
               Text-to-speech is not available in this browser. You can still use your screen reader to read the notes.
             </p>
           )}
-          {ttsSupported && (
-            <div className="max-w-6xl mx-auto grid gap-6 lg:grid-cols-2">
-              <div className="space-y-4">
-                <p className="text-lg leading-relaxed text-center lg:text-left">
+          {ttsSupported && ttsOpen && (
+            <div id="student-tts-panel" className="max-w-6xl mx-auto grid gap-6 lg:grid-cols-2">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-4">
+                <p className="text-lg leading-relaxed">
                   Use the controls below to hear a sample Calculus I note read aloud. This simulates how your own notes
                   will sound once OCR and TTS are fully wired.
                 </p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="text-sm">
-                    <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
-                    <select
-                      value={selectedVoiceUri ?? ""}
-                      onChange={(e) => {
-                        setSelectedVoiceUri(e.target.value);
-                        if (typeof window !== "undefined") {
-                          window.localStorage.setItem(
-                            "tts-prefs",
-                            JSON.stringify({ volume, voiceURI: e.target.value, rate })
-                          );
-                        }
-                      }}
-                      className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
-                    >
-                      {voices.length === 0 && <option value="">Loading voices...</option>}
-                      {voices.map((v) => (
-                        <option key={v.voiceURI} value={v.voiceURI}>
-                          {v.name} ({v.lang})
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="text-sm">
-                    <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Speed</span>
-                    <select
-                      value={rate}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        setRate(val);
-                        if (typeof window !== "undefined") {
-                          window.localStorage.setItem(
-                            "tts-prefs",
-                            JSON.stringify({ volume, voiceURI: selectedVoiceUri ?? undefined, rate: val })
-                          );
-                        }
-                      }}
-                      className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
-                    >
-                      <option value={0.5}>0.5x</option>
-                      <option value={1}>1.0x</option>
-                      <option value={1.5}>1.5x</option>
-                      <option value={2}>2.0x</option>
-                    </select>
-                  </label>
-                </div>
-                <div className="w-full max-w-md mx-auto text-sm">
-                  <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1 text-center">
-                    Volume (starts at 50%)
-                  </span>
-                  <div className="flex items-center gap-3 justify-center">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={volume}
-                      onChange={(e) => {
-                        const vol = parseFloat(e.target.value);
-                        setVolume(vol);
-                        if (typeof window !== "undefined") {
-                          window.localStorage.setItem(
-                            "tts-prefs",
-                            JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined, rate })
-                          );
-                        }
-                      }}
-                      className="w-full accent-blue-600"
-                      aria-valuemin={0}
-                      aria-valuemax={1}
-                      aria-valuenow={volume}
-                    />
-                    <span className="text-xs text-slate-700 dark:text-slate-200">{Math.round(volume * 100)}%</span>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Live reading preview</p>
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Now reading</p>
+                    <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 text-base leading-7 min-h-[160px]">
+                      {sampleParagraphs[sampleParagraphIndex].split(' ').map((w, wi, arr) => {
+                        const isActive = highlightIndex === wi && activeSpeechId === 'sample-note';
+                        return (
+                          <span
+                            key={`live-${wi}`}
+                            className={`mr-1 inline-block transition-all duration-200 ${
+                              isActive
+                                ? 'bg-yellow-200 dark:bg-yellow-500/50 font-semibold text-lg border-2 border-amber-500 rounded px-1.5 shadow transform scale-[1.14]'
+                                : ''
+                            }`}
+                          >
+                            {w}
+                            {wi < arr.length - 1 ? ' ' : ''}
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 justify-center">
-                  <button
-                    type="button"
-                    className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                    onClick={() => setSampleParagraphIndex(0)}
-                    disabled={sampleParagraphIndex === 0}
-                  >
-                    ⏮ First
-                  </button>
-                  <button
-                    type="button"
-                    className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                    onClick={() => setSampleParagraphIndex((i) => Math.max(0, i - 1))}
-                    disabled={sampleParagraphIndex === 0}
-                  >
-                    ◀ Prev
-                  </button>
-                  {isSpeaking && activeSpeechId === "sample-note" ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="text-sm">
+                      <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
+                      <select
+                        value={selectedVoiceUri ?? ''}
+                        onChange={(e) => {
+                          setSelectedVoiceUri(e.target.value);
+                          if (typeof window !== 'undefined') {
+                            window.localStorage.setItem(
+                              'tts-prefs',
+                              JSON.stringify({ volume, voiceURI: e.target.value, rate })
+                            );
+                          }
+                        }}
+                        className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
+                      >
+                        {voices.length === 0 && <option value="">Loading voices...</option>}
+                        {voices.map((v) => (
+                          <option key={v.voiceURI} value={v.voiceURI}>
+                            {v.name} ({v.lang})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="text-sm">
+                      <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Speed</span>
+                      <select
+                        value={rate}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          setRate(val);
+                          if (typeof window !== 'undefined') {
+                            window.localStorage.setItem(
+                              'tts-prefs',
+                              JSON.stringify({ volume, voiceURI: selectedVoiceUri ?? undefined, rate: val })
+                            );
+                          }
+                        }}
+                        className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
+                      >
+                        <option value={0.5}>0.5x</option>
+                        <option value={1}>1.0x</option>
+                        <option value={1.5}>1.5x</option>
+                        <option value={2}>2.0x</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div className="w-full max-w-md mx-auto text-sm">
+                    <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1 text-center">
+                      Volume (starts at 50%)
+                    </span>
+                    <div className="flex items-center gap-3 justify-center">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={volume}
+                        onChange={(e) => {
+                          const vol = parseFloat(e.target.value);
+                          setVolume(vol);
+                          if (typeof window !== 'undefined') {
+                            window.localStorage.setItem(
+                              'tts-prefs',
+                              JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined, rate })
+                            );
+                          }
+                        }}
+                        className="w-full accent-blue-600"
+                        aria-valuemin={0}
+                        aria-valuemax={1}
+                        aria-valuenow={volume}
+                      />
+                      <span className="text-xs text-slate-700 dark:text-slate-200">{Math.round(volume * 100)}%</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 justify-center">
                     <button
                       type="button"
-                      onClick={handleStop}
-                      className="px-5 py-3 rounded bg-red-700 text-white text-base disabled:opacity-60"
+                      className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
+                      onClick={() => setSampleParagraphIndex(0)}
+                      disabled={sampleParagraphIndex === 0}
                     >
-                      Stop {countdown !== null ? `(${countdown}s)` : ""}
+                      First
                     </button>
-                  ) : (
                     <button
                       type="button"
-                      onClick={handlePlaySample}
-                      className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60"
-                      aria-pressed={activeSpeechId === "sample-note"}
-                      disabled={isSpeaking && activeSpeechId === "sample-note"}
+                      className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
+                      onClick={() => setSampleParagraphIndex((i) => Math.max(0, i - 1))}
+                      disabled={sampleParagraphIndex === 0}
                     >
-                      READ
+                      Prev
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                    onClick={() =>
-                      setSampleParagraphIndex((i) => Math.min(sampleParagraphs.length - 1, i + 1))
-                    }
-                    disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
-                  >
-                    Next ▶
-                  </button>
-                  <button
-                    type="button"
-                    className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
-                    onClick={() => setSampleParagraphIndex(sampleParagraphs.length - 1)}
-                    disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
-                  >
-                    Last ⏭
-                  </button>
-                </div>
-                <div className="text-sm space-y-1" aria-live="polite" role="status">
-                  {speechStatus && <p className="text-emerald-700">{speechStatus}</p>}
-                  {speechError && (
-                    <p className="text-red-700" role="alert">
-                      {speechError}
-                    </p>
-                  )}
+                    {isSpeaking && activeSpeechId === 'sample-note' ? (
+                      <button
+                        type="button"
+                        onClick={handleStop}
+                        className="px-5 py-3 rounded bg-red-700 text-white text-base disabled:opacity-60"
+                      >
+                        Stop {countdown !== null ? `(${countdown}s)` : ''}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handlePlaySample}
+                        className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60"
+                        aria-pressed={activeSpeechId === 'sample-note'}
+                        disabled={isSpeaking && activeSpeechId === 'sample-note'}
+                      >
+                        READ
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
+                      onClick={() =>
+                        setSampleParagraphIndex((i) => Math.min(sampleParagraphs.length - 1, i + 1))
+                      }
+                      disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
+                    >
+                      Next
+                    </button>
+                    <button
+                      type="button"
+                      className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
+                      onClick={() => setSampleParagraphIndex(sampleParagraphs.length - 1)}
+                      disabled={sampleParagraphIndex === sampleParagraphs.length - 1}
+                    >
+                      Last
+                    </button>
+                  </div>
+                  <div className="text-sm space-y-1 text-center" aria-live="polite" role="status">
+                    {speechStatus && <p className="text-emerald-700">{speechStatus}</p>}
+                    {speechError && (
+                      <p className="text-red-700" role="alert">
+                        {speechError}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4">
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-2">Live reading preview</p>
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Now reading</p>
-                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 text-base leading-7 min-h-[160px]">
-                    {sampleParagraphs[sampleParagraphIndex].split(" ").map((w, wi, arr) => {
-                      const isActive = highlightIndex === wi && activeSpeechId === "sample-note";
-                      return (
-                        <span
-                          key={`live-${wi}`}
-                          className={`mr-1 inline-block transition-all duration-200 ${
-                            isActive
-                              ? "bg-yellow-200 dark:bg-yellow-500/50 font-semibold text-lg border-2 border-amber-500 rounded px-1.5 shadow transform scale-[1.14]"
-                              : ""
-                          }`}
-                        >
-                          {w}
-                          {wi < arr.length - 1 ? " " : ""}
-                        </span>
-                      );
-                    })}
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">AI-to-speech sample</p>
+                  <select className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800">
+                    <option>Calculus I - Limits</option>
+                    <option>Calculus I - Derivatives</option>
+                    <option>Calculus I - Integrals</option>
+                  </select>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-64 flex flex-col gap-3 overflow-hidden">
+                  <div className="flex-1 space-y-2 overflow-auto text-sm text-slate-700 dark:text-slate-200">
+                    <div className="bg-slate-100 dark:bg-slate-800 rounded p-2">
+                      <p className="font-semibold">Teacher prompt</p>
+                      <p>Read the derivative section aloud with a calm tone.</p>
+                    </div>
+                    <div className="bg-blue-50 dark:bg-blue-900/40 rounded p-2">
+                      <p className="font-semibold">AI voice</p>
+                      <p>f of x equals x squared. The derivative is two x. Here is the short summary for class.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Type a prompt or paste note text..."
+                      className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800"
+                    />
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded bg-blue-700 text-white text-sm"
+                    >
+                      Send
+                    </button>
                   </div>
                 </div>
-                {/* Paragraph list and TL;DR removed per request to simplify TTS sample */}
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Placeholder AI-to-speech preview. This will connect to the production AI reader in a later iteration.
+                </p>
               </div>
             </div>
           )}
         </section>
+
+
 
         <section
           aria-labelledby="student-braille"
