@@ -249,13 +249,57 @@ function StudentPage() {
       const raw = window.localStorage.getItem(key);
       if (raw) {
         const parsed = JSON.parse(raw) as PreviousUpload[];
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           const normalised = parsed.map((u) => ({
             ...u,
             history: Array.isArray(u.history) ? u.history : [],
           }));
           setPreviousUploads(normalised);
+          return;
         }
+      }
+
+      if (preview) {
+        const now = new Date().toISOString();
+        const sampleUploads: PreviousUpload[] = [
+          {
+            id: "sample-calculus-1",
+            name: "calculus_1.jpg",
+            dataUrl: "/calculus_1.jpg",
+            createdAt: now,
+            history: [{ score: 88, createdAt: now }],
+          },
+          {
+            id: "sample-calculus-2",
+            name: "calculus_2.png",
+            dataUrl: "/calculus_2.png",
+            createdAt: now,
+            history: [{ score: 72, createdAt: now }],
+          },
+          {
+            id: "sample-linear-algebra",
+            name: "linear_algebra.png",
+            dataUrl: "/linear_algebra.png",
+            createdAt: now,
+            history: [{ score: 91, createdAt: now }],
+          },
+          {
+            id: "sample-physics",
+            name: "physics.png",
+            dataUrl: "/physics.png",
+            createdAt: now,
+            history: [{ score: 84, createdAt: now }],
+          },
+          {
+            id: "sample-statistics",
+            name: "statistics.png",
+            dataUrl: "/statistics.png",
+            createdAt: now,
+            history: [{ score: 89, createdAt: now }],
+          },
+        ];
+        setPreviousUploads(sampleUploads);
+        window.localStorage.setItem(key, JSON.stringify(sampleUploads));
       }
     } catch {
       // ignore
@@ -992,14 +1036,19 @@ function StudentPage() {
                                 </div>
                                 <button
                                   type="button"
-                                  className="ml-1 text-[11px] px-2 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-red-50 dark:hover:bg-red-900/40 text-red-700 dark:text-red-200"
+                                  className="ml-1 text-[11px] px-2 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-200 disabled:opacity-60"
                                   onClick={(evt) => {
                                     evt.stopPropagation();
+                                    if (preview) {
+                                      announce("Demo only: deletions are disabled in preview.", "info");
+                                      return;
+                                    }
                                     handleDeletePreviousUpload(u.id);
                                   }}
                                   aria-label={`Delete upload ${u.name}`}
+                                  disabled={preview}
                                 >
-                                  Delete
+                                  {preview ? "Delete (demo)" : "Delete"}
                                 </button>
                               </li>
                             );
@@ -1013,9 +1062,16 @@ function StudentPage() {
                     <button
                       type="button"
                       className="w-full px-5 py-3 rounded bg-blue-700 text-white text-lg disabled:opacity-60 hover:bg-blue-600 dark:hover:bg-blue-500"
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => {
+                        if (preview) {
+                          announce("Demo only: file uploads are disabled in preview.", "info");
+                          return;
+                        }
+                        fileInputRef.current?.click();
+                      }}
+                      disabled={preview}
                     >
-                      Upload image
+                      {preview ? "Upload image (demo)" : "Upload image"}
                     </button>
                     <button
                       type="button"
