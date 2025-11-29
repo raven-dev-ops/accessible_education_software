@@ -300,6 +300,11 @@ function StudentPage() {
         ];
         setPreviousUploads(sampleUploads);
         window.localStorage.setItem(key, JSON.stringify(sampleUploads));
+
+        const first = sampleUploads[0];
+        setActiveUploadId(first.id);
+        setUploadImageUrl(first.dataUrl);
+        setUploadFileName(first.name);
       }
     } catch {
       // ignore
