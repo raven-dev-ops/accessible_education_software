@@ -1076,40 +1076,40 @@ function StudentPage() {
 
                     <div className="space-y-3">
                       {uploadPreview ? (
-                        <>
-                          <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
-                            {uploadPreview}
-                          </pre>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                OCR correction
-                              </span>
-                              <button
-                                type="button"
-                                onClick={handleToggleCorrectionEdit}
-                                disabled={correctionSaving}
-                                className="text-xs font-semibold px-3 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-60 text-slate-800 dark:text-slate-100"
-                              >
-                                {isCorrectionEditing
-                                  ? correctionSaving
-                                    ? "Saving..."
-                                    : "Save"
-                                  : "Edit"}
-                              </button>
-                            </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                              OCR text
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleToggleCorrectionEdit}
+                              disabled={correctionSaving}
+                              className="text-xs font-semibold px-3 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-60 text-slate-800 dark:text-slate-100"
+                            >
+                              {isCorrectionEditing
+                                ? correctionSaving
+                                  ? "Saving..."
+                                  : "Save"
+                                : "Edit"}
+                            </button>
+                          </div>
+                          {isCorrectionEditing ? (
                             <textarea
                               className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
                               rows={4}
                               value={correctionText}
                               onChange={(e) => setCorrectionText(e.target.value)}
-                              readOnly={!isCorrectionEditing}
                             />
-                            {correctionError && (
-                              <p className="text-xs text-red-600 dark:text-red-400">{correctionError}</p>
-                            )}
-                          </div>
-                        </>
+                          ) : (
+                            <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
+                              {correctionText || uploadPreview}
+                            </pre>
+                          )}
+                          {correctionError && (
+                            <p className="text-xs text-red-600 dark:text-red-400">{correctionError}</p>
+                          )}
+                        </div>
                       ) : (
                         <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-200">
                           Upload a handwritten note to review its OCR text and make corrections.
