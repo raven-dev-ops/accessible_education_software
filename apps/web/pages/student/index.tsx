@@ -1312,7 +1312,7 @@ function StudentPage() {
                 </div>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Placeholder AI-To-Speech Demo. The module selection above controls the sample OCR text shown here.
+                
               </p>
             </div>
           )}
