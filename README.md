@@ -16,7 +16,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 ## Table of Contents
 
 - [Features](#features)
-- [Status (v1.0.0 / v1.0.0-4)](#status-day-5)
+- [Status (v1.0.0)](#status-v100)
 - [Roles](#roles)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -89,12 +89,12 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 ---
 
-## Status (Week 1)
+## Status (v1.0.0)
 
-- Version **0.3.x**: Google OAuth via NextAuth; role-based routing; Cloud SQL (Postgres) private IP.
-- Student dashboard: low-vision friendly layout, collapsible accessibility widget, TTS voice/volume prefs, multi-paragraph sample (prev/next, countdown), Braille preview, support tickets with attachment upload to GCS (when configured).
-- Teacher dashboard: profile card, module-aware training checklist (per-equation upload/status/editable OCR text), AI chat placeholder, course upload, support ticket review table (pulls `/api/support-tickets`, view/close/escalate).
-- Admin dashboard: students/uploads with sample fallback; sample support tickets; logout fixed in light mode.
+- Version **1.0.0** (MVP): Google OAuth via NextAuth, role-based dashboards (student/teacher/admin), Cloud SQL (Postgres) via Cloud Run API, and Netlify deployment.
+- Student dashboard: low-vision friendly layout, collapsible accessibility widget, TTS sample with voice/volume/rate controls and live word highlighting, Braille preview with liblouis/fallback, OCR MVP demo, and support tickets (including attachments when configured).
+- Teacher dashboard: sample profile, module-aware training checklist (per-equation upload/status/editable OCR text), support ticket review table (view/close/escalate, attachments), course material upload, and AI assistant placeholder.
+- Admin dashboard: system overview cards (student/teacher/admin experience + Cloud SQL/Cloud Run/OCR health), sample students/uploads/modules, live/preview support tickets, and status cards wired to `/api/*` + `test-ocr`.
 
 ---
 

@@ -661,6 +661,7 @@ function StudentPage() {
         className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
         style={{ fontSize: `${fontScale}rem`, lineHeight: 1.6 }}
       >
+        <div className="grid gap-4 md:grid-cols-2 items-stretch">
         <section
           aria-labelledby="student-profile"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
@@ -700,6 +701,7 @@ function StudentPage() {
             listenable content.
           </p>
         </section>
+        </div>
 
         <section
           aria-labelledby="student-upload"

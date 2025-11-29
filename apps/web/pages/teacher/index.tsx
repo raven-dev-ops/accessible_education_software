@@ -394,31 +394,36 @@ function TeacherPage() {
     <>
     <Layout title="Teacher Dashboard" secondaryNav={previewNav}>
       <div className="space-y-8">
-        <section
-          aria-labelledby="teacher-profile"
-          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800 flex items-center gap-4"
-        >
-          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
-            {(session?.user?.name || "Sample Teacher").charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h2 id="teacher-profile" className="text-xl font-semibold">
-              {session?.user?.name || "Sample Teacher"}
-            </h2>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              {session?.user?.email || "teacher@example.com"}
-            </p>
-          </div>
-        </section>
+        <div className="grid gap-4 md:grid-cols-2 items-stretch">
+          <section
+            aria-labelledby="teacher-profile"
+            className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800 flex items-center gap-4"
+          >
+            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
+              {(session?.user?.name || "Sample Teacher").charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h2 id="teacher-profile" className="text-xl font-semibold">
+                {session?.user?.name || "Sample Teacher"}
+              </h2>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                {session?.user?.email || "teacher@example.com"}
+              </p>
+            </div>
+          </section>
 
-        <section aria-labelledby="teacher-welcome" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
-          <h2 id="teacher-welcome" className="text-2xl font-semibold mb-3">
-            Welcome, Teacher
-          </h2>
-          <p className="text-lg leading-relaxed">
-            Manage modules, review student reports, handle support tickets, and train OCR with your handwritten math.
-          </p>
-        </section>
+          <section
+            aria-labelledby="teacher-welcome"
+            className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+          >
+            <h2 id="teacher-welcome" className="text-2xl font-semibold mb-3">
+              Welcome, Teacher
+            </h2>
+            <p className="text-lg leading-relaxed">
+              Manage modules, review student reports, handle support tickets, and train OCR with your handwritten math.
+            </p>
+          </section>
+        </div>
 
         <section aria-labelledby="teacher-support" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
           <h2 id="teacher-support" className="text-xl font-semibold mb-3">

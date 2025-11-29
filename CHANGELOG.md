@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Secured temp-file cleanup in support ticket uploads and normalized admin ticket previews (attachment-aware).
 - Version bumps to 0.2.2 to mark M4 completion.
 
-## [0.2.3-alpha] - Accessible alerts & CI
+## [0.2.3] - Accessible alerts & CI
 
 - Student dashboard now surfaces live, screen-reader-friendly alerts for database note loading, Braille fallback, and support ticket submission outcomes.
 - Admin ticket previews use `next/image` for optimized loading.
@@ -66,7 +66,9 @@ All notable changes to this project will be documented in this file.
 - Scaffold Next.js web app placeholder with role-based dashboards.
 - Add OCR service skeleton and sample OCR test script placeholder.
 - Add documentation stubs (privacy policy, terms of service).
-- Configure basic tooling and ignore files.## [1.0.0] - MVP Release
+- Configure basic tooling and ignore files.
+
+## [1.0.0] - MVP Release
 
 - Web:
   - Accessible dashboards with NextAuth/Google, role-based flows for student/teacher/admin.

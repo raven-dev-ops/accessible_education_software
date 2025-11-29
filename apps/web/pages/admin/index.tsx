@@ -526,20 +526,41 @@ function AdminPage() {
       <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-6 transition-colors">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-md p-6 border border-slate-100 dark:border-slate-800">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
+            <div className="grid gap-4 md:grid-cols-2 items-center">
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
+                  {(session?.user?.name || "Sample Admin").charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    {session?.user?.name || "Sample Admin"}
+                  </h2>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                    {session?.user?.email || "admin@example.com"}
+                  </p>
+                  {preview && (
+                    <p className="mt-1 text-xs inline-flex items-center px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      Preview mode · sample admin
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2 text-sm md:text-base">
                 <p className="text-sm uppercase tracking-wide text-slate-500 dark:text-slate-300">
                   Admin dashboard
                 </p>
                 <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
                   Accessible Education Platform
                 </h1>
-              </div>
-              <div className="text-sm text-slate-600 dark:text-slate-300">
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200 dark:border-emerald-800">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  Signed in as admin
-                </span>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  Monitor students, teachers, uploads, OCR quality, and support tickets across the system.
+                </p>
+                <div className="text-sm text-slate-600 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200 dark:border-emerald-800">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    Signed in as admin
+                  </span>
+                </div>
               </div>
             </div>
           </div>
