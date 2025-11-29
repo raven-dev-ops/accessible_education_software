@@ -658,7 +658,7 @@ function StudentPage() {
         </div>
       )}
       <div
-        className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
+        className={`space-y-8 max-w-5xl mx-auto ${highContrast ? "bg-black text-yellow-100" : ""}`}
         style={{ fontSize: `${fontScale}rem`, lineHeight: 1.6 }}
       >
         <div className="grid gap-4 md:grid-cols-2 items-stretch">

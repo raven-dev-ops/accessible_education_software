@@ -405,7 +405,7 @@ function TeacherPage() {
   return (
     <>
     <Layout title="Teacher Dashboard" secondaryNav={previewNav}>
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-5xl mx-auto">
         <div className="grid gap-4 md:grid-cols-2 items-stretch">
           <section
             aria-labelledby="teacher-profile"
