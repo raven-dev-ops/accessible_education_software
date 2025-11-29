@@ -104,6 +104,7 @@ function StudentPage() {
   const [previousUploads, setPreviousUploads] = useState<PreviousUpload[]>([]);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [brailleOpen, setBrailleOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
     setLiveAlert({ message, tone });
@@ -712,15 +713,16 @@ function StudentPage() {
                   OCR MVP Demo
                 </span>
               </div>
-              <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
-                Choose image or PDF
-                <input
-                  type="file"
-                  accept=".pdf,image/*"
-                  className="mt-2 block w-full text-sm border rounded p-3 bg-white dark:bg-slate-800"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setUploadFileName(file ? file.name : null);
+                <label className="sr-only">
+                  Choose image or PDF
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    ref={fileInputRef}
+                    className="mt-2 block w-full text-sm border rounded p-3 bg-white dark:bg-slate-800"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setUploadFileName(file ? file.name : null);
                     setUploadStatus(null);
                     setUploadError(null);
                     setUploadPreview(null);
@@ -745,6 +747,34 @@ function StudentPage() {
                           persistUploads(next);
                           return next;
                         });
+
+                        // Immediately run simulated OCR for the newly uploaded image
+                        setUploadStatus("Processing handwritten note...");
+                        setUploadError(null);
+                        setUploadPreview(null);
+                        setUploadScore(null);
+                        setCorrectionText("");
+                        setTimeout(() => {
+                          const previewText =
+                            "f(x) = x^2 + 3x - 5\n\nDerivative: f'(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
+                          const score = 72;
+                          setUploadPreview(previewText);
+                          setUploadScore(score);
+                          setCorrectionText(previewText);
+                          setUploadStatus("Formatted for TTS. You can listen to the preview below.");
+                          announce("Uploaded sample note processed. Ready to play.", "success");
+                          const now = new Date().toISOString();
+                          setPreviousUploads((prev) => {
+                            const next = prev.map((u) => {
+                              if (u.id !== entry.id) return u;
+                              const history = Array.isArray(u.history) ? u.history : [];
+                              const historyEntry: UploadHistoryEntry = { score, createdAt: now };
+                              return { ...u, history: [historyEntry, ...history].slice(0, 10) };
+                            });
+                            persistUploads(next);
+                            return next;
+                          });
+                        }, 800);
                       };
                       reader.readAsDataURL(file);
                     } else {
@@ -841,6 +871,10 @@ function StudentPage() {
                 className="w-full px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
                 disabled={!uploadFileName}
                 onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                    return;
+                  }
                   if (!uploadFileName) {
                     setUploadError("Please choose a file first.");
                     return;
