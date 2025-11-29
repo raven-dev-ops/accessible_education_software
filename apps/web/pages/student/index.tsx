@@ -1274,7 +1274,7 @@ function StudentPage() {
             </button>
           </div>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-            Early Braille rendering of the most recent note. Expand to see the generated Braille and download a .brf
+            Expand to see the generated Braille and download a .brf
             file for a display or simulator.
           </p>
           {brailleOpen && (
