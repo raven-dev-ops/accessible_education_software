@@ -1041,33 +1041,25 @@ function StudentPage() {
                         </div>
                       )}
                       {uploadScore != null && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                            Accuracy grade
-                          </span>
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              uploadScore >= 80
-                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200'
-                                : uploadScore >= 70
-                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
-                                : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200'
-                            }`}
-                          >
-                            {uploadScore}% {uploadScore < 80 ? '(will auto-report to teachers)' : ''}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-3">
-                      {uploadPreview ? (
                         <>
-                          <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
-                            {uploadPreview}
-                          </pre>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                              Accuracy grade
+                            </span>
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                uploadScore >= 80
+                                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200'
+                                  : uploadScore >= 70
+                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+                              }`}
+                            >
+                              {uploadScore}% {uploadScore < 80 ? '(will auto-report to teachers)' : ''}
+                            </span>
+                          </div>
                           {activeUploadId && (
-                            <div className="text-xs text-slate-600 dark:text-slate-200">
+                            <div className="mt-1 text-xs text-slate-600 dark:text-slate-200">
                               {(() => {
                                 const selected = previousUploads.find((u) => u.id === activeUploadId);
                                 if (!selected || !selected.history || selected.history.length === 0) return null;
@@ -1078,6 +1070,16 @@ function StudentPage() {
                               })()}
                             </div>
                           )}
+                        </>
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      {uploadPreview ? (
+                        <>
+                          <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
+                            {uploadPreview}
+                          </pre>
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
@@ -1087,13 +1089,13 @@ function StudentPage() {
                                 type="button"
                                 onClick={handleToggleCorrectionEdit}
                                 disabled={correctionSaving}
-                                className="text-xs px-3 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-60"
+                                className="text-xs font-semibold px-3 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-60 text-slate-800 dark:text-slate-100"
                               >
                                 {isCorrectionEditing
                                   ? correctionSaving
                                     ? "Saving..."
-                                    : "Save correction"
-                                  : "Edit OCR text"}
+                                    : "Save"
+                                  : "Edit"}
                               </button>
                             </div>
                             <textarea
