@@ -1094,10 +1094,6 @@ function StudentPage() {
                       );
                     })}
                   </div>
-                  <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
-                    <span className="font-semibold">Equation preview:</span>{" "}
-                    f(x) = x^2 + 3x - 5, f(x) = 2x + 3, ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C
-                  </p>
                   <div className="mt-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
                       Equation preview
@@ -1524,6 +1520,8 @@ function StudentPage() {
 }
 
 export default StudentPage;
+
+
 
 
 
