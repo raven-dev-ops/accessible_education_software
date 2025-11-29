@@ -566,100 +566,110 @@ function AdminPage() {
             </div>
           </section>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <section
-              aria-labelledby="admin-students"
-              className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h2 id="admin-students" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  Students
-                </h2>
-                {studentsLoading && (
-                  <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
+          <section
+            aria-labelledby="admin-students-uploads"
+            className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2
+                id="admin-students-uploads"
+                className="text-lg font-semibold text-slate-900 dark:text-slate-100"
+              >
+                Students and recent uploads
+              </h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 id="admin-students" className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                    Students
+                  </h3>
+                  {studentsLoading && (
+                    <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
+                  )}
+                </div>
+                {studentsError && (
+                  <p role="alert" className="text-red-500 dark:text-red-300 text-sm">
+                    {studentsError}
+                  </p>
+                )}
+                {!studentsLoading && !studentsError && (
+                  <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                        <tr>
+                          <th className="px-3 py-2 text-left">Name</th>
+                          <th className="px-3 py-2 text-left">Email</th>
+                          <th className="px-3 py-2 text-left">Course</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {students.map((s) => (
+                          <tr key={s.id} className="border-t border-slate-100 dark:border-slate-800">
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{s.name}</td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{s.email}</td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{s.course}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
-              {studentsError && (
-                <p role="alert" className="text-red-500 dark:text-red-300 text-sm">
-                  {studentsError}
-                </p>
-              )}
-              {!studentsLoading && !studentsError && (
-                <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
-                      <tr>
-                        <th className="px-3 py-2 text-left">Name</th>
-                        <th className="px-3 py-2 text-left">Email</th>
-                        <th className="px-3 py-2 text-left">Course</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {students.map((s) => (
-                        <tr key={s.id} className="border-t border-slate-100 dark:border-slate-800">
-                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{s.name}</td>
-                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{s.email}</td>
-                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{s.course}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
 
-            <section
-              className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
-              aria-labelledby="admin-uploads"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h2 id="admin-uploads" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  Recent uploads
-                </h2>
-                {uploadsLoading && (
-                  <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3
+                    id="admin-uploads"
+                    className="text-base font-semibold text-slate-900 dark:text-slate-100"
+                  >
+                    Recent uploads
+                  </h3>
+                  {uploadsLoading && (
+                    <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
+                  )}
+                </div>
+                {uploadsError && (
+                  <p role="alert" className="text-red-600 dark:text-red-300 text-sm">
+                    {uploadsError}
+                  </p>
+                )}
+                {!uploadsLoading && !uploadsError && uploads.length === 0 && (
+                  <p className="text-sm text-slate-600 dark:text-slate-300">No uploads yet.</p>
+                )}
+                {!uploadsLoading && !uploadsError && uploads.length > 0 && (
+                  <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                        <tr>
+                          <th className="px-3 py-2 text-left">Filename</th>
+                          <th className="px-3 py-2 text-left">MIME type</th>
+                          <th className="px-3 py-2 text-left">Size</th>
+                          <th className="px-3 py-2 text-left">Status</th>
+                          <th className="px-3 py-2 text-left">Created</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {uploads.map((u) => (
+                          <tr key={u.id} className="border-t border-slate-100 dark:border-slate-800">
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.filename || ""}</td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.mimetype || ""}</td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {typeof u.size === "number" ? `${(u.size / 1024).toFixed(1)} KB` : ""}
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.status}</td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {u.createdAt ? new Date(u.createdAt).toLocaleString() : ""}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
-              {uploadsError && (
-                <p role="alert" className="text-red-600 dark:text-red-300 text-sm">
-                  {uploadsError}
-                </p>
-              )}
-              {!uploadsLoading && !uploadsError && uploads.length === 0 && (
-                <p className="text-sm text-slate-600 dark:text-slate-300">No uploads yet.</p>
-              )}
-              {!uploadsLoading && !uploadsError && uploads.length > 0 && (
-                <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
-                      <tr>
-                        <th className="px-3 py-2 text-left">Filename</th>
-                        <th className="px-3 py-2 text-left">MIME type</th>
-                        <th className="px-3 py-2 text-left">Size</th>
-                        <th className="px-3 py-2 text-left">Status</th>
-                        <th className="px-3 py-2 text-left">Created</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {uploads.map((u) => (
-                        <tr key={u.id} className="border-t border-slate-100 dark:border-slate-800">
-                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.filename || ""}</td>
-                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.mimetype || ""}</td>
-                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                            {typeof u.size === "number" ? `${(u.size / 1024).toFixed(1)} KB` : ""}
-                          </td>
-                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.status}</td>
-                          <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                            {u.createdAt ? new Date(u.createdAt).toLocaleString() : ""}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-          </div>
+            </div>
+          </section>
 
           <div className="grid gap-6 md:grid-cols-2">
             <section className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
