@@ -1148,10 +1148,10 @@ function StudentPage() {
             <p className="text-lg">Text-to-speech is not available in this browser. You can still use your screen reader.</p>
           )}
           {ttsSupported && ttsOpen && (
-            <div id="student-tts-panel" className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 ">
+            <div id="student-tts-panel" className="space-y-5">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Live reading preview</p>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Now reading</p>
                   <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 text-lg leading-7 min-h-[160px]">
                     {sampleParagraphs[sampleParagraphIndex].split(' ').map((w, wi, arr) => {
