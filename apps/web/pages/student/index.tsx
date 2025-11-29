@@ -1046,6 +1046,18 @@ function StudentPage() {
                     <div className="space-y-3">
                       {uploadPreview ? (
                         <div className="space-y-3">
+                          {isCorrectionEditing ? (
+                            <textarea
+                              className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
+                              rows={4}
+                              value={correctionText}
+                              onChange={(e) => setCorrectionText(e.target.value)}
+                            />
+                          ) : (
+                            <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
+                              {correctionText || uploadPreview}
+                            </pre>
+                          )}
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                               OCR text
@@ -1063,18 +1075,6 @@ function StudentPage() {
                                 : "Edit"}
                             </button>
                           </div>
-                          {isCorrectionEditing ? (
-                            <textarea
-                              className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
-                              rows={4}
-                              value={correctionText}
-                              onChange={(e) => setCorrectionText(e.target.value)}
-                            />
-                          ) : (
-                            <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
-                              {correctionText || uploadPreview}
-                            </pre>
-                          )}
                           {correctionError && (
                             <p className="text-xs text-red-600 dark:text-red-400">{correctionError}</p>
                           )}
