@@ -9,44 +9,98 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create or fetch a Calculus I course
-  let course = await prisma.course.findFirst({
-    where: { name: "Calculus I" }
-  });
-
-  if (!course) {
-    course = await prisma.course.create({
-      data: {
-        name: "Calculus I",
-        code: "MATH-101"
-      }
-    });
-  }
-
-  // Seed a few modules under Calculus I
-  const moduleTitles = [
-    "Calculus I â€“ Limits and Continuity",
-    "Calculus I â€“ Derivatives",
-    "Calculus I â€“ Applications of Derivatives"
+  const modulesData = [
+    { id: "calc1", title: "Calculus I - Limits & Derivatives", course: "Calculus I", code: "MATH-101", sampleEquation: "f(x)=x^2, f'(x)=2x; limit h->0 (f(x+h)-f(x))/h" },
+    { id: "calc2", title: "Calculus II - Integrals & Series", course: "Calculus II", code: "MATH-102", sampleEquation: "integral x^2 dx = x^3/3 + C; sum (1/n^2) converges" },
+    { id: "linear", title: "Linear Algebra - Vectors & Matrices", course: "Linear Algebra", code: "MATH-201", sampleEquation: "det(A-?I)=0; Ax=b" },
+    { id: "physics", title: "Physics - Kinematics & Forces", course: "Physics", code: "PHYS-101", sampleEquation: "F=ma; s=v0 t + 0.5 a t^2" },
+    { id: "statistics", title: "Statistics - Probability & Distributions", course: "Statistics", code: "STAT-101", sampleEquation: "P(A|B)=P(AnB)/P(B); Normal(µ,s^2)" },
   ];
 
-  const modules = [];
-  for (const title of moduleTitles) {
-    // Avoid duplicates if seed is re-run
-    let module = await prisma.module.findFirst({
-      where: { title, courseId: course.id }
+  const submodules = {
+    calc1: [
+      { title: "Limits basics", equation: "lim_{h->0} (f(x+h)-f(x))/h" },
+      { title: "Power rule", equation: "f(x)=x^2 => f'(x)=2x" },
+      { title: "Trig identities", equation: "sin^2 x + cos^2 x = 1" },
+    ],
+    calc2: [
+      { title: "Integration by parts", equation: "?u dv = uv - ?v du" },
+      { title: "Series convergence", equation: "S (1/n^2) converges (p-series p=2)" },
+      { title: "Taylor series", equation: "e^x = S x^n / n!" },
+    ],
+    linear: [
+      { title: "Solve Ax=b", equation: "Row-reduce [A|b]" },
+      { title: "Eigenvalues", equation: "det(A-?I)=0" },
+      { title: "Determinant", equation: "det([[a,b],[c,d]]) = ad-bc" },
+    ],
+    physics: [
+      { title: "Kinematics", equation: "s = v0 t + 1/2 a t^2" },
+      { title: "Dynamics", equation: "F = m a" },
+      { title: "Energy", equation: "KE = 1/2 m v^2; PE = mgh" },
+    ],
+    statistics: [
+      { title: "Conditional probability", equation: "P(A|B)=P(AnB)/P(B)" },
+      { title: "Normal distribution", equation: "N(µ, s^2) pdf" },
+      { title: "CLT", equation: "x¯ ~ Normal(µ, s/vn) for large n" },
+    ],
+  };
+
+  const courseCache = {};
+  for (const m of modulesData) {
+    const course = (courseCache[m.course] = courseCache[m.course] || (await prisma.course.upsert({
+      where: { name: m.course },
+      update: { code: m.code },
+      create: { name: m.course, code: m.code },
+    })));
+
+    await prisma.module.upsert({
+      where: { id: m.id },
+      update: {
+        title: m.title,
+        courseId: course.id,
+        teacherProgress: 0,
+        studentCompletion: 0,
+        submodulesCompleted: 0,
+        submodulesTotal: submodules[m.id]?.length ?? 0,
+        ticketsOpen: 0,
+        ticketsResolved: 0,
+        sampleEquation: m.sampleEquation ?? null,
+      },
+      create: {
+        id: m.id,
+        title: m.title,
+        courseId: course.id,
+        teacherProgress: 0,
+        studentCompletion: 0,
+        submodulesCompleted: 0,
+        submodulesTotal: submodules[m.id]?.length ?? 0,
+        ticketsOpen: 0,
+        ticketsResolved: 0,
+        sampleEquation: m.sampleEquation ?? null,
+      },
     });
 
-    if (!module) {
-      module = await prisma.module.create({
-        data: {
-          title,
-          courseId: course.id
-        }
+    const mod = await prisma.module.findUnique({ where: { id: m.id } });
+    const subs = submodules[m.id] || [];
+    for (let i = 0; i < subs.length; i++) {
+      const s = subs[i];
+      await prisma.submodule.upsert({
+        where: { id: `${m.id}-sub-${i}` },
+        update: {
+          title: s.title,
+          equation: s.equation,
+          order: i,
+          moduleId: mod.id,
+        },
+        create: {
+          id: `${m.id}-sub-${i}`,
+          title: s.title,
+          equation: s.equation,
+          order: i,
+          moduleId: mod.id,
+        },
       });
     }
-
-    modules.push(module);
   }
 
   // Seed a teacher user
@@ -81,15 +135,15 @@ async function main() {
   }
 
   // Seed one sample note for the first module
-  const firstModule = modules[0];
+  const firstModule = await prisma.module.findFirst({ where: { id: modulesData[0].id } });
   const existingNote = await prisma.note.findFirst({
     where: {
       userId: teacher.id,
-      moduleId: firstModule.id
+      moduleId: firstModule?.id
     }
   });
 
-  if (!existingNote) {
+  if (!existingNote && firstModule) {
     await prisma.note.create({
       data: {
         userId: teacher.id,
@@ -101,7 +155,7 @@ async function main() {
     });
   }
 
-  console.log("Seed data created (course, modules, teacher, students, note).");
+  console.log("Seed data created (courses, modules with submodules, teacher, students, note).");
 }
 
 main()
@@ -112,4 +166,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
