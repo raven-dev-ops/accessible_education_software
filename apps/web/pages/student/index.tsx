@@ -711,7 +711,7 @@ function StudentPage() {
                 <option value="Calculus II">Calculus II</option>
                 <option value="Linear Algebra">Linear Algebra</option>
                 <option value="Physics">Physics</option>
-                <option value="Statstics">Statstics</option>
+                <option value="Statistics">Statistics</option>
               </select>
             </div>
           </div>
@@ -1214,9 +1214,11 @@ function StudentPage() {
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Module</p>
                 <select className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800">
-                  <option>Calculus I - Limits</option>
-                  <option>Calculus I - Derivatives</option>
-                  <option>Calculus I - Integrals</option>
+                  <option>Calculus I</option>
+                  <option>Calculus II</option>
+                  <option>Linear Algebra</option>
+                  <option>Physics</option>
+                  <option>Statistics</option>
                 </select>
               </div>
               <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-64 flex flex-col gap-3 overflow-hidden">

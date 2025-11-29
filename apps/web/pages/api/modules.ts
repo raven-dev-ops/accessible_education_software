@@ -7,6 +7,13 @@ type ModuleSummary = {
   id: string | number;
   title: string;
   course?: string;
+  teacherProgress?: number;
+  studentCompletion?: number;
+  submodulesCompleted?: number;
+  submodulesTotal?: number;
+  ticketsOpen?: number;
+  ticketsResolved?: number;
+  sampleEquation?: string;
 };
 
 const useCloudRun = process.env.USE_CLOUD_RUN_API === "true";
@@ -38,7 +45,7 @@ export default async function handler(
     }
 
     const modules = await prisma.module.findMany({
-      include: { course: true },
+      include: { course: true, _count: { select: { tickets: true } } },
       orderBy: { createdAt: "asc" },
       take: 100,
     });
@@ -53,6 +60,13 @@ export default async function handler(
       id: m.id,
       title: m.title,
       course: m.course?.name,
+      teacherProgress: m.teacherProgress ?? undefined,
+      studentCompletion: m.studentCompletion ?? undefined,
+      submodulesCompleted: m.submodulesCompleted ?? undefined,
+      submodulesTotal: m.submodulesTotal ?? undefined,
+      ticketsOpen: m.ticketsOpen ?? undefined,
+      ticketsResolved: m.ticketsResolved ?? m._count?.tickets ?? undefined,
+      sampleEquation: m.sampleEquation ?? undefined,
     }));
 
     return res.status(200).json(mapped);

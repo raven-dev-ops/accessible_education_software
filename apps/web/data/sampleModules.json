@@ -1,6 +1,62 @@
 [
-  { "id": 1, "title": "Calculus I – Limits and Continuity", "course": "Calculus I" },
-  { "id": 2, "title": "Calculus I – Derivatives", "course": "Calculus I" },
-  { "id": 3, "title": "Calculus I – Applications of Derivatives", "course": "Calculus I" }
+  {
+    "id": "calc1",
+    "title": "Calculus I - Limits & Derivatives",
+    "course": "Calculus I",
+    "teacherProgress": 72,
+    "studentCompletion": 48,
+    "submodulesCompleted": 3,
+    "submodulesTotal": 8,
+    "ticketsOpen": 2,
+    "ticketsResolved": 5,
+    "sampleEquation": "f(x)=x^2, f'(x)=2x; limit h->0 (f(x+h)-f(x))/h"
+  },
+  {
+    "id": "calc2",
+    "title": "Calculus II - Integrals & Series",
+    "course": "Calculus II",
+    "teacherProgress": 55,
+    "studentCompletion": 31,
+    "submodulesCompleted": 2,
+    "submodulesTotal": 7,
+    "ticketsOpen": 1,
+    "ticketsResolved": 3,
+    "sampleEquation": "integral x^2 dx = x^3/3 + C; sum (1/n^2) converges"
+  },
+  {
+    "id": "linear",
+    "title": "Linear Algebra - Vectors & Matrices",
+    "course": "Linear Algebra",
+    "teacherProgress": 64,
+    "studentCompletion": 42,
+    "submodulesCompleted": 4,
+    "submodulesTotal": 9,
+    "ticketsOpen": 0,
+    "ticketsResolved": 4,
+    "sampleEquation": "A x = b; det(A); eigenvalues lambda solve det(A-lambda I)=0"
+  },
+  {
+    "id": "physics",
+    "title": "Physics - Kinematics & Forces",
+    "course": "Physics",
+    "teacherProgress": 58,
+    "studentCompletion": 36,
+    "submodulesCompleted": 3,
+    "submodulesTotal": 8,
+    "ticketsOpen": 2,
+    "ticketsResolved": 2,
+    "sampleEquation": "F = m a; s = v0*t + 0.5*a*t^2; p = m v"
+  },
+  {
+    "id": "statistics",
+    "title": "Statistics - Probability & Distributions",
+    "course": "Statistics",
+    "teacherProgress": 61,
+    "studentCompletion": 39,
+    "submodulesCompleted": 3,
+    "submodulesTotal": 8,
+    "ticketsOpen": 1,
+    "ticketsResolved": 3,
+    "sampleEquation": "P(A|B)=P(A and B)/P(B); mean mu, std dev sigma; Normal(mu, sigma^2)"
+  }
 ]
-

@@ -9,6 +9,13 @@ type ModuleSummary = {
   id: string | number;
   title: string;
   course?: string;
+  teacherProgress?: number;
+  studentCompletion?: number;
+  submodulesCompleted?: number;
+  submodulesTotal?: number;
+  ticketsOpen?: number;
+  ticketsResolved?: number;
+  sampleEquation?: string;
 };
 
 type TeacherTicket = {
@@ -25,58 +32,145 @@ type TeacherTicket = {
 };
 
 const sampleModules: ModuleSummary[] = [
-  { id: "calc-1", title: "Calculus I  OCR Module", course: "Math 101" },
-  { id: "calc-deriv", title: "Derivatives Workshop", course: "Math 101" },
-  { id: "limits", title: "Limits & Continuity", course: "Math 101" },
+  {
+    id: "calc1",
+    title: "Calculus I - Limits & Derivatives",
+    course: "Calculus I",
+    teacherProgress: 72,
+    studentCompletion: 48,
+    submodulesCompleted: 3,
+    submodulesTotal: 8,
+    ticketsOpen: 2,
+    ticketsResolved: 5,
+    sampleEquation: "f(x)=x^2, f'(x)=2x; limit h->0 (f(x+h)-f(x))/h",
+  },
+  {
+    id: "calc2",
+    title: "Calculus II - Integrals & Series",
+    course: "Calculus II",
+    teacherProgress: 55,
+    studentCompletion: 31,
+    submodulesCompleted: 2,
+    submodulesTotal: 7,
+    ticketsOpen: 1,
+    ticketsResolved: 3,
+    sampleEquation: "integral x^2 dx = x^3/3 + C; sum (1/n^2) converges",
+  },
+  {
+    id: "linear",
+    title: "Linear Algebra - Vectors & Matrices",
+    course: "Linear Algebra",
+    teacherProgress: 64,
+    studentCompletion: 42,
+    submodulesCompleted: 4,
+    submodulesTotal: 9,
+    ticketsOpen: 0,
+    ticketsResolved: 4,
+    sampleEquation: "A x = b; det(A); eigenvalues lambda solve det(A-lambda I)=0",
+  },
+  {
+    id: "physics",
+    title: "Physics - Kinematics & Forces",
+    course: "Physics",
+    teacherProgress: 58,
+    studentCompletion: 36,
+    submodulesCompleted: 3,
+    submodulesTotal: 8,
+    ticketsOpen: 2,
+    ticketsResolved: 2,
+    sampleEquation: "F = m a; s = v0*t + 0.5*a*t^2; p = m v",
+  },
+  {
+    id: "statistics",
+    title: "Statistics - Probability & Distributions",
+    course: "Statistics",
+    teacherProgress: 61,
+    studentCompletion: 39,
+    submodulesCompleted: 3,
+    submodulesTotal: 8,
+    ticketsOpen: 1,
+    ticketsResolved: 3,
+    sampleEquation: "P(A|B)=P(A and B)/P(B); mean mu, std dev sigma; Normal(mu, sigma^2)",
+  },
 ];
 
 const trainingSets: Record<
   string,
   { title: string; equations: string[] }
 > = {
-  "calc-1": {
-    title: "Calculus I  OCR Module",
+  calc1: {
+    title: "Calculus I - Limits & Derivatives",
     equations: [
-      "f(x) = x^2",
-      "f'(x) = 2x",
-      " x^2 dx = x^3/3 + C",
-      "lim_{h0} (f(x+h) - f(x))/h",
+      "f(x) = x^2; f'(x) = 2x",
+      "limit h->0 (f(x+h)-f(x))/h",
       "sin^2 x + cos^2 x = 1",
       "d/dx (sin x) = cos x",
       "d/dx (e^x) = e^x",
-      " 1/x dx = ln|x| + C",
-      "f''(x) < 0  concave down",
+      "integral 1/x dx = ln|x| + C",
       "Mean Value Theorem: f'(c) = (f(b)-f(a))/(b-a)",
-    ],
-  },
-  "calc-deriv": {
-    title: "Derivatives Workshop",
-    equations: [
-      "f(x) = 3x^3 - 5x + 2",
-      "f'(x) = 9x^2 - 5",
-      "Product rule: (fg)' = f'g + fg'",
-      "Quotient rule: (f/g)' = (f'g - fg')/g^2",
-      "Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x)",
-      "d/dx (ln x) = 1/x",
-      "d/dx (a^x) = a^x ln a",
-      "f''(x) sign  concavity",
+      "f''(x) < 0 => concave down",
       "Critical points: f'(x)=0 or undefined",
       "d/dx (tan x) = sec^2 x",
     ],
   },
-  limits: {
-    title: "Limits & Continuity",
+  calc2: {
+    title: "Calculus II - Integrals & Series",
     equations: [
-      "lim_{x0} sin x / x = 1",
-      "lim_{x} (1 + 1/x)^x = e",
-      "lim_{xa} f(x) exists  left=right",
-      "Continuity: lim_{xa} f(x) = f(a)",
-      "lim_{x0} (1 - cos x)/x^2 = 1/2",
-      "Squeeze theorem example: x^2 sin(1/x)  0",
-      "Removable discontinuity: hole at x=a",
-      "Infinite limit: vertical asymptote at x=a",
-      "lim_{x} (ax^n + )/(bx^m + )",
-      "lim_{x0} (e^x - 1)/x = 1",
+      "integral x^2 dx = x^3/3 + C",
+      "integration by parts: ∫u dv = uv - ∫v du",
+      "partial fractions: 1/(x^2-1) = 1/2(1/(x-1)-1/(x+1))",
+      "sum_{n=1..inf} 1/n^2 converges",
+      "ratio test for series convergence",
+      "arc length: L = ∫ sqrt(1+(y')^2) dx",
+      "improper integral example ∫_1^∞ 1/x^2 dx",
+      "Taylor series for e^x",
+      "work = ∫ F dot dr",
+      "surface of revolution area formula",
+    ],
+  },
+  linear: {
+    title: "Linear Algebra - Vectors & Matrices",
+    equations: [
+      "A x = b; solve via row reduction",
+      "det(A) = sum over permutations",
+      "eigenvalues lambda: det(A - lambda I)=0",
+      "eigenvector: (A - lambda I)v = 0",
+      "dot product u·v = ||u|| ||v|| cos(theta)",
+      "cross product u×v magnitude = ||u|| ||v|| sin(theta)",
+      "projection of u on v = (u·v)/(||v||^2) v",
+      "rank(A) = dimension of column space",
+      "nullity + rank = n (rank-nullity theorem)",
+      "orthonormal basis via Gram-Schmidt",
+    ],
+  },
+  physics: {
+    title: "Physics - Kinematics & Forces",
+    equations: [
+      "F = m a",
+      "s = v0*t + 0.5*a*t^2",
+      "v^2 = v0^2 + 2 a s",
+      "momentum p = m v",
+      "impulse J = ∆p",
+      "work W = F·d",
+      "power P = W/t",
+      "kinetic energy = 1/2 m v^2",
+      "potential energy = m g h",
+      "Newton's 2nd law in components",
+    ],
+  },
+  statistics: {
+    title: "Statistics - Probability & Distributions",
+    equations: [
+      "P(A|B) = P(A and B)/P(B)",
+      "Bayes: P(A|B) = P(B|A)P(A)/P(B)",
+      "mean mu = (1/n) sum x_i",
+      "variance sigma^2 = (1/n) sum (x_i - mu)^2",
+      "Normal(mu, sigma^2) pdf",
+      "Binomial(n,p): mean = np, var = np(1-p)",
+      "CLT: sample mean approx Normal",
+      "z = (x - mu)/sigma",
+      "t statistic for small n unknown sigma",
+      "confidence interval basics",
     ],
   },
 };
@@ -98,7 +192,7 @@ function TeacherPage() {
   const [modules, setModules] = useState<ModuleSummary[]>([]);
   const [modulesLoading, setModulesLoading] = useState(true);
   const [modulesError, setModulesError] = useState<string | null>(null);
-  const [selectedModuleId, setSelectedModuleId] = useState<string | number>("calc-1");
+  const [selectedModuleId, setSelectedModuleId] = useState<string | number>("calc1");
   const [ticketDescription, setTicketDescription] = useState("");
   const [ticketList, setTicketList] = useState<TeacherTicket[]>([]);
   const [ticketsLoading, setTicketsLoading] = useState(true);
@@ -139,12 +233,13 @@ function TeacherPage() {
     string,
     { fileName?: string; score?: number | null; status: "pending" | "pass" | "fail"; editableText?: string }
   > = {
-    "calc-1-0": { status: "pass", score: 88, editableText: "f(x) = x^2\nf'(x) = 2x" },
-    "calc-1-1": { status: "pass", score: 90, editableText: "Limit difference quotient simplifies to 2x" },
-    "calc-1-2": { status: "pending", score: null, editableText: "" },
-    "calc-deriv-0": { status: "pass", score: 85, editableText: "f(x) = 3x^3 - 5x + 2" },
-    "calc-deriv-1": { status: "fail", score: 72, editableText: "f'(x) = 9x^2 - 5" },
-    "limits-0": { status: "pending", score: null, editableText: "" },
+    "calc1-0": { status: "pass", score: 88, editableText: "f(x) = x^2\nf'(x) = 2x" },
+    "calc1-1": { status: "pass", score: 90, editableText: "Limit difference quotient simplifies to 2x" },
+    "calc1-2": { status: "pending", score: null, editableText: "" },
+    "calc2-0": { status: "pending", score: null, editableText: "" },
+    "linear-0": { status: "fail", score: 72, editableText: "det(A) example; eigenvalues need correction" },
+    "physics-0": { status: "pending", score: null, editableText: "" },
+    "statistics-0": { status: "pending", score: null, editableText: "" },
   };
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<
@@ -562,6 +657,8 @@ function TeacherPage() {
                     ([key, val]) => key.startsWith(`${m.id}-`) && val.status === "pass"
                   ).length;
                   const pct = eqs ? Math.round((passed / eqs) * 100) : 0;
+                  const teacherPct = typeof m.teacherProgress === "number" ? m.teacherProgress : pct;
+                  const studentPct = typeof m.studentCompletion === "number" ? m.studentCompletion : undefined;
                   return (
                     <li key={m.id} className="flex flex-col gap-2 border rounded p-3 bg-slate-50 dark:bg-slate-800">
                       <div className="flex items-center justify-between">
@@ -580,13 +677,22 @@ function TeacherPage() {
                       <div className="text-xs text-slate-600 dark:text-slate-300">
                         Training progress: {passed}/{eqs || 10} ({pct}%)
                       </div>
+                      <div className="text-xs text-slate-600 dark:text-slate-300">
+                        Teacher progress: {teacherPct}% | Student completion: {studentPct !== undefined ? `${studentPct}%` : "—"}
+                      </div>
+                      <div className="text-xs text-slate-600 dark:text-slate-300">
+                        Submodules: {m.submodulesCompleted !== undefined && m.submodulesTotal !== undefined ? `${m.submodulesCompleted}/${m.submodulesTotal}` : "—"} | Tickets: {m.ticketsOpen ?? 0} open / {m.ticketsResolved ?? 0} resolved
+                      </div>
                       <div className="w-full h-2 rounded bg-slate-200 dark:bg-slate-700 overflow-hidden">
                         <div
                           className="h-full bg-emerald-500"
-                          style={{ width: `${pct}%` }}
-                          aria-label={`Training progress ${pct}%`}
+                          style={{ width: `${teacherPct}%` }}
+                          aria-label={`Training progress ${teacherPct}%`}
                         />
                       </div>
+                      {m.sampleEquation && (
+                        <div className="text-xs text-slate-500 dark:text-slate-400">Example: {m.sampleEquation}</div>
+                      )}
                     </li>
                   );
                 })}

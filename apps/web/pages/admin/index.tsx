@@ -27,9 +27,16 @@ type UploadSummary = {
 };
 
 type ModuleSummary = {
-  id: number;
+  id: string | number;
   title: string;
-  course: string;
+  course?: string;
+  teacherProgress?: number;
+  studentCompletion?: number;
+  submodulesCompleted?: number;
+  submodulesTotal?: number;
+  ticketsOpen?: number;
+  ticketsResolved?: number;
+  sampleEquation?: string;
 };
 
 type SupportTicket = {
@@ -892,6 +899,10 @@ function AdminPage() {
                         <tr>
                           <th className="px-3 py-2 text-left">Module</th>
                           <th className="px-3 py-2 text-left">Course</th>
+                          <th className="px-3 py-2 text-left">Teacher progress</th>
+                          <th className="px-3 py-2 text-left">Student completion</th>
+                          <th className="px-3 py-2 text-left">Submodules</th>
+                          <th className="px-3 py-2 text-left">Tickets</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -899,8 +910,29 @@ function AdminPage() {
                           <tr key={m.id} className="border-t border-slate-100 dark:border-slate-800">
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
                               <span className="block truncate max-w-[12rem]">{m.title}</span>
+                              {m.sampleEquation && (
+                                <span className="block text-xs text-slate-500 dark:text-slate-400">
+                                  {m.sampleEquation}
+                                </span>
+                              )}
                             </td>
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{m.course}</td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{m.course ?? "—"}</td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {typeof m.teacherProgress === "number" ? `${m.teacherProgress}%` : "—"}
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {typeof m.studentCompletion === "number" ? `${m.studentCompletion}%` : "—"}
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {m.submodulesCompleted !== undefined && m.submodulesTotal !== undefined
+                                ? `${m.submodulesCompleted}/${m.submodulesTotal}`
+                                : "—"}
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {m.ticketsOpen !== undefined || m.ticketsResolved !== undefined
+                                ? `${m.ticketsOpen ?? 0} open / ${m.ticketsResolved ?? 0} resolved`
+                                : "—"}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
