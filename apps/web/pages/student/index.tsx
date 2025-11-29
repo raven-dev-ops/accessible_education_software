@@ -103,6 +103,8 @@ function StudentPage() {
   const [previousUploads, setPreviousUploads] = useState<PreviousUpload[]>([]);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [brailleOpen, setBrailleOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(true);
+  const [ttsOpen, setTtsOpen] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
@@ -668,11 +670,11 @@ function StudentPage() {
           <div className="grid gap-4 md:grid-cols-2 items-center">
             <div className="flex items-center gap-4 md:max-w-md">
               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
-                {(session?.user?.name || "Sample Student").charAt(0).toUpperCase()}
+                {(session?.user?.name?.trim() || "Sample Student").charAt(0).toUpperCase() || "S"}
               </div>
               <div>
                 <h2 id="student-profile" className="text-xl font-semibold">
-                  {session?.user?.name || "Sample Student"}
+                  {session?.user?.name?.trim() || "Sample Student"}
                 </h2>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {session?.user?.email || "sample.student@example.com"}
@@ -1211,41 +1213,7 @@ function StudentPage() {
                     })}
                   </div>
                 </div>
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
-                  <p className="font-semibold text-sm text-slate-900 dark:text-slate-50 mb-2">Paragraphs</p>
-                  <ul className="space-y-1 text-sm text-slate-800 dark:text-slate-200">
-                    {sampleParagraphs.map((p, idx) => {
-                      const snippet = p.length > 96 ? `${p.slice(0, 96)}…` : p;
-                      return (
-                        <li
-                          key={idx}
-                          className={`flex items-center justify-between gap-2 rounded px-2 py-1 ${
-                            idx === sampleParagraphIndex ? "bg-blue-50 dark:bg-blue-900/30" : ""
-                          }`}
-                        >
-                          <div>
-                            <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                              Paragraph {idx + 1}
-                            </div>
-                            <div className="text-sm">{snippet}</div>
-                          </div>
-                          <button
-                            type="button"
-                            className="px-2 py-1 text-xs rounded border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            onClick={() => setSampleParagraphIndex(idx)}
-                            aria-label={`Read paragraph ${idx + 1}`}
-                          >
-                            Play
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <div className="mt-3">
-                    <p className="font-semibold text-sm text-slate-900 dark:text-slate-50 mb-1">TL;DR</p>
-                    <p className="text-sm text-slate-800 dark:text-slate-200">{sampleTLDR}</p>
-                  </div>
-                </div>
+                {/* Paragraph list and TL;DR removed per request to simplify TTS sample */}
               </div>
             </div>
           )}
