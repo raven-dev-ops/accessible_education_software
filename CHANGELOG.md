@@ -4,6 +4,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - UI polish (TTS/AI)
+
+- Cleaned up student dashboard TTS/AI sections: standalone expand/collapse toggles with proper arrows, concise descriptions under each heading, and streamlined layout (no nested containers).
+- Bumped package versions to 1.0.1 to reflect the TTS/AI playback polish while keeping overall MVP scope unchanged.
+
 ## [0.2.2] - M4 docs & braille/db polish
 
 - Added `docs/M4.md` to document the Prisma schema (core models, migrations, seeds) and the Braille prototype path with liblouis/fallback configuration.
