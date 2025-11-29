@@ -1088,33 +1088,6 @@ function StudentPage() {
                     </select>
                   </label>
                   <label className="text-sm">
-                    <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Volume (starts at 50%)</span>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={volume}
-                        onChange={(e) => {
-                          const vol = parseFloat(e.target.value);
-                          setVolume(vol);
-                          if (typeof window !== "undefined") {
-                            window.localStorage.setItem(
-                              "tts-prefs",
-                              JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined, rate })
-                            );
-                          }
-                        }}
-                        className="w-full accent-blue-600"
-                        aria-valuemin={0}
-                        aria-valuemax={1}
-                        aria-valuenow={volume}
-                      />
-                      <span className="text-xs text-slate-700 dark:text-slate-200">{Math.round(volume * 100)}%</span>
-                    </div>
-                  </label>
-                  <label className="text-sm">
                     <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Speed</span>
                     <select
                       value={rate}
@@ -1137,7 +1110,36 @@ function StudentPage() {
                     </select>
                   </label>
                 </div>
-                <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start">
+                <div className="w-full max-w-md mx-auto text-sm">
+                  <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1 text-center">
+                    Volume (starts at 50%)
+                  </span>
+                  <div className="flex items-center gap-3 justify-center">
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={volume}
+                      onChange={(e) => {
+                        const vol = parseFloat(e.target.value);
+                        setVolume(vol);
+                        if (typeof window !== "undefined") {
+                          window.localStorage.setItem(
+                            "tts-prefs",
+                            JSON.stringify({ volume: vol, voiceURI: selectedVoiceUri ?? undefined, rate })
+                          );
+                        }
+                      }}
+                      className="w-full accent-blue-600"
+                      aria-valuemin={0}
+                      aria-valuemax={1}
+                      aria-valuenow={volume}
+                    />
+                    <span className="text-xs text-slate-700 dark:text-slate-200">{Math.round(volume * 100)}%</span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 justify-center">
                   <button
                     type="button"
                     className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
@@ -1154,17 +1156,25 @@ function StudentPage() {
                   >
                     ◀ Prev
                   </button>
-                  <button
-                    type="button"
-                    onClick={handlePlaySample}
-                    className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60"
-                    aria-pressed={activeSpeechId === "sample-note"}
-                    disabled={isSpeaking && activeSpeechId === "sample-note"}
-                  >
-                    {activeSpeechId === "sample-note"
-                      ? `Playing... ${countdown !== null ? `${countdown}s` : ""}`
-                      : "Nav reader"}
-                  </button>
+                  {isSpeaking && activeSpeechId === "sample-note" ? (
+                    <button
+                      type="button"
+                      onClick={handleStop}
+                      className="px-5 py-3 rounded bg-red-700 text-white text-base disabled:opacity-60"
+                    >
+                      Stop {countdown !== null ? `(${countdown}s)` : ""}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handlePlaySample}
+                      className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60"
+                      aria-pressed={activeSpeechId === "sample-note"}
+                      disabled={isSpeaking && activeSpeechId === "sample-note"}
+                    >
+                      Nav reader
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50"
