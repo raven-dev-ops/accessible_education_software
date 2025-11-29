@@ -49,6 +49,57 @@ const fallbackNotes: ReleasedNote[] = [
   },
 ];
 
+const moduleSamples: Record<
+  string,
+  { paragraphs: string[]; tldr: string }
+> = {
+  "Calculus I": {
+    paragraphs: [
+      "This is a sample Calculus I note. It describes a function f of x equals x squared, and explains how to find the derivative using the limit definition.",
+      "To compute the derivative, we consider the limit as h approaches zero of the difference quotient f of x plus h minus f of x over h. For x squared, this simplifies to two x when h goes to zero.",
+      "In practice, derivatives let us measure instantaneous rates of change. They are foundational for optimization problems, motion analysis, and curve sketching. This course will build intuition through examples and exercises.",
+    ],
+    tldr:
+      "Summary: For f(x)=x^2, the derivative is 2x via the limit definition. Derivatives measure instantaneous change and power many applications.",
+  },
+  "Calculus II": {
+    paragraphs: [
+      "This Calculus II sample focuses on integrals and series. We revisit power rules and introduce integration by parts for functions like x e^x.",
+      "A classic example is the integral of x squared, which evaluates to x cubed over three plus C. Series convergence tests, like the ratio test, help decide if infinite sums converge.",
+      "We also touch on Taylor series, representing functions like e to the x as an infinite sum, which is useful for approximations and analysis.",
+    ],
+    tldr:
+      "Summary: Integrals accumulate area; series convergence and Taylor expansions extend Calculus II into infinite processes and approximations.",
+  },
+  "Linear Algebra": {
+    paragraphs: [
+      "This Linear Algebra sample covers vectors and matrices. Solving Ax equals b involves row reduction and understanding rank.",
+      "Eigenvalues come from the determinant of A minus lambda times I equals zero, and eigenvectors satisfy the associated homogeneous system.",
+      "Dot products, cross products, and orthonormal bases enable geometric interpretations and decompositions of vectors in space.",
+    ],
+    tldr:
+      "Summary: Linear Algebra studies vector spaces, solving systems, eigenvalues, and geometric operations like projections and orthonormal bases.",
+  },
+  Physics: {
+    paragraphs: [
+      "This Physics sample covers kinematics. Position s equals initial velocity times time plus one half a t squared under constant acceleration.",
+      "Forces follow F equals m a. Momentum p equals m v, and work equals force dot displacement.",
+      "Energy methods track kinetic and potential energy to solve motion and force problems efficiently.",
+    ],
+    tldr:
+      "Summary: Kinematics and dynamics use F=ma, energy, and momentum to describe motion; equations of motion give position and velocity over time.",
+  },
+  Statistics: {
+    paragraphs: [
+      "This Statistics sample covers probability basics. Conditional probability uses P of A given B equals P of A and B over P of B.",
+      "Distributions like Normal and Binomial describe outcomes; mean mu and variance sigma squared summarize them.",
+      "The Central Limit Theorem says sample means approach Normal as sample size grows, enabling confidence intervals and hypothesis tests.",
+    ],
+    tldr:
+      "Summary: Probability rules, distributions, and the CLT underpin inference, confidence intervals, and tests in Statistics.",
+  },
+};
+
 function StudentPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -206,13 +257,10 @@ function StudentPage() {
     }
   }, [preview, session?.user?.email]);
 
-  const sampleParagraphs = [
-    "This is a sample Calculus I note. It describes a function f of x equals x squared, and explains how to find the derivative using the limit definition.",
-    "To compute the derivative, we consider the limit as h approaches zero of the difference quotient f of x plus h minus f of x over h. For x squared, this simplifies to two x when h goes to zero.",
-    "In practice, derivatives let us measure instantaneous rates of change. They are foundational for optimization problems, motion analysis, and curve sketching. This course will build intuition through examples and exercises."
-  ];
-  const sampleTLDR =
-    "Summary: For f(x)=x^2, the derivative is 2x via the limit definition. Derivatives measure instantaneous change and power many applications.";
+  const activeModuleSample =
+    moduleSamples[selectedModuleId] ?? moduleSamples["Calculus I"];
+  const sampleParagraphs = activeModuleSample.paragraphs;
+  const sampleTLDR = activeModuleSample.tldr;
   const [sampleParagraphIndex, setSampleParagraphIndex] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
 
@@ -287,6 +335,18 @@ function StudentPage() {
     const text = `${note.title}. ${note.excerpt}`;
     runSpeech(text, `"${note.title}"`, String(note.id));
   };
+
+  useEffect(() => {
+    setSampleParagraphIndex(0);
+    setHighlightIndex(null);
+    if (activeSpeechId === "sample-note") {
+      stopSpeaking();
+      setIsSpeaking(false);
+      setActiveSpeechId(null);
+      setSpeechStatus(null);
+      setCountdown(null);
+    }
+  }, [selectedModuleId, activeSpeechId]);
 
   const handleStop = () => {
     stopSpeaking();
