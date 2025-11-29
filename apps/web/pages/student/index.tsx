@@ -1317,7 +1317,7 @@ function StudentPage() {
         >
           <div className="flex items-center justify-between mb-2">
             <h2 id="student-braille" className="text-xl font-semibold mb-0">
-              Braille Preview
+              Text-To-Braille Demo
             </h2>
             <button
               type="button"
