@@ -1073,7 +1073,7 @@ function StudentPage() {
                   aria-expanded={ttsOpen}
                   aria-controls="student-tts-panel"
                 >
-                  {ttsOpen ? '?' : '?'}
+                  {ttsOpen ? "?" : "?"}
                 </button>
               </div>
               {!ttsSupported && (
@@ -1202,7 +1202,7 @@ function StudentPage() {
                   aria-expanded={aiTtsOpen}
                   aria-controls="student-tts-ai-panel"
                 >
-                  {aiTtsOpen ? "▲" : "▼"}
+                  {aiTtsOpen ? "?" : "?"}
                 </button>
               </div>
               {aiTtsOpen && (
@@ -1504,6 +1504,7 @@ function StudentPage() {
 }
 
 export default StudentPage;
+
 
 
 
