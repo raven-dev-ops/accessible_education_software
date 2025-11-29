@@ -154,6 +154,9 @@ function StudentPage() {
   const [uploadImageUrl, setUploadImageUrl] = useState<string | null>(null);
   const [previousUploads, setPreviousUploads] = useState<PreviousUpload[]>([]);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
+  const [isCorrectionEditing, setIsCorrectionEditing] = useState(false);
+  const [correctionSaving, setCorrectionSaving] = useState(false);
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
   const [brailleOpen, setBrailleOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [ttsOpen, setTtsOpen] = useState(false);
@@ -376,6 +379,9 @@ function StudentPage() {
     setUploadPreview(null);
     setUploadScore(null);
     setCorrectionText("");
+    setIsCorrectionEditing(false);
+    setCorrectionSaving(false);
+    setCorrectionError(null);
   };
 
   const handleDeletePreviousUpload = (id: string) => {
@@ -409,6 +415,9 @@ function StudentPage() {
     setUploadPreview(null);
     setUploadScore(null);
     setCorrectionText("");
+    setIsCorrectionEditing(false);
+    setCorrectionSaving(false);
+    setCorrectionError(null);
 
     setTimeout(() => {
       const previewText =
@@ -452,6 +461,42 @@ function StudentPage() {
 
   // Reference handleRunOcr so that linting does not treat it as unused while this preview is evolving.
   void handleRunOcr;
+
+  const handleToggleCorrectionEdit = async () => {
+    if (!uploadPreview) return;
+
+    if (!isCorrectionEditing) {
+      setIsCorrectionEditing(true);
+      setCorrectionError(null);
+      return;
+    }
+
+    setCorrectionSaving(true);
+    setCorrectionError(null);
+    try {
+      const now = new Date().toISOString();
+      const payload = {
+        detail: `OCR correction saved at ${now}.\n\nCorrected text:\n${correctionText}`,
+        score: uploadScore,
+        userEmail: session?.user?.email ?? null,
+        kind: "ocr_correction",
+      };
+
+      await fetch("/api/support-tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      announce("OCR correction saved for review.", "success");
+      setIsCorrectionEditing(false);
+    } catch {
+      setCorrectionError("Could not save OCR correction right now. Please try again later.");
+      announce("Could not save OCR correction.", "error");
+    } finally {
+      setCorrectionSaving(false);
+    }
+  };
 
   const filteredNotes =
     selectedModuleId && notes.length > 0
@@ -799,6 +844,9 @@ function StudentPage() {
                         setUploadPreview(null);
                         setUploadScore(null);
                         setCorrectionText('');
+                        setIsCorrectionEditing(false);
+                        setCorrectionSaving(false);
+                        setCorrectionError(null);
                         setUploadImageUrl(null);
                         if (file && file.type.startsWith('image/')) {
                           const reader = new FileReader();
@@ -824,6 +872,9 @@ function StudentPage() {
                             setUploadPreview(null);
                             setUploadScore(null);
                             setCorrectionText('');
+                            setIsCorrectionEditing(false);
+                            setCorrectionSaving(false);
+                            setCorrectionError(null);
                             setTimeout(() => {
                               const previewText =
                                 "f(x) = x^2 + 3x - 5\n\nDerivative: f(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
@@ -1027,15 +1078,35 @@ function StudentPage() {
                               })()}
                             </div>
                           )}
-                          <label className="block text-sm">
-                            <span className="block mb-1">Correction (edit if OCR is wrong)</span>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                OCR correction
+                              </span>
+                              <button
+                                type="button"
+                                onClick={handleToggleCorrectionEdit}
+                                disabled={correctionSaving}
+                                className="text-xs px-3 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-60"
+                              >
+                                {isCorrectionEditing
+                                  ? correctionSaving
+                                    ? "Saving..."
+                                    : "Save correction"
+                                  : "Edit OCR text"}
+                              </button>
+                            </div>
                             <textarea
                               className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
                               rows={4}
                               value={correctionText}
                               onChange={(e) => setCorrectionText(e.target.value)}
+                              readOnly={!isCorrectionEditing}
                             />
-                          </label>
+                            {correctionError && (
+                              <p className="text-xs text-red-600 dark:text-red-400">{correctionError}</p>
+                            )}
+                          </div>
                         </>
                       ) : (
                         <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-200">
