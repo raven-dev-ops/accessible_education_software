@@ -1251,7 +1251,7 @@ function StudentPage() {
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 id="student-tts-ai" className="text-xl font-semibold mb-0">AI-to-speech sample</h2>
+            <h2 id="student-tts-ai" className="text-xl font-semibold mb-0">AI-to-speech demo</h2>
             <button
               type="button"
               onClick={() => setAiTtsOpen((open) => !open)}
@@ -1263,38 +1263,46 @@ function StudentPage() {
             </button>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-            Preview an AI voice reading a short math passage; module selection is for demonstration only.
+            Preview how an uploaded math image would be OCR’d and read aloud by the AI, using the module you selected above.
           </p>
           {aiTtsOpen && (
             <div
               id="student-tts-ai-panel"
               className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-3"
             >
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Module</p>
-                <select className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800">
-                  <option>Calculus I</option>
-                  <option>Calculus II</option>
-                  <option>Linear Algebra</option>
-                  <option>Physics</option>
-                  <option>Statistics</option>
-                </select>
-              </div>
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-64 flex flex-col gap-3 overflow-hidden">
-                <div className="flex-1 space-y-2 overflow-auto text-sm text-slate-700 dark:text-slate-200">
-                  <div className="bg-slate-100 dark:bg-slate-800 rounded p-2">
-                    <p className="font-semibold">Teacher prompt</p>
-                    <p>Read the derivative section aloud with a calm tone.</p>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-72 flex flex-col gap-3 overflow-hidden">
+                <div className="flex-1 space-y-3 overflow-auto text-sm text-slate-700 dark:text-slate-200">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">OCR text (from uploaded image)</span>
+                    <div className="rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3">
+                      {activeModuleSample.paragraphs[0]}
+                    </div>
                   </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/40 rounded p-2">
-                    <p className="font-semibold">AI voice</p>
-                    <p>f of x equals x squared. The derivative is two x. Here is the short summary for class.</p>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">AI readout</span>
+                    <div className="rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-slate-200 dark:border-slate-700 p-3">
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">AI voice</p>
+                      <p>{sampleTLDR}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Chat transcript (demo)</span>
+                    <div className="space-y-2">
+                      <div className="max-w-[90%] rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2">
+                        <p className="text-xs text-slate-600 dark:text-slate-300">You</p>
+                        <p>Read this math note aloud with a calm voice.</p>
+                      </div>
+                      <div className="max-w-[90%] rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 p-2 ml-auto">
+                        <p className="text-xs text-emerald-700 dark:text-emerald-200">AI</p>
+                        <p>{activeModuleSample.paragraphs[1] ?? sampleTLDR}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
-                    placeholder="Type a prompt or paste note text..."
+                    placeholder="Type a prompt or paste OCR text..."
                     className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800"
                   />
                   <button
@@ -1306,7 +1314,7 @@ function StudentPage() {
                 </div>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Placeholder AI-to-speech preview. This will connect to the production AI reader in a later iteration.
+                Placeholder AI-to-speech demo. The module selection above controls the sample OCR text shown here.
               </p>
             </div>
           )}
