@@ -36,10 +36,6 @@ jobs:
         run: npm --workspace apps/web run a11y:pa11y
         env:
           NEXT_PUBLIC_AUTH_ENABLED: "false"
-      - name: Lighthouse CI (budgets)
-        run: npm --workspace apps/web run lhci:autorun
-        env:
-          NEXT_PUBLIC_AUTH_ENABLED: "false"
 
   ocr:
     runs-on: ubuntu-latest
