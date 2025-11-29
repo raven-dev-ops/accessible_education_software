@@ -726,11 +726,8 @@ function StudentPage() {
         >
           <div className="space-y-4" id="student-upload-panel">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Upload & process</h3>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">OCR Pipeline Demo</h3>
               <div className="flex items-center gap-2">
-                <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100">
-                  OCR MVP Demo
-                </span>
                 <button
                   type="button"
                   onClick={() => setUploadOpen((open) => !open)}
