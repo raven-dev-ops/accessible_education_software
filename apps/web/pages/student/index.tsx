@@ -1057,13 +1057,6 @@ function StudentPage() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="text-sm">
                     <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
-                    <input
-                      type="text"
-                      value={voiceSearch}
-                      onChange={(e) => setVoiceSearch(e.target.value)}
-                      placeholder="Search voices"
-                      className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full mb-2"
-                    />
                     <select
                       value={selectedVoiceUri ?? ""}
                       onChange={(e) => {
@@ -1078,13 +1071,11 @@ function StudentPage() {
                       className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
                     >
                       {voices.length === 0 && <option value="">Loading voices...</option>}
-                      {voices
-                        .filter((v) => `${v.name} ${v.lang}`.toLowerCase().includes(voiceSearch.toLowerCase()))
-                        .map((v) => (
-                          <option key={v.voiceURI} value={v.voiceURI}>
-                            {v.name} ({v.lang})
-                          </option>
-                        ))}
+                      {voices.map((v) => (
+                        <option key={v.voiceURI} value={v.voiceURI}>
+                          {v.name} ({v.lang})
+                        </option>
+                      ))}
                     </select>
                   </label>
                   <label className="text-sm">
@@ -1172,7 +1163,7 @@ function StudentPage() {
                       aria-pressed={activeSpeechId === "sample-note"}
                       disabled={isSpeaking && activeSpeechId === "sample-note"}
                     >
-                      Nav reader
+                      READ
                     </button>
                   )}
                   <button
@@ -1277,7 +1268,7 @@ function StudentPage() {
         >
           <div className="flex items-center justify-between mb-2">
             <h2 id="student-braille" className="text-xl font-semibold mb-0">
-              Braille preview (prototype)
+              Braille Preview
             </h2>
             <button
               type="button"
@@ -1285,8 +1276,9 @@ function StudentPage() {
               className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800"
               aria-expanded={brailleOpen}
               aria-controls="student-braille-panel"
+              aria-label={brailleOpen ? "Hide Braille preview" : "Show Braille preview"}
             >
-              {brailleOpen ? "Hide preview" : "Show preview"}
+              {brailleOpen ? "▲" : "▼"}
             </button>
           </div>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
