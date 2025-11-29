@@ -610,7 +610,6 @@ function StudentPage() {
           setBrailleError(
             "Advanced Braille service is unavailable; falling back."
           );
-          announce("Braille service unavailable; using fallback output.", "error");
         }
       } finally {
         if (!cancelled) {
