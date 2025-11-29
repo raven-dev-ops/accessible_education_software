@@ -427,16 +427,25 @@ function TeacherPage() {
                 </p>
               </div>
             </div>
-            <div className="md:col-span-1">
-              <label className="block text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">Select module</label>
-              <select className="w-full border rounded px-3 py-2 text-base bg-white dark:bg-slate-800">
-                <option>Calculus I - Limits</option>
-                <option>Calculus I - Derivatives</option>
-                <option>Calculus I - Integrals</option>
-              </select>
+              <div className="md:col-span-1">
+                <label className="block text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
+                  Select module
+                </label>
+                <select
+                  className="w-full border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
+                  value={selectedModuleId}
+                  onChange={(e) => setSelectedModuleId(e.target.value)}
+                >
+                  {modules.length === 0 && <option value="">No modules yet</option>}
+                  {modules.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
         <section aria-labelledby="teacher-support" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
           <h2 id="teacher-support" className="text-xl font-semibold mb-3">
