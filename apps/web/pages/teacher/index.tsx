@@ -406,36 +406,37 @@ function TeacherPage() {
     <>
     <Layout title="Teacher Dashboard" secondaryNav={previewNav}>
       <div className="space-y-8">
-        <div className="grid gap-4 md:grid-cols-2 items-stretch">
-          <section
-            aria-labelledby="teacher-profile"
-            className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800 flex items-center gap-4"
-          >
-            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
-              {(session?.user?.name || "Sample Teacher").charAt(0).toUpperCase()}
+        <section
+          aria-labelledby="teacher-hero"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <div className="grid gap-4 md:grid-cols-3 items-center">
+            <div className="flex items-center gap-4 md:col-span-2">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
+                {(session?.user?.name || "Sample Teacher").charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h2 id="teacher-hero" className="text-2xl font-semibold">
+                  {session?.user?.name || "Sample Teacher"}
+                </h2>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  {session?.user?.email || "teacher@example.com"}
+                </p>
+                <p className="text-base leading-relaxed mt-2">
+                  Welcome, Teacher. Manage modules, review student reports, handle support tickets, and train OCR with your handwritten math.
+                </p>
+              </div>
             </div>
-            <div className="md:max-w-md">
-              <h2 id="teacher-profile" className="text-xl font-semibold">
-                {session?.user?.name || "Sample Teacher"}
-              </h2>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                {session?.user?.email || "teacher@example.com"}
-              </p>
+            <div className="md:col-span-1">
+              <label className="block text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">Select module</label>
+              <select className="w-full border rounded px-3 py-2 text-base bg-white dark:bg-slate-800">
+                <option>Calculus I - Limits</option>
+                <option>Calculus I - Derivatives</option>
+                <option>Calculus I - Integrals</option>
+              </select>
             </div>
-          </section>
-
-          <section
-            aria-labelledby="teacher-welcome"
-            className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
-          >
-            <h2 id="teacher-welcome" className="text-2xl font-semibold mb-3">
-              Welcome, Teacher
-            </h2>
-            <p className="text-lg leading-relaxed">
-              Manage modules, review student reports, handle support tickets, and train OCR with your handwritten math.
-            </p>
-          </section>
-        </div>
+          </div>
+        </section>
 
         <section aria-labelledby="teacher-support" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
           <h2 id="teacher-support" className="text-xl font-semibold mb-3">
