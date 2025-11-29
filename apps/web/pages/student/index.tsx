@@ -382,7 +382,8 @@ function StudentPage() {
 
   const handlePlaySample = () => {
     const text = sampleParagraphs[sampleParagraphIndex] ?? sampleParagraphs[0];
-    runSpeech(text, "a sample Calculus note", "sample-note");
+    const labelModule = selectedModuleId || "sample";
+    runSpeech(text, `a sample ${labelModule} note`, "sample-note");
   };
 
   const handleSpeakNote = (note: ReleasedNote) => {
