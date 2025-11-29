@@ -405,7 +405,7 @@ function TeacherPage() {
   return (
     <>
     <Layout title="Teacher Dashboard" secondaryNav={previewNav}>
-      <div className="space-y-8 max-w-5xl mx-auto">
+      <div className="space-y-8">
         <div className="grid gap-4 md:grid-cols-2 items-stretch">
           <section
             aria-labelledby="teacher-profile"
@@ -414,7 +414,7 @@ function TeacherPage() {
             <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
               {(session?.user?.name || "Sample Teacher").charAt(0).toUpperCase()}
             </div>
-            <div>
+            <div className="md:max-w-md">
               <h2 id="teacher-profile" className="text-xl font-semibold">
                 {session?.user?.name || "Sample Teacher"}
               </h2>

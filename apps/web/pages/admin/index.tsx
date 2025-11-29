@@ -524,7 +524,7 @@ function AdminPage() {
   return (
     <Layout title="Admin Dashboard" secondaryNav={previewNav}>
       <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-6 transition-colors">
-        <div className="max-w-5xl mx-auto space-y-6">
+        <div className="max-w-6xl mx-auto space-y-6">
           <div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-md p-6 border border-slate-100 dark:border-slate-800">
             <div className="grid gap-4 md:grid-cols-2 items-center">
               <div className="flex items-center gap-4">

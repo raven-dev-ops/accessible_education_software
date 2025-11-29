@@ -658,7 +658,7 @@ function StudentPage() {
         </div>
       )}
       <div
-        className={`space-y-8 max-w-5xl mx-auto ${highContrast ? "bg-black text-yellow-100" : ""}`}
+        className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
         style={{ fontSize: `${fontScale}rem`, lineHeight: 1.6 }}
       >
         <div className="grid gap-4 md:grid-cols-2 items-stretch">
@@ -667,7 +667,7 @@ function StudentPage() {
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
           <div className="grid gap-4 md:grid-cols-2 items-center">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 md:max-w-md">
               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
                 {(session?.user?.name || "Sample Student").charAt(0).toUpperCase()}
               </div>
