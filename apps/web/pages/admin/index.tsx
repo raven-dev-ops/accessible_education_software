@@ -91,6 +91,7 @@ function AdminPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [ticketsError, setTicketsError] = useState<string | null>(null);
   const [ticketsLoading, setTicketsLoading] = useState(true);
+  const [activeTicket, setActiveTicket] = useState<SupportTicket | null>(null);
   const [useSamples, setUseSamples] = useState(preview || allowSampleEnv);
   const isPreviewOnly = preview && (!session || !session.user);
 
@@ -843,197 +844,183 @@ function AdminPage() {
             </div>
           </section>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <section className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                    Teacher training docs
-                  </p>
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    Upload curriculum PDFs
-                  </h2>
-                </div>
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-                Provide handwritten/printed curriculum samples to improve OCR accuracy for math notes.
-              </p>
-              <div className="flex items-center gap-3 flex-wrap">
-                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-sm cursor-pointer">
-                  <span className="text-xl font-semibold leading-none">+</span>
-                  <span>Upload PDF</span>
-                  <input type="file" accept=".pdf" className="sr-only" />
-                </label>
-                <span className="text-xs text-slate-500 dark:text-slate-300">
-                  Supports PDF; drag scanned pages or export from LMS.
-                </span>
-              </div>
-            </section>
-
-            <section className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                    OCR analytics
-                  </p>
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    Quality & volume
-                  </h2>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
-                  <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
-                    OCR samples
-                  </p>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                    10
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-300">
-                    Initial batch submitted
-                  </p>
-                </div>
-                <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
-                  <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
-                    Accuracy (mock)
-                  </p>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                    94%
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-300">
-                    Based on recent runs
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-300 mt-3">
-                Analytics are illustrative until we wire real OCR scoring.
-              </p>
-            </section>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <section className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                    Support tickets
-                  </p>
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    OCR issues (&lt;80%)
-                  </h2>
-                </div>
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-                Recent tickets submitted when OCR failed or scored under 80%. Includes the reported detail, score, and any attachment preview.
-              </p>
-              {ticketsError && (
-                <p role="alert" className="text-red-600 dark:text-red-300 text-sm">
-                  {ticketsError}
+          <section className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                  OCR analytics & support
                 </p>
-              )}
-              {ticketsLoading && <p className="text-sm text-slate-500">Loading tickets...</p>}
-              {!ticketsLoading && !ticketsError && tickets.length === 0 && (
-                <p className="text-sm text-slate-600 dark:text-slate-300">No tickets yet.</p>
-              )}
-              {!ticketsLoading && !ticketsError && tickets.length > 0 && (
-                <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
-                      <tr>
-                        <th className="px-3 py-2 text-left">Student</th>
-                        <th className="px-3 py-2 text-left">Created</th>
-                        <th className="px-3 py-2 text-left">Score</th>
-                        <th className="px-3 py-2 text-left">Detail</th>
-                        <th className="px-3 py-2 text-left">Attachment</th>
-                        <th className="px-3 py-2 text-left">Preview</th>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Quality, volume, and issues
+                </h2>
+              </div>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3 mb-4">
+              <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
+                <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
+                  OCR samples (mock)
+                </p>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                  10
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">
+                  Initial batch submitted
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
+                <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
+                  Accuracy (mock)
+                </p>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                  94%
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">
+                  Based on recent runs
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
+                <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
+                  Tickets &lt; 80%
+                </p>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                  {tickets.filter((t) => (t.score ?? 0) < 80).length}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">
+                  Student‑reported OCR issues
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-300 mb-4">
+              Analytics are illustrative until we wire real OCR scoring. Tickets below show concrete examples where OCR scored under 80% or was corrected.
+            </p>
+
+            {ticketsError && (
+              <p role="alert" className="text-red-600 dark:text-red-300 text-sm">
+                {ticketsError}
+              </p>
+            )}
+            {ticketsLoading && <p className="text-sm text-slate-500">Loading tickets...</p>}
+            {!ticketsLoading && !ticketsError && tickets.length === 0 && (
+              <p className="text-sm text-slate-600 dark:text-slate-300">No tickets yet.</p>
+            )}
+            {!ticketsLoading && !ticketsError && tickets.length > 0 && (
+              <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Student</th>
+                      <th className="px-3 py-2 text-left">Created</th>
+                      <th className="px-3 py-2 text-left">Score</th>
+                      <th className="px-3 py-2 text-left">Summary</th>
+                      <th className="px-3 py-2 text-left">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tickets.map((t) => (
+                      <tr key={t.id} className="border-t border-slate-100 dark:border-slate-800 align-top">
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                          {t.userEmail ?? "Unknown"}
+                        </td>
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                          {new Date(t.createdAt).toLocaleString()}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              (t.score ?? 0) < 80
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                            }`}
+                          >
+                            {t.score != null ? `${t.score}%` : "N/A"}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100 max-w-xs">
+                          <div className="line-clamp-2">{t.detail}</div>
+                          {t.fileName && (
+                            <div className="text-xs text-slate-500">File: {t.fileName}</div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                          <button
+                            type="button"
+                            className="px-3 py-1 rounded border border-slate-300 dark:border-slate-600 text-xs hover:bg-slate-100 dark:hover:bg-slate-800"
+                            onClick={() => setActiveTicket(t)}
+                          >
+                            View ticket
+                          </button>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {tickets.map((t) => {
-                        const isImage =
-                          t.attachmentUrl &&
-                          /(png|jpe?g|gif|webp|bmp|svg)$/i.test(t.attachmentUrl.split("?")[0]);
-                        return (
-                          <tr key={t.id} className="border-t border-slate-100 dark:border-slate-800 align-top">
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                              {t.userEmail ?? "Unknown"}
-                            </td>
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100 whitespace-nowrap">
-                              {new Date(t.createdAt).toLocaleString()}
-                            </td>
-                            <td className="px-3 py-2">
-                              <span
-                                className={`px-2 py-1 rounded text-xs ${
-                                  (t.score ?? 0) < 80
-                                    ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                                    : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
-                                }`}
-                              >
-                                {t.score != null ? `${t.score}%` : "N/A"}
-                              </span>
-                            </td>
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100 max-w-xs">
-                              <div className="line-clamp-3">{t.detail}</div>
-                              {t.fileName && (
-                                <div className="text-xs text-slate-500">File: {t.fileName}</div>
-                              )}
-                              {(t.scannedText || t.correctedText) && (
-                                <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 space-y-1">
-                                  {t.scannedText && (
-                                    <div>
-                                      <span className="font-semibold">Scanned:</span> {t.scannedText}
-                                    </div>
-                                  )}
-                                  {t.correctedText && (
-                                    <div>
-                                      <span className="font-semibold">Correction:</span> {t.correctedText}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </td>
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                              {t.attachmentUrl ? (
-                                <a
-                                  href={t.attachmentUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-blue-600 dark:text-blue-300 underline"
-                                >
-                                  View
-                                </a>
-                              ) : (
-                                "-"
-                              )}
-                            </td>
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                              {isImage ? (
-                                <Image
-                                  src={t.attachmentUrl as string}
-                                  alt="Attachment preview"
-                                  width={200}
-                                  height={200}
-                                  className="h-16 w-auto rounded border border-slate-200 dark:border-slate-700 object-contain"
-                                />
-                              ) : t.attachmentUrl ? (
-                                <span className="text-xs text-slate-500 dark:text-slate-300">
-                                  Preview unavailable
-                                </span>
-                              ) : (
-                                "-"
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-          </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
         </div>
       </main>
+      {activeTicket && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4">
+          <div className="max-w-xl w-full rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                  Ticket details
+                </p>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  OCR issue for {activeTicket.userEmail ?? "Unknown student"}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTicket(null)}
+                className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                Close
+              </button>
+            </div>
+            <div className="space-y-2 text-sm text-slate-800 dark:text-slate-100">
+              <p className="text-xs text-slate-500 dark:text-slate-300">
+                Created: {new Date(activeTicket.createdAt).toLocaleString()}
+              </p>
+              <p>
+                <span className="font-semibold">Score:</span>{" "}
+                {activeTicket.score != null ? `${activeTicket.score}%` : "N/A"}
+              </p>
+              <p>
+                <span className="font-semibold">Detail:</span> {activeTicket.detail}
+              </p>
+              {(activeTicket.scannedText || activeTicket.correctedText) && (
+                <div className="space-y-1">
+                  {activeTicket.scannedText && (
+                    <p>
+                      <span className="font-semibold">Scanned:</span> {activeTicket.scannedText}
+                    </p>
+                  )}
+                  {activeTicket.correctedText && (
+                    <p>
+                      <span className="font-semibold">Correction:</span> {activeTicket.correctedText}
+                    </p>
+                  )}
+                </div>
+              )}
+              {activeTicket.attachmentUrl && (
+                <p className="mt-2">
+                  <span className="font-semibold">Attachment:</span>{" "}
+                  <a
+                    href={activeTicket.attachmentUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-blue-600 dark:text-blue-300 underline"
+                  >
+                    Open in new tab
+                  </a>
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
