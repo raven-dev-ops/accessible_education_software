@@ -478,8 +478,11 @@ function TeacherPage() {
     setChatInput("");
   };
 
-  const selectedModule = modules.find((m) => m.id === selectedModuleId) ?? modules[0];
+  const availableModules = modules.length ? modules : allowSamples ? sampleModules : [];
+  const selectedModule =
+    availableModules.find((m) => m.id === selectedModuleId) || availableModules[0];
   const training = trainingSets[selectedModule?.id as string] ?? Object.values(trainingSets)[0];
+  const modulesForDisplay = selectedModule ? [selectedModule] : availableModules;
 
   const previewNav = showPreviewNav ? (
     <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200" htmlFor="preview-nav-teacher">
@@ -506,27 +509,43 @@ function TeacherPage() {
       <div className="space-y-8">
         <section
           aria-labelledby="teacher-hero"
-          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
-        >
-          <div className="grid gap-4 md:grid-cols-2 items-center">
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
-                {(session?.user?.name || "Sample Teacher").charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h2 id="teacher-hero" className="text-2xl font-semibold">
-                  {session?.user?.name || "Sample Teacher"}
-                </h2>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  {session?.user?.email || "teacher@example.com"}
-                </p>
-                <p className="text-base leading-relaxed mt-2">
-                  Welcome, Teacher. Manage modules, review student reports, handle support tickets, and train OCR with your handwritten math.
-                </p>
-              </div>
-            </div>
+      className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+    >
+      <div className="grid gap-4 md:grid-cols-2 items-center">
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
+            {(session?.user?.name || "Sample Teacher").charAt(0).toUpperCase()}
           </div>
-        </section>
+          <div>
+            <h2 id="teacher-hero" className="text-2xl font-semibold">
+              {session?.user?.name || "Sample Teacher"}
+            </h2>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              {session?.user?.email || "teacher@example.com"}
+            </p>
+            <p className="text-base leading-relaxed mt-2">
+              Welcome, Teacher. Manage modules, review student reports, handle support tickets, and train OCR with your handwritten math.
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <label className="w-full max-w-xs text-sm text-slate-700 dark:text-slate-200">
+            <span className="block mb-1">Select module</span>
+            <select
+              className="w-full border rounded px-3 py-2 bg-white dark:bg-slate-800"
+              value={selectedModuleId}
+              onChange={(e) => setSelectedModuleId(e.target.value)}
+            >
+              {(modules.length ? modules : allowSamples ? sampleModules : []).map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+    </section>
 
         <section aria-labelledby="teacher-support" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-2">
@@ -651,7 +670,7 @@ function TeacherPage() {
             {modulesError && <p role="alert" className="text-red-700">{modulesError}</p>}
             {!modulesLoading && (
               <ul className="space-y-2 text-sm">
-                {(modules.length ? modules : allowSamples ? sampleModules : []).map((m) => {
+                {modulesForDisplay.map((m) => {
                   const eqs = trainingSets[m.id as string]?.equations?.length || 0;
                   const passed = Object.entries(equationProgress).filter(
                     ([key, val]) => key.startsWith(`${m.id}-`) && val.status === "pass"
