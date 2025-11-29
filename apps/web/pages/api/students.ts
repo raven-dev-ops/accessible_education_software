@@ -7,10 +7,14 @@ type StudentSummary = {
   id: string | number;
   name: string;
   email: string;
-  course?: string;
+  course?: string | null;
+  createdAt?: string | null;
 };
 
 const allowSamples = process.env.ALLOW_SAMPLE_FALLBACKS === "true";
+const useCloudRun = process.env.USE_CLOUD_RUN_API === "true";
+const cloudRunBase = process.env.CLOUD_RUN_API_BASE_URL;
+const cloudRunApiKey = process.env.CLOUD_RUN_API_KEY;
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,6 +24,22 @@ export default async function handler(
   if (!auth) return;
 
   try {
+    if (useCloudRun && cloudRunBase && cloudRunApiKey) {
+      const url = `${cloudRunBase.replace(/\/$/, "")}/students`;
+      const r = await fetch(url, {
+        headers: { "x-api-key": cloudRunApiKey },
+      });
+      if (!r.ok) {
+        console.error("Cloud Run /students failed:", r.status, await r.text().catch(() => ""));
+      } else {
+        const data = (await r.json()) as { ok: boolean; students?: StudentSummary[] };
+        if (data.ok && data.students && data.students.length) {
+          return res.status(200).json(data.students);
+        }
+      }
+      // fall through to Prisma / samples on failure
+    }
+
     const users = await prisma.user.findMany({
       where: { role: "student" },
       orderBy: { createdAt: "asc" },
@@ -37,8 +57,8 @@ export default async function handler(
       id: user.id,
       name: user.name || user.email,
       email: user.email,
-      // Placeholder: real course/module associations will be wired later.
-      course: undefined,
+      course: null,
+      createdAt: user.createdAt?.toISOString?.() ?? null,
     }));
 
     return res.status(200).json(mapped);

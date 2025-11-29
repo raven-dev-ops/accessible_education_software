@@ -9,6 +9,10 @@ type ModuleSummary = {
   course?: string;
 };
 
+const useCloudRun = process.env.USE_CLOUD_RUN_API === "true";
+const cloudRunBase = process.env.CLOUD_RUN_API_BASE_URL;
+const cloudRunApiKey = process.env.CLOUD_RUN_API_KEY;
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ModuleSummary[] | { error: string }>
@@ -17,6 +21,22 @@ export default async function handler(
   if (!auth) return;
 
   try {
+    if (useCloudRun && cloudRunBase && cloudRunApiKey) {
+      const url = `${cloudRunBase.replace(/\/$/, "")}/modules`;
+      const r = await fetch(url, {
+        headers: { "x-api-key": cloudRunApiKey },
+      });
+      if (!r.ok) {
+        console.error("Cloud Run /modules failed:", r.status, await r.text().catch(() => ""));
+      } else {
+        const data = (await r.json()) as { ok: boolean; modules?: ModuleSummary[] };
+        if (data.ok && data.modules && data.modules.length) {
+          return res.status(200).json(data.modules);
+        }
+      }
+      // fall through to Prisma / samples on failure
+    }
+
     const modules = await prisma.module.findMany({
       include: { course: true },
       orderBy: { createdAt: "asc" },

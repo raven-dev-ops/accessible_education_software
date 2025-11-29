@@ -14,7 +14,14 @@ type SupportTicket = {
   score?: number | null;
   userEmail?: string | null;
   attachmentUrl?: string | null;
+  scannedText?: string | null;
+  correctedText?: string | null;
+  fileName?: string | null;
 };
+
+const useCloudRun = process.env.USE_CLOUD_RUN_API === "true";
+const cloudRunBase = process.env.CLOUD_RUN_API_BASE_URL;
+const cloudRunApiKey = process.env.CLOUD_RUN_API_KEY;
 
 export const config = {
   api: {
@@ -148,6 +155,26 @@ export default async function handler(
     const auth = await requireRole(req, res, ["admin"]);
     if (!auth) return;
 
+    if (useCloudRun && cloudRunBase && cloudRunApiKey) {
+      try {
+        const url = `${cloudRunBase.replace(/\/$/, "")}/support-tickets`;
+        const r = await fetch(url, {
+          headers: { "x-api-key": cloudRunApiKey },
+        });
+        if (!r.ok) {
+          console.error("Cloud Run /support-tickets failed:", r.status, await r.text().catch(() => ""));
+        } else {
+          const data = (await r.json()) as { ok: boolean; tickets?: SupportTicket[] };
+          if (data.ok && data.tickets) {
+            return res.status(200).json(data.tickets);
+          }
+        }
+      } catch (err) {
+        console.error("Cloud Run /support-tickets error:", err);
+        // fall through to Prisma
+      }
+    }
+
     const logs = await prisma.log.findMany({
       where: { level: "support_ticket" },
       orderBy: { createdAt: "desc" },
@@ -161,6 +188,9 @@ export default async function handler(
       score: (log.meta as any)?.score ?? null,
       userEmail: (log.meta as any)?.userEmail ?? null,
       attachmentUrl: (log.meta as any)?.attachmentUrl ?? null,
+      scannedText: (log.meta as any)?.scannedText ?? null,
+      correctedText: (log.meta as any)?.correctedText ?? null,
+      fileName: (log.meta as any)?.fileName ?? null,
     }));
 
     return res.status(200).json(mapped);
