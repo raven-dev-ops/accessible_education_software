@@ -157,6 +157,7 @@ function StudentPage() {
   const [isCorrectionEditing, setIsCorrectionEditing] = useState(false);
   const [correctionSaving, setCorrectionSaving] = useState(false);
   const [correctionError, setCorrectionError] = useState<string | null>(null);
+  const [showOcrSection, setShowOcrSection] = useState(false);
   const [brailleOpen, setBrailleOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [ttsOpen, setTtsOpen] = useState(false);
@@ -382,6 +383,7 @@ function StudentPage() {
     setIsCorrectionEditing(false);
     setCorrectionSaving(false);
     setCorrectionError(null);
+    setShowOcrSection(false);
   };
 
   const handleDeletePreviousUpload = (id: string) => {
@@ -427,6 +429,7 @@ function StudentPage() {
       setUploadScore(score);
       setCorrectionText(previewText);
       setUploadStatus("OCR complete. Review the text and accuracy below.");
+      setShowOcrSection(true);
       announce("Uploaded note processed. Accuracy grade available.", score < 80 ? "info" : "success");
 
       if (activeUploadId) {
@@ -468,6 +471,7 @@ function StudentPage() {
     if (!isCorrectionEditing) {
       setIsCorrectionEditing(true);
       setCorrectionError(null);
+      setShowOcrSection(true);
       return;
     }
 
@@ -475,21 +479,36 @@ function StudentPage() {
     setCorrectionError(null);
     try {
       const now = new Date().toISOString();
-      const payload = {
-        detail: `OCR correction saved at ${now}.\n\nCorrected text:\n${correctionText}`,
-        score: uploadScore,
-        userEmail: session?.user?.email ?? null,
-        kind: "ocr_correction",
-      };
+      const formData = new FormData();
+      formData.append(
+        "detail",
+        `OCR correction saved at ${now}.\n\nCorrected text:\n${correctionText}`
+      );
+      if (typeof uploadScore === "number") {
+        formData.append("score", String(uploadScore));
+      }
+      if (session?.user?.email) {
+        formData.append("userEmail", session.user.email);
+      }
+      if (uploadPreview) {
+        formData.append("scannedText", uploadPreview);
+      }
+      formData.append("correctedText", correctionText);
+      if (uploadFileName) {
+        formData.append("fileName", uploadFileName);
+      }
+      if (selectedModuleId) {
+        formData.append("module", selectedModuleId);
+      }
 
       await fetch("/api/support-tickets", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       announce("OCR correction saved for review.", "success");
       setIsCorrectionEditing(false);
+      setShowOcrSection(false);
     } catch {
       setCorrectionError("Could not save OCR correction right now. Please try again later.");
       announce("Could not save OCR correction.", "error");
@@ -847,6 +866,7 @@ function StudentPage() {
                         setIsCorrectionEditing(false);
                         setCorrectionSaving(false);
                         setCorrectionError(null);
+                        setShowOcrSection(false);
                         setUploadImageUrl(null);
                         if (file && file.type.startsWith('image/')) {
                           const reader = new FileReader();
@@ -883,6 +903,7 @@ function StudentPage() {
                               setUploadScore(score);
                               setCorrectionText(previewText);
                               setUploadStatus('Formatted for TTS. You can listen to the preview below.');
+                              setShowOcrSection(true);
                               announce('Uploaded sample note processed. Ready to play.', 'success');
                               const now = new Date().toISOString();
                               setPreviousUploads((prev) => {
@@ -1018,107 +1039,108 @@ function StudentPage() {
                   )}
                 </div>
 
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/80 p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                      OCR Text &amp; Results
-                    </h3>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-3">
-                      {uploadImageUrl ? (
-                        <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
-                          <div className="relative h-full w-full">
-                            <Image src={uploadImageUrl} alt="Scanned region" fill className="object-contain rounded" />
-                            <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-                              Scanned region
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-200">
-                          Upload an image to view the scanned region.
-                        </div>
-                      )}
-                      {uploadScore != null && null}
+                {showOcrSection && (
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/80 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        OCR Text &amp; Results
+                      </h3>
                     </div>
-
-                    <div className="space-y-3">
-                      {uploadPreview ? (
-                        <div className="space-y-3">
-                          {isCorrectionEditing ? (
-                            <textarea
-                              className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
-                              rows={4}
-                              value={correctionText}
-                              onChange={(e) => setCorrectionText(e.target.value)}
-                            />
-                          ) : (
-                            <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
-                              {correctionText || uploadPreview}
-                            </pre>
-                          )}
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              OCR text
-                            </span>
-                            <button
-                              type="button"
-                              onClick={handleToggleCorrectionEdit}
-                              disabled={correctionSaving}
-                              className="text-xs font-semibold px-3 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-60 text-slate-800 dark:text-slate-100"
-                            >
-                              {isCorrectionEditing
-                                ? correctionSaving
-                                  ? "Saving..."
-                                  : "Save"
-                                : "Edit"}
-                            </button>
-                          </div>
-                          {correctionError && (
-                            <p className="text-xs text-red-600 dark:text-red-400">{correctionError}</p>
-                          )}
-                          {uploadScore != null && (
-                            <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                  Accuracy grade
-                                </span>
-                                <span
-                                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                    uploadScore >= 80
-                                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200'
-                                      : uploadScore >= 70
-                                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
-                                      : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200'
-                                  }`}
-                                >
-                                  {uploadScore}% {uploadScore < 80 ? '(will auto-report to teachers)' : ''}
-                                </span>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-3">
+                        {uploadImageUrl ? (
+                          <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
+                            <div className="relative h-full w-full">
+                              <Image src={uploadImageUrl} alt="Scanned region" fill className="object-contain rounded" />
+                              <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
+                                Scanned region
                               </div>
-                              {activeUploadId && (
-                                <div className="text-xs text-slate-600 dark:text-slate-200">
-                                  {(() => {
-                                    const selected = previousUploads.find((u) => u.id === activeUploadId);
-                                    if (!selected || !selected.history || selected.history.length === 0) return null;
-                                    const historyText = selected.history
-                                      .map((h) => `${h.score}% on ${new Date(h.createdAt).toLocaleDateString()}`)
-                                      .join(' | ');
-                                    return <p>Previous scores for this image: {historyText}</p>;
-                                  })()}
-                                </div>
-                              )}
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-200">
-                          Upload a handwritten note to review its OCR text and make corrections.
-                        </div>
-                      )}
+                          </div>
+                        ) : (
+                          <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-200">
+                            Upload an image to view the scanned region.
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        {uploadPreview ? (
+                          <div className="space-y-3">
+                            {isCorrectionEditing ? (
+                              <textarea
+                                className="w-full border rounded p-2 text-sm bg-white dark:bg-slate-900"
+                                rows={4}
+                                value={correctionText}
+                                onChange={(e) => setCorrectionText(e.target.value)}
+                              />
+                            ) : (
+                              <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
+                                {correctionText || uploadPreview}
+                              </pre>
+                            )}
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                OCR text
+                              </span>
+                              <button
+                                type="button"
+                                onClick={handleToggleCorrectionEdit}
+                                disabled={correctionSaving}
+                                className="text-xs font-semibold px-3 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-60 text-slate-800 dark:text-slate-100"
+                              >
+                                {isCorrectionEditing
+                                  ? correctionSaving
+                                    ? "Saving..."
+                                    : "Save"
+                                  : "Edit"}
+                              </button>
+                            </div>
+                            {correctionError && (
+                              <p className="text-xs text-red-600 dark:text-red-400">{correctionError}</p>
+                            )}
+                            {uploadScore != null && (
+                              <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                    Accuracy grade
+                                  </span>
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                      uploadScore >= 80
+                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200'
+                                        : uploadScore >= 70
+                                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
+                                        : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+                                    }`}
+                                  >
+                                    {uploadScore}% {uploadScore < 80 ? '(will auto-report to teachers)' : ''}
+                                  </span>
+                                </div>
+                                {activeUploadId && (
+                                  <div className="text-xs text-slate-600 dark:text-slate-200">
+                                    {(() => {
+                                      const selected = previousUploads.find((u) => u.id === activeUploadId);
+                                      if (!selected || !selected.history || selected.history.length === 0) return null;
+                                      const historyText = selected.history
+                                        .map((h) => `${h.score}% on ${new Date(h.createdAt).toLocaleDateString()}`)
+                                        .join(' | ');
+                                      return <p>Previous scores for this image: {historyText}</p>;
+                                    })()}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-200">
+                            Upload a handwritten note to review its OCR text and make corrections.
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </>
             )}
           </div>

@@ -17,6 +17,7 @@ type SupportTicket = {
   scannedText?: string | null;
   correctedText?: string | null;
   fileName?: string | null;
+  module?: string | null;
 };
 
 const useCloudRun = process.env.USE_CLOUD_RUN_API === "true";
@@ -96,6 +97,10 @@ export default async function handler(
       const scoreRaw = fields.score as string | undefined;
       const score = scoreRaw ? Number(scoreRaw) : null;
       const userEmail = (fields.userEmail as string | undefined) ?? null;
+      const scannedText = (fields.scannedText as string | undefined) ?? null;
+      const correctedText = (fields.correctedText as string | undefined) ?? null;
+      const fileName = (fields.fileName as string | undefined) ?? null;
+      const moduleId = (fields.module as string | undefined) ?? null;
 
       if (!detail) {
         return res.status(400).json({ error: "detail is required" });
@@ -135,6 +140,10 @@ export default async function handler(
             score,
             userEmail,
             attachmentUrl,
+            scannedText,
+            correctedText,
+            fileName,
+            module: moduleId,
           },
         },
       });
@@ -146,6 +155,10 @@ export default async function handler(
         score: score ?? null,
         userEmail,
         attachmentUrl,
+        scannedText,
+        correctedText,
+        fileName,
+        module: moduleId,
       });
     });
     return;
@@ -191,6 +204,7 @@ export default async function handler(
       scannedText: (log.meta as any)?.scannedText ?? null,
       correctedText: (log.meta as any)?.correctedText ?? null,
       fileName: (log.meta as any)?.fileName ?? null,
+      module: (log.meta as any)?.module ?? null,
     }));
 
     return res.status(200).json(mapped);
