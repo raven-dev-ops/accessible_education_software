@@ -1,6 +1,6 @@
 {
   "name": "@raven-dev-ops/accessible-education-software-shared",
-  "version": "0.0.0-development",
+  "version": "1.0.0",
   "description": "Shared utilities and types for the Accessible Education Software monorepo.",
   "main": "index.js",
   "license": "UNLICENSED",
