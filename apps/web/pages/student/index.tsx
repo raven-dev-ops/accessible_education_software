@@ -968,9 +968,13 @@ function StudentPage() {
                 </div>
 
                 <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/80 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      OCR Text &amp; Results
+                    </h3>
+                  </div>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Scanned region</h3>
                       {uploadImageUrl ? (
                         <div className="relative h-48 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center">
                           <div className="relative h-full w-full">
@@ -1006,7 +1010,6 @@ function StudentPage() {
                     </div>
 
                     <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">OCR text & corrections</h3>
                       {uploadPreview ? (
                         <>
                           <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
