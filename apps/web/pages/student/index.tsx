@@ -778,7 +778,7 @@ function StudentPage() {
                 {uploadOpen ? "▼" : "▲"}
               </button>
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
+            <p className="text-sm text-slate-600 dark:text-slate-200">
               Upload a handwritten note to see OCR accuracy, history, and formatting preview before TTS.
             </p>
             {uploadOpen && (
@@ -859,7 +859,7 @@ function StudentPage() {
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Selected image</p>
                         {uploadFileName && (
-                          <span className="text-xs text-slate-600 dark:text-slate-300">{uploadFileName}</span>
+                          <span className="text-xs text-slate-600 dark:text-slate-200">{uploadFileName}</span>
                         )}
                       </div>
                       {uploadImageUrl ? (
@@ -867,24 +867,17 @@ function StudentPage() {
                           <Image src={uploadImageUrl} alt="Uploaded preview" fill className="object-contain rounded" />
                         </div>
                       ) : (
-                        <div className="h-48 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 rounded border border-dashed border-slate-300 dark:border-slate-700">
+                        <div className="h-48 flex items-center justify-center text-xs text-slate-500 dark:text-slate-200 rounded border border-dashed border-slate-300 dark:border-slate-700">
                           No image selected
                         </div>
                       )}
-                    <button
-                      type="button"
-                      className="w-full px-5 py-3 rounded bg-blue-700 text-white text-lg disabled:opacity-60 hover:bg-blue-600 dark:hover:bg-blue-500"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      Upload image
-                    </button>
-                    </div>
+                  </div>
                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 ">
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
                         Previous uploads
                       </p>
                       {previousUploads.length === 0 ? (
-                        <div className="h-36 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300 border border-dashed border-slate-300 dark:border-slate-700 rounded">
+                        <div className="h-36 flex items-center justify-center text-xs text-slate-500 dark:text-slate-200 border border-dashed border-slate-300 dark:border-slate-700 rounded">
                           No previous uploads yet
                         </div>
                       ) : (
@@ -1037,7 +1030,7 @@ function StudentPage() {
                             {uploadPreview}
                           </pre>
                           {activeUploadId && (
-                            <div className="text-xs text-slate-600 dark:text-slate-300">
+                            <div className="text-xs text-slate-600 dark:text-slate-200">
                               {(() => {
                                 const selected = previousUploads.find((u) => u.id === activeUploadId);
                                 if (!selected || !selected.history || selected.history.length === 0) return null;
@@ -1061,7 +1054,7 @@ function StudentPage() {
                           </div>
                         </>
                       ) : (
-                        <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-300">
+                        <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-200">
                           Upload a handwritten note to review its OCR text and make corrections.
                         </div>
                       )}
@@ -1071,7 +1064,7 @@ function StudentPage() {
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Formatting preview</h3>
                       {uploadPreview ? (
                         <div className="">
-                          <p className="text-sm text-slate-700 dark:text-slate-300">
+                          <p className="text-sm text-slate-700 dark:text-slate-200">
                             Preview how this note is laid out for reading and where the OCR engine focused.
                           </p>
                           <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800">
@@ -1086,12 +1079,12 @@ function StudentPage() {
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-sm text-slate-500 dark:text-slate-300">Region preview</span>
+                              <span className="text-sm text-slate-500 dark:text-slate-200">Region preview</span>
                             )}
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-700 dark:text-slate-300">
+                        <p className="text-sm text-slate-700 dark:text-slate-200">
                           Upload a handwritten note and run OCR to see the formatting preview and scanned region.
                         </p>
                       )}
@@ -1120,7 +1113,7 @@ function StudentPage() {
               {ttsOpen ? "▼" : "▲"}
             </button>
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
+          <p className="text-sm text-slate-600 dark:text-slate-200 mb-3">
             Hear a sample Calculus note with your selected voice, speed, and volume.
           </p>
           {!ttsSupported && (
@@ -1254,7 +1247,7 @@ function StudentPage() {
               {aiTtsOpen ? "▼" : "▲"}
             </button>
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
+          <p className="text-sm text-slate-600 dark:text-slate-200 mb-3">
             Preview how an uploaded math image would be OCR’d and read aloud by the AI, using the module you selected above.
           </p>
           {aiTtsOpen && (
@@ -1281,7 +1274,7 @@ function StudentPage() {
                     <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Chat transcript (demo)</span>
                     <div className="space-y-2">
                       <div className="max-w-[90%] rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2">
-                        <p className="text-xs text-slate-600 dark:text-slate-300">You</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-200">You</p>
                         <p>Read this math note aloud with a calm voice.</p>
                       </div>
                       <div className="max-w-[90%] rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 p-2 ml-auto">
