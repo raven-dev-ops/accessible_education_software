@@ -85,7 +85,7 @@ function StudentPage() {
   const [brailleError, setBrailleError] = useState<string | null>(null);
   const [brailleLoading, setBrailleLoading] = useState(false);
   const [widgetOpen, setWidgetOpen] = useState(true);
-  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
+  const [selectedModuleId, setSelectedModuleId] = useState<string>("Calculus I");
   const [ticketDescription, setTicketDescription] = useState("");
   const [ticketList, setTicketList] = useState<
     { id: string; title: string; detail: string; createdAt: string }[]
@@ -395,7 +395,12 @@ function StudentPage() {
 
   const filteredNotes =
     selectedModuleId && notes.length > 0
-      ? notes.filter((n) => n.module === selectedModuleId || n.id === selectedModuleId)
+      ? notes.filter(
+          (n) =>
+            n.module === selectedModuleId ||
+            n.course === selectedModuleId ||
+            n.id === selectedModuleId
+        )
       : notes;
 
   const brailleSourceText =
@@ -699,22 +704,14 @@ function StudentPage() {
               </label>
               <select
                 className="w-full border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
-                value={selectedModuleId || ""}
-                onChange={(e) => setSelectedModuleId(e.target.value || null)}
+                value={selectedModuleId}
+                onChange={(e) => setSelectedModuleId(e.target.value)}
               >
-                <option value="">All modules</option>
-                {notes.map((n) => (
-                  <option key={n.id} value={String(n.module || n.id)}>
-                    {n.module || n.title}
-                  </option>
-                ))}
-                {notes.length === 0 && (
-                  <>
-                    <option value="Limits">Calculus I - Limits</option>
-                    <option value="Derivatives">Calculus I - Derivatives</option>
-                    <option value="Integrals">Calculus I - Integrals</option>
-                  </>
-                )}
+                <option value="Calculus I">Calculus I</option>
+                <option value="Calculus II">Calculus II</option>
+                <option value="Linear Algebra">Linear Algebra</option>
+                <option value="Physics">Physics</option>
+                <option value="Statstics">Statstics</option>
               </select>
             </div>
           </div>
