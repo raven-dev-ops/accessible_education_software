@@ -1109,7 +1109,7 @@ function StudentPage() {
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 id="student-tts" className="text-xl font-semibold mb-0">Text-to-speech sample</h2>
+            <h2 id="student-tts" className="text-xl font-semibold mb-0">Text-To-Speech Demo</h2>
             <button
               type="button"
               onClick={() => setTtsOpen((open) => !open)}
