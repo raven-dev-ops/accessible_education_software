@@ -1033,12 +1033,6 @@ function StudentPage() {
                               onChange={(e) => setCorrectionText(e.target.value)}
                             />
                           </label>
-                          <div className="text-sm text-slate-700 dark:text-slate-200">
-                            <span className="font-semibold">Formatted preview</span>
-                            <pre className="whitespace-pre-wrap text-sm text-slate-900 dark:text-slate-100 border rounded p-2 bg-slate-50 dark:bg-slate-800 mt-1">
-                              {correctionText || uploadPreview}
-                            </pre>
-                          </div>
                         </>
                       ) : (
                         <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-200">
