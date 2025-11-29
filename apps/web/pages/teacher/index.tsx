@@ -265,7 +265,7 @@ function TeacherPage() {
     return () => {
       cancelled = true;
     };
-  }, [unauthorized, session, allowSamples]);
+  }, [unauthorized, session, allowSamples, preview]);
 
   useEffect(() => {
     let cancelled = false;
