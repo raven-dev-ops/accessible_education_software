@@ -666,49 +666,41 @@ function StudentPage() {
         className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
         style={{ fontSize: `${fontScale}rem`, lineHeight: 1.6 }}
       >
-        <div className="grid gap-4 md:grid-cols-2 items-stretch">
         <section
-          aria-labelledby="student-profile"
+          aria-labelledby="student-hero"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <div className="grid gap-4 md:grid-cols-2 items-center">
-            <div className="flex items-center gap-4 md:max-w-md">
+          <div className="grid gap-4 md:grid-cols-3 items-center">
+            <div className="flex items-center gap-4 md:col-span-2">
               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
                 {displayInitial}
               </div>
               <div>
-                <h2 id="student-profile" className="text-xl font-semibold">
+                <h2 id="student-hero" className="text-2xl font-semibold">
                   {displayName}
                 </h2>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {session?.user?.email || "sample.student@example.com"}
                 </p>
-                {false && (
-                  <p className="mt-1 text-xs inline-flex items-center px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                    Preview mode · sample student
-                  </p>
-                )}
+                <p className="text-base leading-relaxed mt-2">
+                  Welcome, Student. Upload your handwritten calculus notes and, in future iterations, we will convert them into accessible, listenable content.
+                </p>
               </div>
             </div>
-            <div className="mt-3 md:mt-0" />
+            <div className="md:col-span-1">
+              <label className="block text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
+                Select module
+              </label>
+              <select className="w-full border rounded px-3 py-2 text-base bg-white dark:bg-slate-800">
+                <option>Calculus I - Limits</option>
+                <option>Calculus I - Derivatives</option>
+                <option>Calculus I - Integrals</option>
+              </select>
+            </div>
           </div>
         </section>
 
         <section
-          aria-labelledby="student-welcome"
-          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
-        >
-          <h2 id="student-welcome" className="text-2xl font-semibold mb-3">
-            Welcome, Student
-          </h2>
-          <p className="text-lg leading-relaxed">
-            Upload your handwritten calculus notes and, in future iterations, we will convert them into accessible,
-            listenable content.
-          </p>
-        </section>
-        </div>
-
-                <section
           aria-labelledby="student-upload"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
@@ -1492,4 +1484,7 @@ function StudentPage() {
 }
 
 export default StudentPage;
+
+
+
 
