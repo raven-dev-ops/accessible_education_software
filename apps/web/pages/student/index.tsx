@@ -64,7 +64,6 @@ function StudentPage() {
   const [selectedVoiceUri, setSelectedVoiceUri] = useState<string | null>(null);
   const [volume, setVolume] = useState(0.5);
   const [rate, setRate] = useState(1);
-  const [voiceSearch, setVoiceSearch] = useState("");
   const [speechStatus, setSpeechStatus] = useState<string | null>(null);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [activeSpeechId, setActiveSpeechId] = useState<string | null>(null);
@@ -1048,12 +1047,6 @@ function StudentPage() {
                   Use the controls below to hear a sample Calculus I note read aloud. This simulates how your own notes
                   will sound once OCR and TTS are fully wired.
                 </p>
-                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
-                  <div>
-                    <p className="mt-2 font-semibold text-sm text-slate-900 dark:text-slate-50">TL;DR</p>
-                    <p className="text-sm text-slate-800 dark:text-slate-200">{sampleTLDR}</p>
-                  </div>
-                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="text-sm">
                     <span className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Voice</span>
@@ -1184,14 +1177,6 @@ function StudentPage() {
                   >
                     Last ⏭
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleStop}
-                    className="px-5 py-3 rounded border text-base disabled:opacity-60"
-                    disabled={!isSpeaking}
-                  >
-                    Stop
-                  </button>
                 </div>
                 <div className="text-sm space-y-1" aria-live="polite" role="status">
                   {speechStatus && <p className="text-emerald-700">{speechStatus}</p>}
@@ -1256,6 +1241,10 @@ function StudentPage() {
                       );
                     })}
                   </ul>
+                  <div className="mt-3">
+                    <p className="font-semibold text-sm text-slate-900 dark:text-slate-50 mb-1">TL;DR</p>
+                    <p className="text-sm text-slate-800 dark:text-slate-200">{sampleTLDR}</p>
+                  </div>
                 </div>
               </div>
             </div>
