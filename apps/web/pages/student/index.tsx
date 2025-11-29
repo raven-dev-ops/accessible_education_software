@@ -105,7 +105,7 @@ function StudentPage() {
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [brailleOpen, setBrailleOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [ttsOpen, setTtsOpen] = useState(false);
+  const [ttsOpen, setTtsOpen] = useState(true);
   const [aiTtsOpen, setAiTtsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 

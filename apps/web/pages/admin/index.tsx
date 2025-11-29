@@ -525,9 +525,9 @@ function AdminPage() {
     <Layout title="Admin Dashboard" secondaryNav={previewNav}>
       <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-6 transition-colors">
         <div className="max-w-6xl mx-auto space-y-6">
-                    <div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-md p-6 border border-slate-100 dark:border-slate-800">
-            <div className="grid gap-4 md:grid-cols-3 items-center">
-              <div className="flex items-center gap-4 md:col-span-2">
+          <div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-md p-6 border border-slate-100 dark:border-slate-800">
+            <div className="grid gap-4 md:grid-cols-2 items-center">
+              <div className="flex items-center gap-4">
                 <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
                   {(session?.user?.name || "Sample Admin").charAt(0).toUpperCase()}
                 </div>
@@ -542,16 +542,6 @@ function AdminPage() {
                     Accessible Education Platform. Monitor students, teachers, uploads, OCR quality, and support tickets across the system.
                   </p>
                 </div>
-              </div>
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
-                  Select view
-                </label>
-                <select className="w-full border rounded px-3 py-2 text-base bg-white dark:bg-slate-800">
-                  <option>System overview</option>
-                  <option>Students & uploads</option>
-                  <option>Teachers & modules</option>
-                </select>
               </div>
             </div>
           </div>

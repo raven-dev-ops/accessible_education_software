@@ -154,6 +154,9 @@ function TeacherPage() {
   ]);
   const [chatOpen, setChatOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [modulesOpen, setModulesOpen] = useState(false);
+  const [trainingOpen, setTrainingOpen] = useState(false);
   const [equationProgress, setEquationProgress] = useState<
     Record<
       string,
@@ -410,8 +413,8 @@ function TeacherPage() {
           aria-labelledby="teacher-hero"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-          <div className="grid gap-4 md:grid-cols-3 items-center">
-            <div className="flex items-center gap-4 md:col-span-2">
+          <div className="grid gap-4 md:grid-cols-2 items-center">
+            <div className="flex items-center gap-4">
               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-bold">
                 {(session?.user?.name || "Sample Teacher").charAt(0).toUpperCase()}
               </div>
@@ -427,121 +430,121 @@ function TeacherPage() {
                 </p>
               </div>
             </div>
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
-                  Select module
-                </label>
-                <select
-                  className="w-full border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
-                  value={selectedModuleId}
-                  onChange={(e) => setSelectedModuleId(e.target.value)}
-                >
-                  {modules.length === 0 && <option value="">No modules yet</option>}
-                  {modules.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </section>
+          </div>
+        </section>
 
         <section aria-labelledby="teacher-support" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
-          <h2 id="teacher-support" className="text-xl font-semibold mb-3">
-            Student Tickets
-          </h2>
-          <p className="text-sm mb-3">
-            Review or escalate student-submitted tickets (e.g., OCR below 80%). Add context and pass to software support as needed.
-          </p>
-          <div className="overflow-auto rounded-lg border border-slate-200 dark:border-slate-700">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-100">
-                <tr>
-                  <th className="px-3 py-2 text-left">Student</th>
-                  <th className="px-3 py-2 text-left">Created</th>
-                  <th className="px-3 py-2 text-left">Score</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ticketList.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-3 py-2 text-slate-500">
-                      No pending tickets.
-                    </td>
-                  </tr>
-                )}
-                {ticketList.map((t) => (
-                  <tr key={t.id} className="border-t border-slate-200 dark:border-slate-700">
-                    <td className="px-3 py-2">
-                      <div className="font-medium text-slate-900 dark:text-slate-100">
-                        {t.studentEmail || "Student"}
-                      </div>
-                      <div className="text-xs text-slate-500">{t.detail}</div>
-                      {t.fileName && <div className="text-xs text-slate-500">File: {t.fileName}</div>}
-                      {(t.scannedText || t.correctedText) && (
-                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 space-y-1">
-                          {t.scannedText && (
-                            <div>
-                              <span className="font-semibold">Scanned:</span> {t.scannedText}
-                            </div>
-                          )}
-                          {t.correctedText && (
-                            <div>
-                              <span className="font-semibold">Correction:</span> {t.correctedText}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-                      {new Date(t.createdAt).toLocaleString()}
-                    </td>
-                    <td className="px-3 py-2 text-sm">{t.score != null ? `${t.score}%` : ""}</td>
-                    <td className="px-3 py-2 text-sm">{t.status || "pending review"}</td>
-                    <td className="px-3 py-2">
-                      <div className="flex gap-2 flex-wrap">
-                        {t.attachmentUrl && (
-                          <a
-                            href={t.attachmentUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-xs"
-                          >
-                            View attachment
-                          </a>
-                        )}
-                        <button
-                          type="button"
-                          className="px-2 py-1 rounded bg-blue-600 text-white text-xs"
-                          onClick={() => {
-                            const note = prompt("Add a teacher comment before closing:");
-                            const updated = ticketList.map((item) =>
-                              item.id === t.id ? { ...item, status: `closed${note ? `: ${note}` : ""}` } : item
-                            );
-                            setTicketList(updated);
-                          }}
-                        >
-                          Close
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 rounded bg-amber-500 text-white text-xs"
-                          onClick={() => {
-                            alert("Escalated to software support with context.");
-                          }}
-                        >
-                          Escalate
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h2 id="teacher-support" className="text-xl font-semibold">
+                Student Tickets
+              </h2>
+              <p className="text-sm">
+                Review or escalate student-submitted tickets (e.g., OCR below 80%). Add context and pass to software support as needed.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+              onClick={() => setSupportOpen((open) => !open)}
+              aria-expanded={supportOpen}
+              aria-controls="teacher-support-panel"
+            >
+              {supportOpen ? "▲" : "▼"}
+            </button>
           </div>
+          {supportOpen && (
+            <div id="teacher-support-panel">
+              <div className="overflow-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-100">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Student</th>
+                      <th className="px-3 py-2 text-left">Created</th>
+                      <th className="px-3 py-2 text-left">Score</th>
+                      <th className="px-3 py-2 text-left">Status</th>
+                      <th className="px-3 py-2 text-left">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ticketList.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-3 py-2 text-slate-500">
+                          No pending tickets.
+                        </td>
+                      </tr>
+                    )}
+                    {ticketList.map((t) => (
+                      <tr key={t.id} className="border-t border-slate-200 dark:border-slate-700">
+                        <td className="px-3 py-2">
+                          <div className="font-medium text-slate-900 dark:text-slate-100">
+                            {t.studentEmail || "Student"}
+                          </div>
+                          <div className="text-xs text-slate-500">{t.detail}</div>
+                          {t.fileName && <div className="text-xs text-slate-500">File: {t.fileName}</div>}
+                          {(t.scannedText || t.correctedText) && (
+                            <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                              {t.scannedText && (
+                                <div>
+                                  <span className="font-semibold">Scanned:</span> {t.scannedText}
+                                </div>
+                              )}
+                              {t.correctedText && (
+                                <div>
+                                  <span className="font-semibold">Correction:</span> {t.correctedText}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+                          {new Date(t.createdAt).toLocaleString()}
+                        </td>
+                        <td className="px-3 py-2 text-sm">{t.score != null ? `${t.score}%` : ""}</td>
+                        <td className="px-3 py-2 text-sm">{t.status || "pending review"}</td>
+                        <td className="px-3 py-2">
+                          <div className="flex gap-2 flex-wrap">
+                            {t.attachmentUrl && (
+                              <a
+                                href={t.attachmentUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-xs"
+                              >
+                                View attachment
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              className="px-2 py-1 rounded bg-blue-600 text-white text-xs"
+                              onClick={() => {
+                                const note = prompt("Add a teacher comment before closing:");
+                                const updated = ticketList.map((item) =>
+                                  item.id === t.id ? { ...item, status: `closed${note ? `: ${note}` : ""}` } : item
+                                );
+                                setTicketList(updated);
+                              }}
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              className="px-2 py-1 rounded bg-amber-500 text-white text-xs"
+                              onClick={() => {
+                                alert("Escalated to software support with context.");
+                              }}
+                            >
+                              Escalate
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </section>
 
         <div className="grid gap-6 md:grid-cols-2">
