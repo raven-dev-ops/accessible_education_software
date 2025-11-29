@@ -158,6 +158,7 @@ function StudentPage() {
   const [correctionSaving, setCorrectionSaving] = useState(false);
   const [correctionError, setCorrectionError] = useState<string | null>(null);
   const [showOcrSection, setShowOcrSection] = useState(false);
+  const [scoreLogOpen, setScoreLogOpen] = useState(false);
   const [brailleOpen, setBrailleOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [ttsOpen, setTtsOpen] = useState(false);
@@ -1117,18 +1118,29 @@ function StudentPage() {
                                     {uploadScore}% {uploadScore < 80 ? '(will auto-report to teachers)' : ''}
                                   </span>
                                 </div>
-                                {activeUploadId && (
-                                  <div className="text-xs text-slate-600 dark:text-slate-200">
-                                    {(() => {
-                                      const selected = previousUploads.find((u) => u.id === activeUploadId);
-                                      if (!selected || !selected.history || selected.history.length === 0) return null;
-                                      const historyText = selected.history
-                                        .map((h) => `${h.score}% on ${new Date(h.createdAt).toLocaleDateString()}`)
-                                        .join(' | ');
-                                      return <p>Previous scores for this image: {historyText}</p>;
-                                    })()}
-                                  </div>
-                                )}
+                                {activeUploadId && (() => {
+                                  const selected = previousUploads.find((u) => u.id === activeUploadId);
+                                  if (!selected || !selected.history || selected.history.length === 0) return null;
+                                  const last = selected.history[0];
+                                  const hasMore = selected.history.length > 1;
+                                  return (
+                                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-200">
+                                      <span>
+                                        Previous score: {last.score}% on{' '}
+                                        {new Date(last.createdAt).toLocaleDateString()}
+                                      </span>
+                                      {hasMore && (
+                                        <button
+                                          type="button"
+                                          onClick={() => setScoreLogOpen(true)}
+                                          className="ml-3 px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-[11px] font-semibold"
+                                        >
+                                          View log
+                                        </button>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
                               </div>
                             )}
                           </div>
@@ -1476,6 +1488,41 @@ function StudentPage() {
 
         {/* Report-a-problem block removed per requirements; ticket flow now demo-only in teacher/admin views */}
       </div>
+
+      {scoreLogOpen && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
+          <div className="max-w-md w-full mx-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                OCR score history
+              </h3>
+              <button
+                type="button"
+                onClick={() => setScoreLogOpen(false)}
+                className="text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
+              >
+                Close
+              </button>
+            </div>
+            <div className="max-h-60 overflow-y-auto text-xs text-slate-700 dark:text-slate-200 space-y-1">
+              {(() => {
+                const selected = activeUploadId
+                  ? previousUploads.find((u) => u.id === activeUploadId)
+                  : null;
+                const history = selected?.history ?? [];
+                if (!history.length) {
+                  return <p>No score history recorded yet for this image.</p>;
+                }
+                return history.map((h, idx) => (
+                  <p key={`${h.createdAt}-${idx}`}>
+                    {h.score}% on {new Date(h.createdAt).toLocaleString()}
+                  </p>
+                ));
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div
         className="fixed right-4 bottom-4 z-40"
