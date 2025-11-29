@@ -1321,11 +1321,8 @@ function StudentPage() {
             Preview how an uploaded math image would be OCR’d and read aloud by the AI, using the module you selected above.
           </p>
           {aiTtsOpen && (
-            <div
-              id="student-tts-ai-panel"
-              className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 "
-            >
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-[27rem] md:h-[36rem] flex flex-col gap-3 overflow-hidden">
+            <div id="student-tts-ai-panel" className="mt-1">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-[27rem] md:h-[36rem] flex flex-col gap-3 overflow-hidden">
                 <div className="flex-1 space-y-3 overflow-auto text-sm text-slate-700 dark:text-slate-200">
                   <div className="flex flex-col gap-1">
                     <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">OCR text (from uploaded image)</span>
