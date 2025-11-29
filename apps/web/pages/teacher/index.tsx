@@ -153,6 +153,7 @@ function TeacherPage() {
     { role: "assistant", text: "Hi! Ask anything about your module or OCR results." },
   ]);
   const [chatOpen, setChatOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [equationProgress, setEquationProgress] = useState<
     Record<
       string,
@@ -516,7 +517,7 @@ function TeacherPage() {
           </div>
         </section>
 
-        <div className="grid gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
           <section aria-labelledby="teacher-modules" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between mb-3">
               <h2 id="teacher-modules" className="text-xl font-semibold">Your modules</h2>
@@ -563,58 +564,7 @@ function TeacherPage() {
             )}
           </section>
 
-        </div>
-
-        <section aria-labelledby="teacher-upload" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
-          <h2 id="teacher-upload" className="text-xl font-semibold mb-3">
-            Upload course material
-          </h2>
-          <p className="text-sm mb-2">Selected module: {selectedModule?.title || "None"}</p>
-          <form className="space-y-3">
-            <label className="block">
-              <span className="block mb-1 text-sm">Choose module</span>
-              <select
-                value={selectedModuleId}
-                onChange={(e) => setSelectedModuleId(e.target.value)}
-                className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
-              >
-                {modules.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="block mb-1 text-sm">Upload course material (PDF/image)</span>
-              <input
-                type="file"
-                accept=".pdf,image/*"
-                className="block w-full text-sm border rounded px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
-              />
-            </label>
-            <label className="block">
-              <span className="block mb-1 text-sm">Optional description (up to ~2000 characters)</span>
-              <textarea
-                className="block w-full border rounded p-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
-                rows={4}
-                maxLength={2000}
-              />
-            </label>
-            <label className="block">
-              <span className="block mb-1 text-sm">Planned release date</span>
-              <input
-                type="datetime-local"
-                className="block w-full border rounded p-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 placeholder:text-slate-500 dark:placeholder:text-slate-400"
-              />
-            </label>
-            <button type="button" className="px-4 py-2 rounded bg-blue-600 text-white text-sm">
-              Save
-            </button>
-          </form>
-        </section>
-
-        <section aria-labelledby="teacher-training" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
+          <section aria-labelledby="teacher-training" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
           <h2 id="teacher-training" className="text-xl font-semibold mb-3">
             Training: {training.title}
           </h2>
@@ -721,6 +671,78 @@ function TeacherPage() {
               </button>
             </div>
           </div>
+          </section>
+        </div>
+
+        <section
+          aria-labelledby="teacher-upload"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h2 id="teacher-upload" className="text-xl font-semibold">
+                Upload course material
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Selected module: {selectedModule?.title || "None"}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+              onClick={() => setUploadOpen((open) => !open)}
+              aria-expanded={uploadOpen}
+              aria-controls="teacher-upload-panel"
+            >
+              {uploadOpen ? "Hide form" : "Show form"}
+            </button>
+          </div>
+          {uploadOpen && (
+            <div id="teacher-upload-panel" className="mt-3">
+              <form className="space-y-3">
+                <label className="block">
+                  <span className="block mb-1 text-sm">Choose module</span>
+                  <select
+                    value={selectedModuleId}
+                    onChange={(e) => setSelectedModuleId(e.target.value)}
+                    className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
+                  >
+                    {(modules.length ? modules : allowSamples ? sampleModules : []).map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="block mb-1 text-sm">Upload course material (PDF/image)</span>
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    className="block w-full text-sm border rounded px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
+                  />
+                </label>
+                <label className="block">
+                  <span className="block mb-1 text-sm">Optional description (up to ~2000 characters)</span>
+                  <textarea
+                    className="block w-full border rounded p-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
+                    rows={4}
+                    maxLength={2000}
+                  />
+                </label>
+                <label className="block">
+                  <span className="block mb-1 text-sm">Planned release date</span>
+                  <input
+                    type="datetime-local"
+                    className="block w-full border rounded p-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                  />
+                </label>
+                <button type="button" className="px-4 py-2 rounded bg-blue-600 text-white text-sm">
+                  Save
+                </button>
+              </form>
+            </div>
+          )}
         </section>
 
       </div>
