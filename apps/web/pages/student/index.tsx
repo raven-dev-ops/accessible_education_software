@@ -105,7 +105,7 @@ function StudentPage() {
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [brailleOpen, setBrailleOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [ttsOpen, setTtsOpen] = useState(true);
+  const [ttsOpen, setTtsOpen] = useState(false);
   const [aiTtsOpen, setAiTtsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -724,10 +724,12 @@ function StudentPage() {
           aria-labelledby="student-upload"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
+
           <div className="space-y-4" id="student-upload-panel">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">OCR Pipeline Demo</h3>
               <div className="flex items-center gap-2">
+                <p className="text-xs text-slate-600 dark:text-slate-400">Upload a handwritten note to see OCR accuracy and formatting preview.</p>
                 <button
                   type="button"
                   onClick={() => setUploadOpen((open) => !open)}
@@ -735,11 +737,10 @@ function StudentPage() {
                   aria-expanded={uploadOpen}
                   aria-controls="student-upload-panel"
                 >
-                  {uploadOpen ? "▲" : "▼"}
+                  {uploadOpen ? "▼" : "▲"}
                 </button>
               </div>
             </div>
-
             {uploadOpen && (
               <>
                 <div className="space-y-3">
@@ -1269,7 +1270,7 @@ function StudentPage() {
               aria-controls="student-braille-panel"
               aria-label={brailleOpen ? "Hide Braille preview" : "Show Braille preview"}
             >
-              {brailleOpen ? "▲" : "▼"}
+              {brailleOpen ? "▼" : "▲"}
             </button>
           </div>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
