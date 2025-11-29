@@ -22,6 +22,7 @@ export default async function handler(
   }
 
   const ocrServiceUrl = process.env.OCR_SERVICE_URL;
+  const ocrApiKey = process.env.OCR_SERVICE_API_KEY;
   if (!ocrServiceUrl) {
     console.log(
       "Test OCR endpoint invoked but OCR_SERVICE_URL is not set; returning stub response."
@@ -36,7 +37,9 @@ export default async function handler(
 
   try {
     const url = ocrServiceUrl.replace(/\/$/, "") + "/health";
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: ocrApiKey ? { "x-api-key": ocrApiKey } : undefined,
+    });
     if (!response.ok) {
       const bodyText = await response.text().catch(() => "");
       console.error("OCR health check error:", response.status, bodyText);

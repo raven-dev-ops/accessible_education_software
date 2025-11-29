@@ -122,6 +122,7 @@ export default async function handler(
     });
 
     const ocrServiceUrl = process.env.OCR_SERVICE_URL;
+    const ocrApiKey = process.env.OCR_SERVICE_API_KEY;
     if (!ocrServiceUrl) {
       console.log("Received upload (stub, OCR_SERVICE_URL not set):", fileInfos);
       void recordUpload({
@@ -214,6 +215,7 @@ export default async function handler(
       const response = await fetch(url, {
         method: "POST",
         body: formData,
+        headers: ocrApiKey ? { "x-api-key": ocrApiKey } : undefined,
       });
 
       if (!response.ok) {
