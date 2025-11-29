@@ -752,7 +752,7 @@ function StudentPage() {
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {session?.user?.email || "sample.student@example.com"}
                 </p>
-                <p className="text-base leading-relaxed mt-2">
+                <p className="text-lg leading-relaxed mt-2">
                   Welcome, Student. Upload your handwritten calculus notes and, in future iterations, we will convert them into accessible, listenable content.
                 </p>
               </div>
@@ -762,7 +762,7 @@ function StudentPage() {
                 Select module
               </label>
               <select
-                className="w-full border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
+                className="w-full border rounded px-3 py-2 text-lg bg-white dark:bg-slate-800"
                 value={selectedModuleId}
                 onChange={(e) => setSelectedModuleId(e.target.value)}
               >
@@ -783,11 +783,11 @@ function StudentPage() {
 
           <div className="space-y-4" id="student-upload-panel">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">OCR Pipeline Demo</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Math-To-Text Demo</h3>
               <button
                 type="button"
                 onClick={() => setUploadOpen((open) => !open)}
-                className="text-xs px-3 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                className="text-sm px-3 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
                 aria-expanded={uploadOpen}
                 aria-controls="student-upload-panel"
               >
@@ -954,7 +954,7 @@ function StudentPage() {
 
                   <button
                     type="button"
-                    className="w-full px-5 py-3 rounded bg-blue-700 text-white text-base disabled:opacity-60"
+                    className="w-full px-5 py-3 rounded bg-blue-700 text-white text-lg disabled:opacity-60"
                     disabled={!uploadFileName}
                     onClick={() => {
                       if (fileInputRef.current) {
@@ -997,7 +997,7 @@ function StudentPage() {
 
                   <button
                     type="button"
-                    className="mt-2 w-full px-5 py-3 rounded border border-blue-700 text-blue-700 dark:text-blue-200 dark:border-blue-300 text-base disabled:opacity-60"
+                    className="mt-2 w-full px-5 py-3 rounded border border-blue-700 text-blue-700 dark:text-blue-200 dark:border-blue-300 text-lg disabled:opacity-60"
                     disabled={!uploadPreview}
                     onClick={handleFormatForTts}
                   >
@@ -1020,7 +1020,7 @@ function StudentPage() {
                 <div className="space-y-3">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-3">
-                      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Review OCR result</h3>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Review OCR result</h3>
                       {uploadPreview ? (
                         <>
                           <div className="flex items-center justify-between">
@@ -1076,7 +1076,7 @@ function StudentPage() {
                     </div>
 
                     <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 p-4">
-                      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Formatting preview</h3>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Formatting preview</h3>
                       {uploadPreview ? (
                         <div className="space-y-3">
                           <p className="text-sm text-slate-700 dark:text-slate-300">
@@ -1132,7 +1132,7 @@ function StudentPage() {
             Hear a sample Calculus note with your selected voice, speed, and volume.
           </p>
           {!ttsSupported && (
-            <p className="text-base">Text-to-speech is not available in this browser. You can still use your screen reader.</p>
+            <p className="text-lg">Text-to-speech is not available in this browser. You can still use your screen reader.</p>
           )}
           {ttsSupported && ttsOpen && (
             <div id="student-tts-panel" className="space-y-4">
@@ -1140,7 +1140,7 @@ function StudentPage() {
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Live reading preview</p>
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Now reading</p>
-                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 text-base leading-7 min-h-[160px]">
+                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 text-lg leading-7 min-h-[160px]">
                     {sampleParagraphs[sampleParagraphIndex].split(' ').map((w, wi, arr) => {
                       const isActive = highlightIndex === wi && activeSpeechId === 'sample-note';
                       return (
@@ -1170,7 +1170,7 @@ function StudentPage() {
                           window.localStorage.setItem('tts-prefs', JSON.stringify({ volume, voiceURI: e.target.value, rate }));
                         }
                       }}
-                      className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
+                      className="border rounded px-3 py-2 text-lg bg-white dark:bg-slate-800 w-full"
                     >
                       {voices.length === 0 && <option value="">Loading voices...</option>}
                       {voices.map((v) => (
@@ -1191,7 +1191,7 @@ function StudentPage() {
                           window.localStorage.setItem('tts-prefs', JSON.stringify({ volume, voiceURI: selectedVoiceUri ?? undefined, rate: val }));
                         }
                       }}
-                      className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800 w-full"
+                      className="border rounded px-3 py-2 text-lg bg-white dark:bg-slate-800 w-full"
                     >
                       <option value={0.5}>0.5x</option>
                       <option value={1}>1.0x</option>
@@ -1228,11 +1228,11 @@ function StudentPage() {
                   <button type="button" className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50" onClick={() => setSampleParagraphIndex(0)} disabled={sampleParagraphIndex === 0}>First</button>
                   <button type="button" className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50" onClick={() => setSampleParagraphIndex((i) => Math.max(0, i - 1))} disabled={sampleParagraphIndex === 0}>Prev</button>
                   {isSpeaking && activeSpeechId === 'sample-note' ? (
-                    <button type="button" onClick={handleStop} className="px-5 py-3 rounded bg-red-700 text-white text-base disabled:opacity-60">
+                    <button type="button" onClick={handleStop} className="px-5 py-3 rounded bg-red-700 text-white text-lg disabled:opacity-60">
                       Stop {countdown !== null ? `(${countdown}s)` : ""}
                     </button>
                   ) : (
-                    <button type="button" onClick={handlePlaySample} className="px-5 py-3 rounded bg-green-700 text-white text-base disabled:opacity-60" aria-pressed={activeSpeechId === 'sample-note'} disabled={isSpeaking && activeSpeechId === 'sample-note'}>READ</button>
+                    <button type="button" onClick={handlePlaySample} className="px-5 py-3 rounded bg-green-700 text-white text-lg disabled:opacity-60" aria-pressed={activeSpeechId === 'sample-note'} disabled={isSpeaking && activeSpeechId === 'sample-note'}>READ</button>
                   )}
                   <button type="button" className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50" onClick={() => setSampleParagraphIndex((i) => Math.min(sampleParagraphs.length - 1, i + 1))} disabled={sampleParagraphIndex === sampleParagraphs.length - 1}>Next</button>
                   <button type="button" className="px-3 py-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm disabled:opacity-50" onClick={() => setSampleParagraphIndex(sampleParagraphs.length - 1)} disabled={sampleParagraphIndex === sampleParagraphs.length - 1}>Last</button>
@@ -1341,23 +1341,23 @@ function StudentPage() {
                 Preview source: {notes.length > 0 ? "Latest released note" : "Sample note"}
               </p>
               <div className="flex flex-wrap gap-4 items-end mb-3">
-                <label className="text-base">
+                <label className="text-lg">
                   <span className="block text-sm text-gray-700 dark:text-gray-300">Engine</span>
                   <select
                     value={braillePreferredEngine}
                     onChange={(e) => setBraillePreferredEngine(e.target.value as "liblouis" | "fallback")}
-                    className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
+                    className="border rounded px-3 py-2 text-lg bg-white dark:bg-slate-800"
                   >
                     <option value="liblouis">liblouis (Nemeth)</option>
                     <option value="fallback">Grade 1 fallback</option>
                   </select>
                 </label>
-                <label className="text-base">
+                <label className="text-lg">
                   <span className="block text-sm text-gray-700 dark:text-gray-300">liblouis table</span>
                   <select
                     value={brailleTable}
                     onChange={(e) => setBrailleTable(e.target.value)}
-                    className="border rounded px-3 py-2 text-base bg-white dark:bg-slate-800"
+                    className="border rounded px-3 py-2 text-lg bg-white dark:bg-slate-800"
                     aria-disabled={braillePreferredEngine !== "liblouis"}
                     disabled={braillePreferredEngine !== "liblouis"}
                   >
@@ -1397,7 +1397,7 @@ function StudentPage() {
                   </p>
                 )}
               </div>
-              <div className="mt-3 border rounded p-4 bg-gray-50 dark:bg-slate-800 font-mono text-base whitespace-pre-wrap" aria-live="polite">
+              <div className="mt-3 border rounded p-4 bg-gray-50 dark:bg-slate-800 font-mono text-lg whitespace-pre-wrap" aria-live="polite">
                 {braillePreview || "Generating preview..."}
               </div>
               <div className="mt-3 flex items-center gap-3">
