@@ -374,7 +374,7 @@ function StudentPage() {
 
   const handleFormatForTts = () => {
     if (!uploadPreview) {
-      const message = "Run OCR first to generate text to format for TTS.";
+      const message = "Run OCR first to generate text to Format TTS.";
       setUploadError(message);
       announce(message, "error");
       return;
@@ -873,7 +873,7 @@ function StudentPage() {
                   }, 800);
                 }}
               >
-                Upload & format for TTS
+                Upload image
               </button>
 
               <button
@@ -882,7 +882,7 @@ function StudentPage() {
                 disabled={!uploadPreview}
                 onClick={handleFormatForTts}
               >
-                Format for TTS
+                Format TTS
               </button>
 
               {(uploadStatus || uploadError) && (
@@ -1473,3 +1473,4 @@ function StudentPage() {
 }
 
 export default StudentPage;
+
