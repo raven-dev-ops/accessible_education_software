@@ -871,48 +871,13 @@ function StudentPage() {
                           No image selected
                         </div>
                       )}
-                      <button
-                        type="button"
-                    className="w-full px-5 py-3 rounded bg-blue-700 text-white text-lg disabled:opacity-60 hover:bg-blue-600 dark:hover:bg-blue-500"
-                        disabled={!uploadFileName}
-                        onClick={() => {
-                          if (fileInputRef.current) {
-                            fileInputRef.current.click();
-                            return;
-                          }
-                          if (!uploadFileName) {
-                            setUploadError('Please choose a file first.');
-                            return;
-                          }
-                          setUploadStatus('Processing handwritten note...');
-                          setUploadError(null);
-                          setTimeout(() => {
-                            const preview =
-                              "f(x) = x^2 + 3x - 5\\n\\nDerivative: f'(x) = 2x + 3\\nIntegral: integral of f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
-                            const score = 72;
-                            setUploadPreview(preview);
-                            setUploadStatus('Formatted for TTS. You can listen to the preview below.');
-                            setUploadScore(score);
-                            setCorrectionText(preview);
-                            announce('Uploaded sample note processed. Ready to play.', 'success');
-                            if (activeUploadId) {
-                              const now = new Date().toISOString();
-                              setPreviousUploads((prev) => {
-                                const next = prev.map((u) => {
-                                  if (u.id !== activeUploadId) return u;
-                                  const history = Array.isArray(u.history) ? u.history : [];
-                                  const entry: UploadHistoryEntry = { score, createdAt: now };
-                                  return { ...u, history: [entry, ...history].slice(0, 10) };
-                                });
-                                persistUploads(next);
-                                return next;
-                              });
-                            }
-                          }, 800);
-                        }}
-                      >
-                        Upload image
-                      </button>
+                    <button
+                      type="button"
+                      className="w-full px-5 py-3 rounded bg-blue-700 text-white text-lg disabled:opacity-60 hover:bg-blue-600 dark:hover:bg-blue-500"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Upload image
+                    </button>
                     </div>
                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 ">
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
