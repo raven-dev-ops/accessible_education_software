@@ -411,8 +411,8 @@ function StudentPage() {
     setCorrectionText("");
 
     setTimeout(() => {
-                              const previewText =
-                                "f(x) = x^2 + 3x - 5\\n\\nDerivative: f'(x) = 2x + 3\\nIntegral: integral of f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
+      const previewText =
+        "f(x) = x^2 + 3x - 5\n\nDerivative: f(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
       const score = 72;
       setUploadPreview(previewText);
       setUploadScore(score);
@@ -826,7 +826,7 @@ function StudentPage() {
                             setCorrectionText('');
                             setTimeout(() => {
                               const previewText =
-                                "f(x) = x^2 + 3x - 5\\n\\nDerivative: f'(x) = 2x + 3\\nIntegral: integral of f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
+                                "f(x) = x^2 + 3x - 5\n\nDerivative: f(x) = 2x + 3\nIntegral: ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C";
                               const score = 72;
                               setUploadPreview(previewText);
                               setUploadScore(score);
@@ -1094,6 +1094,10 @@ function StudentPage() {
                       );
                     })}
                   </div>
+                  <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+                    <span className="font-semibold">Equation preview:</span>{" "}
+                    f(x) = x^2 + 3x - 5, f(x) = 2x + 3, ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C
+                  </p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="text-sm">
