@@ -717,21 +717,6 @@ function StudentPage() {
 
   return (
     <Layout title="Student Dashboard" secondaryNav={previewNav}>
-      {liveAlert && (
-        <div
-          role={liveAlert.tone === "error" ? "alert" : "status"}
-          aria-live="polite"
-          className={`mb-4 px-4 py-3 rounded-lg text-sm border ${
-            liveAlert.tone === "error"
-              ? "bg-red-50 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-100 dark:border-red-800"
-              : liveAlert.tone === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800"
-              : "bg-slate-50 text-slate-800 border-slate-200 dark:bg-slate-800/60 dark:text-slate-100 dark:border-slate-700"
-          }`}
-        >
-          {liveAlert.message}
-        </div>
-      )}
       <div
         className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
         style={{ fontSize: `${fontScale}rem`, lineHeight: 1.6 }}
