@@ -873,7 +873,7 @@ function StudentPage() {
                       )}
                       <button
                         type="button"
-                        className="w-full px-5 py-3 rounded bg-blue-700 text-white text-lg disabled:opacity-60"
+                    className="w-full px-5 py-3 rounded bg-blue-700 text-white text-lg disabled:opacity-60 hover:bg-blue-600 dark:hover:bg-blue-500"
                         disabled={!uploadFileName}
                         onClick={() => {
                           if (fileInputRef.current) {
@@ -1023,7 +1023,7 @@ function StudentPage() {
                     </button>
                     <button
                       type="button"
-                      className="w-full px-5 py-3 rounded bg-emerald-700 text-white text-lg disabled:opacity-60"
+                      className="w-full px-5 py-3 rounded bg-emerald-600 text-white text-lg disabled:opacity-60 hover:bg-emerald-500 dark:hover:bg-emerald-500"
                       onClick={handleRunOcr}
                       disabled={!uploadImageUrl && !activeUploadId}
                     >
