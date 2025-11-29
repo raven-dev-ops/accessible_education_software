@@ -728,19 +728,19 @@ function StudentPage() {
           <div className="space-y-4" id="student-upload-panel">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">OCR Pipeline Demo</h3>
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-slate-600 dark:text-slate-400">Upload a handwritten note to see OCR accuracy and formatting preview.</p>
-                <button
-                  type="button"
-                  onClick={() => setUploadOpen((open) => !open)}
-                  className="text-xs px-3 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
-                  aria-expanded={uploadOpen}
-                  aria-controls="student-upload-panel"
-                >
-                  {uploadOpen ? "▼" : "▲"}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setUploadOpen((open) => !open)}
+                className="text-xs px-3 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                aria-expanded={uploadOpen}
+                aria-controls="student-upload-panel"
+              >
+                {uploadOpen ? "▼" : "▲"}
+              </button>
             </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Upload a handwritten note to see OCR accuracy, history, and formatting preview before TTS.
+            </p>
             {uploadOpen && (
               <>
                 <div className="space-y-3">
