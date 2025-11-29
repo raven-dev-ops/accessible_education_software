@@ -324,13 +324,24 @@ function StudentPage() {
       return;
     }
 
+    if (typeof window === "undefined" || !window.speechSynthesis) {
+      setSpeechError("Text-to-speech is not available in this environment.");
+      return;
+    }
+
     setSpeechError(null);
     const words = text.split(" ");
-    const voice = voices.find((v) => v.voiceURI === selectedVoiceUri);
-    const utterance = speakText(text, {
+
+    const options: {
+      rate: number;
+      volume: number;
+      voice?: SpeechSynthesisVoice;
+      onStart: () => void;
+      onEnd: () => void;
+      onError: () => void;
+    } = {
       rate,
       volume,
-      voice,
       onStart: () => {
         setIsSpeaking(true);
         setActiveSpeechId(speechId);
@@ -373,7 +384,18 @@ function StudentPage() {
         setCountdown(null);
         setHighlightIndex(null);
       },
-    });
+    };
+
+    // In non-preview mode, respect the selected voice; in preview mode,
+    // let the browser choose the default voice to reduce engine errors.
+    if (!preview) {
+      const voice = voices.find((v) => v.voiceURI === selectedVoiceUri);
+      if (voice) {
+        options.voice = voice;
+      }
+    }
+
+    const utterance = speakText(text, options);
 
     if (!utterance) {
       setSpeechError("Text-to-speech is not available in this browser.");
