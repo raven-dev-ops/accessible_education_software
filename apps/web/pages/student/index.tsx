@@ -986,15 +986,6 @@ function StudentPage() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className="mt-2 w-full px-5 py-3 rounded border border-blue-700 text-blue-700 dark:text-blue-200 dark:border-blue-300 text-lg disabled:opacity-60"
-                    disabled={!uploadPreview}
-                    onClick={handleFormatForTts}
-                  >
-                    Format TTS
-                  </button>
-
                   {(uploadStatus || uploadError) && (
                     <div
                       className={`text-sm rounded border px-3 py-2 ${
