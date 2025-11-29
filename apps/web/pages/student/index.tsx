@@ -103,8 +103,8 @@ function StudentPage() {
   const [previousUploads, setPreviousUploads] = useState<PreviousUpload[]>([]);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [brailleOpen, setBrailleOpen] = useState(false);
-  const [uploadOpen, setUploadOpen] = useState(true);
-  const [ttsOpen, setTtsOpen] = useState(true);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [ttsOpen, setTtsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
@@ -725,7 +725,7 @@ function StudentPage() {
                   aria-expanded={uploadOpen}
                   aria-controls="student-upload-panel"
                 >
-                  {uploadOpen ? 'Hide' : 'Show'}
+                  {uploadOpen ? "▲" : "▼"}
                 </button>
               </div>
             </div>
@@ -1060,7 +1060,7 @@ function StudentPage() {
               aria-expanded={ttsOpen}
               aria-controls="student-tts-panel"
             >
-              {ttsOpen ? 'Hide' : 'Show'}
+              {ttsOpen ? "▲" : "▼"}
             </button>
           </div>
           {!ttsSupported && (
@@ -1069,7 +1069,7 @@ function StudentPage() {
             </p>
           )}
           {ttsSupported && ttsOpen && (
-            <div id="student-tts-panel" className="max-w-6xl mx-auto grid gap-6 lg:grid-cols-2">
+            <div id="student-tts-panel" className="max-w-6xl mx-auto grid gap-6">
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-4">
                 <p className="text-lg leading-relaxed">
                   Use the controls below to hear a sample Calculus I note read aloud. This simulates how your own notes
@@ -1239,46 +1239,57 @@ function StudentPage() {
                   </div>
                 </div>
               </div>
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">AI-to-speech sample</p>
-                  <select className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800">
-                    <option>Calculus I - Limits</option>
-                    <option>Calculus I - Derivatives</option>
-                    <option>Calculus I - Integrals</option>
-                  </select>
-                </div>
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-64 flex flex-col gap-3 overflow-hidden">
-                  <div className="flex-1 space-y-2 overflow-auto text-sm text-slate-700 dark:text-slate-200">
-                    <div className="bg-slate-100 dark:bg-slate-800 rounded p-2">
-                      <p className="font-semibold">Teacher prompt</p>
-                      <p>Read the derivative section aloud with a calm tone.</p>
-                    </div>
-                    <div className="bg-blue-50 dark:bg-blue-900/40 rounded p-2">
-                      <p className="font-semibold">AI voice</p>
-                      <p>f of x equals x squared. The derivative is two x. Here is the short summary for class.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Type a prompt or paste note text..."
-                      className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800"
-                    />
-                    <button
-                      type="button"
-                      className="px-4 py-2 rounded bg-blue-700 text-white text-sm"
-                    >
-                      Send
-                    </button>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Placeholder AI-to-speech preview. This will connect to the production AI reader in a later iteration.
-                </p>
-              </div>
             </div>
           )}
+        </section>
+
+        <section
+          aria-labelledby="student-tts-ai"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h2 id="student-tts-ai" className="text-xl font-semibold mb-0">
+              AI-to-speech sample
+            </h2>
+          </div>
+          <div className="max-w-5xl mx-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Module</p>
+              <select className="border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800">
+                <option>Calculus I - Limits</option>
+                <option>Calculus I - Derivatives</option>
+                <option>Calculus I - Integrals</option>
+              </select>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-64 flex flex-col gap-3 overflow-hidden">
+              <div className="flex-1 space-y-2 overflow-auto text-sm text-slate-700 dark:text-slate-200">
+                <div className="bg-slate-100 dark:bg-slate-800 rounded p-2">
+                  <p className="font-semibold">Teacher prompt</p>
+                  <p>Read the derivative section aloud with a calm tone.</p>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-900/40 rounded p-2">
+                  <p className="font-semibold">AI voice</p>
+                  <p>f of x equals x squared. The derivative is two x. Here is the short summary for class.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Type a prompt or paste note text..."
+                  className="flex-1 border rounded px-3 py-2 text-sm bg-white dark:bg-slate-800"
+                />
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded bg-blue-700 text-white text-sm"
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Placeholder AI-to-speech preview. This will connect to the production AI reader in a later iteration.
+            </p>
+          </div>
         </section>
 
 
