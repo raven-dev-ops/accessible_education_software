@@ -205,6 +205,14 @@ function TeacherPage() {
     let cancelled = false;
 
     async function loadModules() {
+      // In preview mode, show sample modules immediately and skip auth gating.
+      if (preview && allowSamples) {
+        setModules(sampleModules);
+        setModulesLoading(false);
+        setModulesError(null);
+        return;
+      }
+
       try {
         const res = await fetch("/api/modules");
         if (!res.ok) {
@@ -248,6 +256,10 @@ function TeacherPage() {
 
     if (!unauthorized && (!authEnabled || (session && session.user))) {
       void loadModules();
+    } else if (preview && allowSamples) {
+      setModules(sampleModules);
+      setModulesLoading(false);
+      setModulesError(null);
     }
 
     return () => {
