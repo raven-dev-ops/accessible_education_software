@@ -1098,6 +1098,14 @@ function StudentPage() {
                     <span className="font-semibold">Equation preview:</span>{" "}
                     f(x) = x^2 + 3x - 5, f(x) = 2x + 3, ∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C
                   </p>
+                  <div className="mt-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3">
+                    <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
+                      Equation preview
+                    </p>
+                    <pre className="whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-100">
+                      {`f(x) = x^2 + 3x - 5\nf'(x) = 2x + 3\n∫ f(x) dx = x^3/3 + (3/2)x^2 - 5x + C`}
+                    </pre>
+                  </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="text-sm">
