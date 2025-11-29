@@ -783,7 +783,7 @@ function StudentPage() {
             </p>
             {uploadOpen && (
               <>
-                <div className="space-y-3">
+                <div className="">
                   <label className="sr-only">
                     Choose image or PDF
                     <input
@@ -855,7 +855,7 @@ function StudentPage() {
                   </label>
 
                   <div className="grid gap-3 md:grid-cols-2">
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 space-y-3">
+                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 ">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Selected image</p>
                         {uploadFileName && (
@@ -914,7 +914,7 @@ function StudentPage() {
                         Upload image
                       </button>
                     </div>
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 space-y-3">
+                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 ">
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
                         Previous uploads
                       </p>
@@ -1008,9 +1008,9 @@ function StudentPage() {
                   )}
                 </div>
 
-                <div className="space-y-3">
+                <div className="">
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 space-y-3">
+                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 ">
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Review OCR result</h3>
                       {uploadPreview ? (
                         <>
@@ -1069,7 +1069,7 @@ function StudentPage() {
                     <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 p-4">
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Formatting preview</h3>
                       {uploadPreview ? (
-                        <div className="space-y-3">
+                        <div className="">
                           <p className="text-sm text-slate-700 dark:text-slate-300">
                             Preview how this note is laid out for reading and where the OCR engine focused.
                           </p>
@@ -1127,7 +1127,7 @@ function StudentPage() {
           )}
           {ttsSupported && ttsOpen && (
             <div id="student-tts-panel" className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 ">
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Live reading preview</p>
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Now reading</p>
@@ -1259,7 +1259,7 @@ function StudentPage() {
           {aiTtsOpen && (
             <div
               id="student-tts-ai-panel"
-              className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-3"
+              className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 "
             >
               <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-[27rem] md:h-[36rem] flex flex-col gap-3 overflow-hidden">
                 <div className="flex-1 space-y-3 overflow-auto text-sm text-slate-700 dark:text-slate-200">
