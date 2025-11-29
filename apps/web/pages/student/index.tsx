@@ -780,10 +780,9 @@ function StudentPage() {
           aria-labelledby="student-upload"
           className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
         >
-
           <div className="space-y-4" id="student-upload-panel">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Math-To-Text Demo</h3>
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Math-To-Text Demo</h2>
               <button
                 type="button"
                 onClick={() => setUploadOpen((open) => !open)}
@@ -794,7 +793,7 @@ function StudentPage() {
                 {uploadOpen ? "▼" : "▲"}
               </button>
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
               Upload a handwritten note to see OCR accuracy, history, and formatting preview before TTS.
             </p>
             {uploadOpen && (
