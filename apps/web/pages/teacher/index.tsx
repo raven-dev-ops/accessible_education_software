@@ -721,7 +721,7 @@ function TeacherPage() {
               aria-expanded={uploadOpen}
               aria-controls="teacher-upload-panel"
             >
-              {uploadOpen ? "Hide form" : "Show form"}
+              {uploadOpen ? "▲" : "▼"}
             </button>
           </div>
           {uploadOpen && (
