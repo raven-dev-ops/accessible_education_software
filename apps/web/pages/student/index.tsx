@@ -1261,7 +1261,7 @@ function StudentPage() {
               id="student-tts-ai-panel"
               className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 p-4 space-y-3"
             >
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-72 flex flex-col gap-3 overflow-hidden">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 h-[18rem] md:h-[24rem] flex flex-col gap-3 overflow-hidden">
                 <div className="flex-1 space-y-3 overflow-auto text-sm text-slate-700 dark:text-slate-200">
                   <div className="flex flex-col gap-1">
                     <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">OCR text (from uploaded image)</span>
@@ -1291,6 +1291,13 @@ function StudentPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"
+                    aria-label="Attach file (demo)"
+                  >
+                    📎
+                  </button>
                   <input
                     type="text"
                     placeholder="Type a prompt or paste OCR text..."
