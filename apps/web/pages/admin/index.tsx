@@ -65,6 +65,8 @@ const normalizeTickets = (raw: any[]): SupportTicket[] =>
     fileName: t.fileName ?? t.meta?.fileName ?? null,
   }));
 
+type HealthState = "unknown" | "healthy" | "degraded" | "down";
+
 
 function AdminPage() {
   const router = useRouter();
@@ -94,6 +96,9 @@ function AdminPage() {
   const [activeTicket, setActiveTicket] = useState<SupportTicket | null>(null);
   const [useSamples, setUseSamples] = useState(preview || allowSampleEnv);
   const isPreviewOnly = preview && (!session || !session.user);
+  const [cloudRunHealth, setCloudRunHealth] = useState<HealthState>("unknown");
+  const [cloudSqlHealth, setCloudSqlHealth] = useState<HealthState>("unknown");
+  const [ocrHealth, setOcrHealth] = useState<HealthState>("unknown");
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -331,6 +336,59 @@ function AdminPage() {
     };
   }, [unauthorized, session, useSamples, isPreviewOnly]);
 
+  // Health checks for Cloud Run / Cloud SQL / OCR
+  useEffect(() => {
+    let cancelled = false;
+
+    async function runHealthChecks() {
+      // Cloud Run + Cloud SQL via /api/status (if implemented later) or simply by checking that admin APIs responded.
+      // For now, we infer health from whether uploads/students loaded without error.
+      if (!cancelled) {
+        if (uploadsError || studentsError) {
+          setCloudRunHealth("degraded");
+          setCloudSqlHealth("degraded");
+        } else if (!uploadsLoading && !studentsLoading) {
+          setCloudRunHealth("healthy");
+          setCloudSqlHealth("healthy");
+        } else {
+          setCloudRunHealth("unknown");
+          setCloudSqlHealth("unknown");
+        }
+      }
+
+      // OCR service via /api/test-ocr
+      try {
+        const res = await fetch("/api/test-ocr", { method: "POST" });
+        if (!res.ok) {
+          if (!cancelled) setOcrHealth("degraded");
+          return;
+        }
+        const data = (await res.json()) as { ok?: boolean; ocrAvailable?: boolean };
+        if (!cancelled) {
+          if (data.ok && data.ocrAvailable) {
+            setOcrHealth("healthy");
+          } else if (data.ok && !data.ocrAvailable) {
+            setOcrHealth("degraded");
+          } else {
+            setOcrHealth("degraded");
+          }
+        }
+      } catch (err) {
+        console.error("OCR health check in admin dashboard failed:", err);
+        if (!cancelled) setOcrHealth("degraded");
+      }
+    }
+
+    // Only run when admin APIs have settled to avoid double-load at page mount
+    if (!unauthorized && !studentsLoading && !uploadsLoading) {
+      void runHealthChecks();
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [unauthorized, studentsLoading, uploadsLoading, studentsError, uploadsError]);
+
   const handleTestOcr = async () => {
     setOcrLoading(true);
     setOcrMessage(null);
@@ -566,9 +624,26 @@ function AdminPage() {
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
                     Admin experience
                   </p>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200 border border-emerald-100 dark:border-emerald-800">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    {uploadsError || ticketsError ? "Attention" : "Healthy"}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border"
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        cloudRunHealth === "healthy"
+                          ? "bg-emerald-500"
+                          : cloudRunHealth === "degraded"
+                          ? "bg-amber-500"
+                          : cloudRunHealth === "down"
+                          ? "bg-red-500"
+                          : "bg-slate-400"
+                      }`}
+                    />
+                    {cloudRunHealth === "healthy"
+                      ? "Healthy"
+                      : cloudRunHealth === "degraded"
+                      ? "Attention"
+                      : cloudRunHealth === "down"
+                      ? "Down"
+                      : "Checking"}
                   </span>
                 </div>
                 <p className="text-sm text-slate-700 dark:text-slate-200 mb-3">
@@ -595,8 +670,24 @@ function AdminPage() {
                 </p>
                 <div className="flex items-center justify-between text-xs">
                   <span className="inline-flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Configured
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        cloudSqlHealth === "healthy"
+                          ? "bg-emerald-500"
+                          : cloudSqlHealth === "degraded"
+                          ? "bg-amber-500"
+                          : cloudSqlHealth === "down"
+                          ? "bg-red-500"
+                          : "bg-slate-400"
+                      }`}
+                    />
+                    {cloudSqlHealth === "healthy"
+                      ? "Healthy"
+                      : cloudSqlHealth === "degraded"
+                      ? "Attention"
+                      : cloudSqlHealth === "down"
+                      ? "Down"
+                      : "Checking"}
                   </span>
                   <span className="text-slate-500 dark:text-slate-300">IAM + private connectivity</span>
                 </div>
@@ -608,10 +699,26 @@ function AdminPage() {
                 </p>
                 <div className="flex items-center justify-between text-xs">
                   <span className="inline-flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Healthy
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        cloudRunHealth === "healthy"
+                          ? "bg-emerald-500"
+                          : cloudRunHealth === "degraded"
+                          ? "bg-amber-500"
+                          : cloudRunHealth === "down"
+                          ? "bg-red-500"
+                          : "bg-slate-400"
+                      }`}
+                    />
+                    {cloudRunHealth === "healthy"
+                      ? "Healthy"
+                      : cloudRunHealth === "degraded"
+                      ? "Attention"
+                      : cloudRunHealth === "down"
+                      ? "Down"
+                      : "Checking"}
                   </span>
-                  <span className="text-slate-500 dark:text-slate-300">Rate‑limited & API‑key protected</span>
+                  <span className="text-slate-500 dark:text-slate-300">Rate-limited & API-key protected</span>
                 </div>
               </div>
               <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
@@ -630,7 +737,7 @@ function AdminPage() {
               <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
                 <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">Auth & OAuth</p>
                 <p className="text-sm text-slate-700 dark:text-slate-200 mb-1">
-                  Google OAuth + NextAuth with role‑based dashboards.
+                  Google OAuth + NextAuth with role-based dashboards.
                 </p>
                 <div className="flex items-center justify-between text-xs">
                   <span className="inline-flex items-center gap-1">
@@ -872,10 +979,18 @@ function AdminPage() {
                   Accuracy (mock)
                 </p>
                 <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                  94%
+                  {(() => {
+                    const scored = tickets.filter((t) => typeof t.score === "number") as {
+                      score: number;
+                    }[];
+                    if (!scored.length) return "–";
+                    const avg =
+                      scored.reduce((sum, t) => sum + (t.score ?? 0), 0) / scored.length;
+                    return `${Math.round(avg)}%`;
+                  })()}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-300">
-                  Based on recent runs
+                  Based on recent ticket scores
                 </p>
               </div>
               <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
