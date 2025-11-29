@@ -8,6 +8,7 @@ import { getRoleFromUser } from "../../lib/roleUtils";
 import sampleStudents from "../../data/sampleStudents.json";
 import sampleUploads from "../../data/sampleUploads.json";
 import sampleTickets from "../../data/sampleTickets.json";
+import sampleModules from "../../data/sampleModules.json";
 
 type Student = {
   id: number;
@@ -23,6 +24,12 @@ type UploadSummary = {
   size?: number | null;
   status: string;
   createdAt?: string | null;
+};
+
+type ModuleSummary = {
+  id: number;
+  title: string;
+  course: string;
 };
 
 type SupportTicket = {
@@ -78,6 +85,9 @@ function AdminPage() {
   const [uploads, setUploads] = useState<UploadSummary[]>([]);
   const [uploadsError, setUploadsError] = useState<string | null>(null);
   const [uploadsLoading, setUploadsLoading] = useState(true);
+  const [modules, setModules] = useState<ModuleSummary[]>([]);
+  const [modulesError, setModulesError] = useState<string | null>(null);
+  const [modulesLoading, setModulesLoading] = useState(true);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [ticketsError, setTicketsError] = useState<string | null>(null);
   const [ticketsLoading, setTicketsLoading] = useState(true);
@@ -196,7 +206,53 @@ function AdminPage() {
       }
     }
 
+    async function loadModules() {
+      if (authEnabled && !isPreviewOnly && (!session || !session.user || unauthorized)) return;
+      if (unauthorized) return;
+      try {
+        const res = await fetch("/api/modules");
+        if (!res.ok) {
+          if (useSamples) {
+            setModules(sampleModules as ModuleSummary[]);
+            setModulesError(null);
+          } else {
+            setModulesError("Modules unavailable (samples disabled).");
+          }
+          setModulesLoading(false);
+          return;
+        }
+        const data = (await res.json()) as ModuleSummary[];
+        if (!cancelled) {
+          if (data.length) {
+            setModules(data);
+            setModulesError(null);
+          } else if (useSamples) {
+            setModules(sampleModules as ModuleSummary[]);
+            setModulesError(null);
+          } else {
+            setModules([]);
+            setModulesError("No modules yet (samples disabled).");
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          if (useSamples) {
+            setModules(sampleModules as ModuleSummary[]);
+            setModulesError(null);
+          } else {
+            setModulesError("Failed to load modules (samples disabled).");
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setModulesLoading(false);
+        }
+      }
+    }
+
     void loadUploads();
+    void loadModules();
+
     async function loadTickets() {
       if (authEnabled && !isPreviewOnly && (!session || !session.user || unauthorized)) return;
       if (unauthorized) return;
@@ -615,7 +671,7 @@ function AdminPage() {
                 )}
                 {!studentsLoading && !studentsError && (
                   <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
-                    <table className="min-w-full text-sm">
+                    <table className="w-full text-sm">
                       <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
                         <tr>
                           <th className="px-3 py-2 text-left">Name</th>
@@ -643,7 +699,7 @@ function AdminPage() {
                     id="admin-uploads"
                     className="text-base font-semibold text-slate-900 dark:text-slate-100"
                   >
-                    Recent uploads
+                    Recent uploads (students)
                   </h3>
                   {uploadsLoading && (
                     <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
@@ -659,30 +715,126 @@ function AdminPage() {
                 )}
                 {!uploadsLoading && !uploadsError && uploads.length > 0 && (
                   <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
-                    <table className="min-w-full text-sm">
+                    <table className="w-full text-sm">
                       <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
                         <tr>
                           <th className="px-3 py-2 text-left">Filename</th>
-                          <th className="px-3 py-2 text-left">MIME type</th>
+                          <th className="px-3 py-2 text-left">Type</th>
                           <th className="px-3 py-2 text-left">Size</th>
                           <th className="px-3 py-2 text-left">Status</th>
-                          <th className="px-3 py-2 text-left">Created</th>
                         </tr>
                       </thead>
                       <tbody>
                         {uploads.map((u) => (
                           <tr key={u.id} className="border-t border-slate-100 dark:border-slate-800">
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.filename || ""}</td>
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.mimetype || ""}</td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              <span className="block truncate max-w-[10rem]">{u.filename || ""}</span>
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              {u.mimetype?.split("/")[1] || u.mimetype || ""}
+                            </td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
                               {typeof u.size === "number" ? `${(u.size / 1024).toFixed(1)} KB` : ""}
                             </td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.status}</td>
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                              {u.createdAt ? new Date(u.createdAt).toLocaleString() : ""}
-                            </td>
                           </tr>
                         ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section
+            aria-labelledby="admin-teachers-uploads"
+            className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2
+                id="admin-teachers-uploads"
+                className="text-lg font-semibold text-slate-900 dark:text-slate-100"
+              >
+                Teachers and curriculum uploads
+              </h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                    Modules (sample)
+                  </h3>
+                  {modulesLoading && (
+                    <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
+                  )}
+                </div>
+                {modulesError && (
+                  <p role="alert" className="text-red-500 dark:text-red-300 text-sm">
+                    {modulesError}
+                  </p>
+                )}
+                {!modulesLoading && !modulesError && (
+                  <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                        <tr>
+                          <th className="px-3 py-2 text-left">Module</th>
+                          <th className="px-3 py-2 text-left">Course</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {modules.map((m) => (
+                          <tr key={m.id} className="border-t border-slate-100 dark:border-slate-800">
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                              <span className="block truncate max-w-[12rem]">{m.title}</span>
+                            </td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{m.course}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                    Recent uploads (teachers)
+                  </h3>
+                  {uploadsLoading && (
+                    <span className="text-xs text-slate-500 dark:text-slate-300">Loading...</span>
+                  )}
+                </div>
+                {!uploadsLoading && !uploadsError && (
+                  <div className="overflow-auto rounded-lg border border-slate-100 dark:border-slate-800">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                        <tr>
+                          <th className="px-3 py-2 text-left">Filename</th>
+                          <th className="px-3 py-2 text-left">Type</th>
+                          <th className="px-3 py-2 text-left">Size</th>
+                          <th className="px-3 py-2 text-left">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {uploads
+                          .filter((u) => (u.mimetype || "").includes("pdf"))
+                          .map((u) => (
+                            <tr key={u.id} className="border-t border-slate-100 dark:border-slate-800">
+                              <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                                <span className="block truncate max-w-[12rem]">{u.filename || ""}</span>
+                              </td>
+                              <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                                {u.mimetype?.split("/")[1] || u.mimetype || ""}
+                              </td>
+                              <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
+                                {typeof u.size === "number" ? `${(u.size / 1024).toFixed(1)} KB` : ""}
+                              </td>
+                              <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{u.status}</td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>

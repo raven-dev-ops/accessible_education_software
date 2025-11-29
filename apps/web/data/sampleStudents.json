@@ -2,5 +2,8 @@
   { "id": 1, "name": "Alice A.", "email": "alice@example.com", "course": "Calculus I" },
   { "id": 2, "name": "Bob B.", "email": "bob@example.com", "course": "Calculus I" },
   { "id": 3, "name": "Charlie C.", "email": "charlie@example.com", "course": "Calculus I" },
-  { "id": 4, "name": "Dana D.", "email": "dana@example.com", "course": "Calculus I" }
+  { "id": 4, "name": "Dana D.", "email": "dana@example.com", "course": "Calculus I" },
+  { "id": 5, "name": "Evan E.", "email": "evan@example.com", "course": "Calculus II" },
+  { "id": 6, "name": "Fatima F.", "email": "fatima@example.com", "course": "Linear Algebra" },
+  { "id": 7, "name": "Gina G.", "email": "gina@example.com", "course": "Physics I" }
 ]

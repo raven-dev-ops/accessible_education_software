@@ -14,5 +14,21 @@
     "size": 512000,
     "status": "PROCESSING",
     "createdAt": "2025-01-02T10:30:00.000Z"
+  },
+  {
+    "id": "upl-sample-3",
+    "filename": "limits_review_notes.png",
+    "mimetype": "image/png",
+    "size": 102400,
+    "status": "COMPLETE",
+    "createdAt": "2025-01-03T14:05:00.000Z"
+  },
+  {
+    "id": "upl-sample-4",
+    "filename": "calculus_syllabus.pdf",
+    "mimetype": "application/pdf",
+    "size": 256000,
+    "status": "COMPLETE",
+    "createdAt": "2025-01-04T16:45:00.000Z"
   }
 ]
