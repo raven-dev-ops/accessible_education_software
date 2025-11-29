@@ -1050,37 +1050,6 @@ function StudentPage() {
                 </p>
                 <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
                   <div>
-                    <p className="font-semibold text-sm text-slate-900 dark:text-slate-50">Paragraphs</p>
-                    <ul className="space-y-1 text-sm text-slate-800 dark:text-slate-200">
-                      {sampleParagraphs.map((p, idx) => {
-                        const snippet = p.length > 96 ? `${p.slice(0, 96)}…` : p;
-                        return (
-                          <li
-                            key={idx}
-                            className={`flex items-center justify-between gap-2 rounded px-2 py-1 ${
-                              idx === sampleParagraphIndex ? "bg-blue-50 dark:bg-blue-900/30" : ""
-                            }`}
-                          >
-                            <div>
-                              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                                Paragraph {idx + 1}
-                              </div>
-                              <div className="text-sm">{snippet}</div>
-                            </div>
-                            <button
-                              type="button"
-                              className="px-2 py-1 text-xs rounded border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-                              onClick={() => setSampleParagraphIndex(idx)}
-                              aria-label={`Read paragraph ${idx + 1}`}
-                            >
-                              Play
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                  <div>
                     <p className="mt-2 font-semibold text-sm text-slate-900 dark:text-slate-50">TL;DR</p>
                     <p className="text-sm text-slate-800 dark:text-slate-200">{sampleTLDR}</p>
                   </div>
@@ -1255,6 +1224,37 @@ function StudentPage() {
                       );
                     })}
                   </div>
+                </div>
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
+                  <p className="font-semibold text-sm text-slate-900 dark:text-slate-50 mb-2">Paragraphs</p>
+                  <ul className="space-y-1 text-sm text-slate-800 dark:text-slate-200">
+                    {sampleParagraphs.map((p, idx) => {
+                      const snippet = p.length > 96 ? `${p.slice(0, 96)}…` : p;
+                      return (
+                        <li
+                          key={idx}
+                          className={`flex items-center justify-between gap-2 rounded px-2 py-1 ${
+                            idx === sampleParagraphIndex ? "bg-blue-50 dark:bg-blue-900/30" : ""
+                          }`}
+                        >
+                          <div>
+                            <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                              Paragraph {idx + 1}
+                            </div>
+                            <div className="text-sm">{snippet}</div>
+                          </div>
+                          <button
+                            type="button"
+                            className="px-2 py-1 text-xs rounded border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            onClick={() => setSampleParagraphIndex(idx)}
+                            aria-label={`Read paragraph ${idx + 1}`}
+                          >
+                            Play
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
               </div>
             </div>
