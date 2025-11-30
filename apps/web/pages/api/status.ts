@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { rateLimit } from "../../lib/rateLimiter";
+import { Storage } from "@google-cloud/storage";
 
 type QaStatus = {
   status: "unknown" | "pass" | "fail";
@@ -7,11 +8,14 @@ type QaStatus = {
   notes?: string | null;
 };
 
+type StorageStatus = "not_configured" | "available" | "error";
+
 type StatusResponse = {
   ok: boolean;
   app: "ok";
   dbEnabled: boolean;
   ocr: "not_configured" | "available" | "unavailable" | "error";
+  storage: StorageStatus;
   message?: string;
   timestamp: string;
   qa: QaStatus;
@@ -34,8 +38,10 @@ export default async function handler(
   const dbEnabled = Boolean(process.env.DATABASE_URL);
   const ocrServiceUrl = process.env.OCR_SERVICE_URL;
   const ocrApiKey = process.env.OCR_SERVICE_API_KEY;
+  const bucketName = process.env.GCS_BUCKET;
 
   let ocrState: StatusResponse["ocr"] = "not_configured";
+  let storageState: StorageStatus = "not_configured";
   let message: string | undefined;
 
   const qaStatusEnv = (process.env.QA_STATUS || "unknown").toLowerCase();
@@ -47,6 +53,7 @@ export default async function handler(
     notes: process.env.QA_NOTES ?? null,
   };
 
+  // OCR backend health
   if (!ocrServiceUrl) {
     ocrState = "not_configured";
     message = "OCR service URL is not configured; running without backend OCR.";
@@ -76,11 +83,26 @@ export default async function handler(
     }
   }
 
+  // Cloud Storage health
+  if (!bucketName) {
+    storageState = "not_configured";
+  } else {
+    try {
+      const storage = new Storage();
+      const [exists] = await storage.bucket(bucketName).exists();
+      storageState = exists ? "available" : "error";
+    } catch (err) {
+      console.error("Error checking GCS bucket from /api/status:", err);
+      storageState = "error";
+    }
+  }
+
   return res.status(200).json({
     ok: true,
     app: "ok",
     dbEnabled,
     ocr: ocrState,
+    storage: storageState,
     message,
     timestamp: new Date().toISOString(),
     qa,

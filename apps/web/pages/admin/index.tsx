@@ -174,6 +174,7 @@ function AdminPage() {
   const [now, setNow] = useState(new Date());
   const dbEnabled = Boolean(process.env.NEXT_PUBLIC_DB_ENABLED);
   const [qaStatus, setQaStatus] = useState<QaState>({ status: "unknown" });
+  const [storageHealth, setStorageHealth] = useState<HealthState>("unknown");
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -423,6 +424,7 @@ function AdminPage() {
             setCloudRunHealth("degraded");
             setCloudSqlHealth("degraded");
             setOcrHealth("degraded");
+            setStorageHealth("degraded");
           }
           return;
         }
@@ -430,6 +432,7 @@ function AdminPage() {
           ok?: boolean;
           dbEnabled?: boolean;
           ocr?: "not_configured" | "available" | "unavailable" | "error";
+          storage?: "not_configured" | "available" | "error";
           qa?: { status?: "unknown" | "pass" | "fail"; lastRunAt?: string | null; notes?: string | null };
         };
         if (!cancelled) {
@@ -447,6 +450,14 @@ function AdminPage() {
             setOcrHealth("degraded");
           }
 
+          if (!data.storage || data.storage === "not_configured") {
+            setStorageHealth("unknown");
+          } else if (data.storage === "available") {
+            setStorageHealth("healthy");
+          } else {
+            setStorageHealth("degraded");
+          }
+
           if (data.qa) {
             setQaStatus({
               status: data.qa.status ?? "unknown",
@@ -461,6 +472,7 @@ function AdminPage() {
           setCloudRunHealth("degraded");
           setCloudSqlHealth("degraded");
           setOcrHealth("degraded");
+          setStorageHealth("degraded");
         }
       }
     }
@@ -661,26 +673,33 @@ function AdminPage() {
     Math.max(tickets.length || 1, 1),
   ]);
 
-  const connectionHealth: HealthState =
-    cloudRunHealth === "down" || cloudSqlHealth === "down"
-      ? "down"
-      : cloudRunHealth === "degraded" || cloudSqlHealth === "degraded"
-      ? "degraded"
-      : cloudRunHealth === "healthy" && cloudSqlHealth === "healthy"
-      ? "healthy"
-      : "unknown";
+	  const connectionHealth: HealthState =
+	    cloudRunHealth === "down" || cloudSqlHealth === "down" || storageHealth === "down"
+	      ? "down"
+	      : cloudRunHealth === "degraded" ||
+	        cloudSqlHealth === "degraded" ||
+	        storageHealth === "degraded" ||
+	        ocrHealth === "degraded"
+	      ? "degraded"
+	      : cloudRunHealth === "healthy" &&
+	        cloudSqlHealth === "healthy" &&
+	        (storageHealth === "healthy" || storageHealth === "unknown") &&
+	        (ocrHealth === "healthy" || ocrHealth === "unknown")
+	      ? "healthy"
+	      : "unknown";
 
-  const connectionBars = createBarHeights([
-    Math.max(healthToValue(cloudRunHealth), 1),
-    Math.max(healthToValue(cloudSqlHealth), 1),
-    Math.max(healthToValue(ocrHealth), 1),
-    authEnabled ? 4 : 2,
-    Math.max(pdfUploads || 1, 1),
-  ]);
+	  const connectionBars = createBarHeights([
+	    Math.max(healthToValue(cloudRunHealth), 1),
+	    Math.max(healthToValue(cloudSqlHealth), 1),
+	    Math.max(healthToValue(ocrHealth), 1),
+	    Math.max(healthToValue(storageHealth), 1),
+	    authEnabled ? 4 : 2,
+	    Math.max(pdfUploads || 1, 1),
+	  ]);
 
-  const databaseStatus = getHealthStyle(cloudSqlHealth);
-  const apiStatus = getHealthStyle(cloudRunHealth);
-  const testStatus = getHealthStyle(ocrHealth);
+	  const databaseStatus = getHealthStyle(cloudSqlHealth);
+	  const apiStatus = getHealthStyle(cloudRunHealth);
+	  const testStatus = getHealthStyle(ocrHealth);
   const buildStatus = getHealthStyle("healthy");
   const connectionStatus = getHealthStyle(connectionHealth);
   const overviewSections = [
@@ -755,21 +774,32 @@ function AdminPage() {
         },
       ],
     },
-    {
-      key: "connections",
-      title: "CONNECTIONS",
-      subtitle: "App & data layers",
-      status: connectionStatus,
+	    {
+	      key: "connections",
+	      title: "CONNECTIONS",
+	      subtitle: "App & data layers",
+	      status: connectionStatus,
       bars: connectionBars,
       barGradient: "from-slate-200 to-slate-500 dark:from-slate-800 dark:to-slate-400",
-      sparkline: "from-slate-400 via-slate-500 to-slate-700",
-      stats: [
-        { label: "Cloud Run", value: apiStatus.label },
-        { label: "Cloud SQL", value: databaseStatus.label },
-        { label: "Auth", value: authEnabled ? "Enabled" : "Disabled" },
-        { label: "PDF uploads", value: pdfUploads },
-      ],
-    },
+	      sparkline: "from-slate-400 via-slate-500 to-slate-700",
+	      stats: [
+	        { label: "Cloud Run", value: apiStatus.label },
+	        { label: "Cloud SQL", value: databaseStatus.label },
+	        {
+	          label: "GCS bucket",
+	          value:
+	            storageHealth === "healthy"
+	              ? "Healthy"
+	              : storageHealth === "degraded"
+	              ? "Attention"
+	              : storageHealth === "down"
+	              ? "Down"
+	              : "Not configured",
+	        },
+	        { label: "Auth", value: authEnabled ? "Enabled" : "Disabled" },
+	        { label: "PDF uploads", value: pdfUploads },
+	      ],
+	    },
   ];
 
   return (
