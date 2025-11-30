@@ -1,6 +1,6 @@
 import io
 import logging
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
@@ -23,8 +23,8 @@ except ImportError:
 logger = logging.getLogger("accessible_education_ocr")
 
 app = FastAPI(
-    title="Accessible Education OCR Service",
-    description="OCR service with basic PDF/text image handling.",
+    title="Accessible Education Backend (OCR + Logic)",
+    description="Python backend for OCR and custom logic endpoints.",
     version="0.2.0",
 )
 
@@ -36,6 +36,17 @@ class OCRRequest(BaseModel):
     content_type: str | None = None
     text: str | None = None  # Optional text body or hex-encoded PDF bytes
     ai_verify: bool | None = False
+
+
+class LogicRequest(BaseModel):
+  """Generic payload for custom backend logic.
+
+  This is intentionally simple: you can extend it in-place
+  as your project grows (e.g., add specific fields for
+  grading, normalization, or routing decisions).
+  """
+  payload: dict[str, Any] | None = None
+  tags: list[str] | None = None
 
 
 def run_ocr_on_image(image: "Image.Image") -> str:
@@ -85,12 +96,42 @@ def pdf_page_images(doc: "fitz.Document", dpi: int = 200) -> List[Tuple[int, "Im
     return images
 
 
+@app.post("/logic/echo")
+async def logic_echo(req: LogicRequest) -> JSONResponse:
+    """Stub endpoint for project-specific backend logic.
+
+    Today this simply echoes the payload and tags you send.
+    Over time you can replace this with your own business
+    rules (scoring, normalization, routing) while keeping
+    the frontend contract stable.
+    """
+    return JSONResponse(
+        status_code=200,
+        content={
+            "ok": True,
+            "message": "Logic service stub response.",
+            "payload": req.payload or {},
+            "tags": req.tags or [],
+        },
+    )
+
+
 @app.get("/health")
 async def health() -> dict:
     return {
         "status": "ok",
         "ocr_available": bool(pytesseract and Image),
         "pdf_available": bool(fitz),
+    }
+
+
+@app.get("/logic/health")
+async def logic_health() -> dict:
+    """Simple health check for the custom logic surface."""
+    return {
+        "status": "ok",
+        "component": "logic",
+        "version": app.version,
     }
 
 
