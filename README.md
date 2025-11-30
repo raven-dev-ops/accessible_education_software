@@ -16,7 +16,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 ## Table of Contents
 
 - [Features](#features)
-  - [Status (v1.0.1)](#status-v101)
+  - [Status (v1.1.0)](#status-v110)
 - [Roles](#roles)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -89,12 +89,12 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 ---
 
-## Status (v1.0.1)
+## Status (v1.1.0)
 
-- Version **1.0.1**: Same MVP scope as 1.0.0 (Google OAuth via NextAuth; student/teacher/admin dashboards; Cloud SQL via Cloud Run API; Netlify deploy) plus TTS/AI playback polish (clean expand/collapse toggles, clearer descriptions, streamlined layout).
+- Version **1.1.0**: Same MVP scope as 1.0.0 (Google OAuth via NextAuth; student/teacher/admin dashboards) with UI polish from 1.0.1, now deployed as a Cloud Run frontend (`accessible-web`) with a Python backend (`accessible-backend`) and Cloud Storage as the only active storage layer (no Cloud SQL in the current cs-poc deployment).
 - Student dashboard: low-vision friendly layout, collapsible accessibility widget, TTS sample with voice/volume/rate controls and live word highlighting, Braille preview with liblouis/fallback, OCR MVP demo, and support tickets (including attachments when configured).
   - Teacher dashboard: sample profile, module-aware training checklist (per-equation upload/status/editable OCR text), support ticket review table (view/close/escalate, attachments), course material upload, and AI assistant placeholder.
-  - Admin dashboard: system overview cards (student/teacher/admin experience + Cloud SQL/Cloud Run/OCR health), sample students/uploads/modules, live/preview support tickets, and status cards wired to `/api/*` + `test-ocr`.
+  - Admin dashboard: system overview cards (student/teacher/admin experience + Cloud Run/backend/OCR health), sample students/uploads/modules, live/preview support tickets, and status cards wired to `/api/*` + `test-ocr`.
 
 ---
 
