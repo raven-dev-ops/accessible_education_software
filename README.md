@@ -244,9 +244,9 @@ pip install -r apps/ocr_service/requirements.txt
 
 ### Environment variables
 
-Frontend (`apps/web/.env.local` for local, `.env` for Netlify):
+Frontend (`apps/web/.env.local` for local, Cloud Run env vars for production):
 
-- `NEXTAUTH_URL` – site origin (e.g. `http://localhost:3000` or `https://accessibilitysoftware.netlify.app`).
+- `NEXTAUTH_URL` – site origin (e.g. `http://localhost:3000` or `https://accessible-web-139864076628.us-central1.run.app`).
 - `NEXTAUTH_SECRET` – random long secret for NextAuth session encryption.
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` – Google OAuth client credentials.
 - `ADMIN_EMAILS` / `TEACHER_EMAILS` – optional comma-separated allowlists; everyone else is treated as `student`.
@@ -291,9 +291,13 @@ npm run test:ocr
 
 1. **OAuth client (already provisioned)**
    - Client ID: `a7e9753a3-293b-4ea2-b108-ba02da5b041e`
-   - Redirect URIs: `https://accessibilitysoftware.netlify.app/api/auth/callback`, `https://accessibilitysoftware.netlify.app/api/auth/callback/google`, `http://localhost:3000/api/auth/callback`, `http://localhost:3000/api/auth/callback/google`
+   - Redirect URIs should include:
+   - `https://accessible-web-139864076628.us-central1.run.app/api/auth/callback`
+   - `https://accessible-web-139864076628.us-central1.run.app/api/auth/callback/google`
+   - `http://localhost:3000/api/auth/callback`
+   - `http://localhost:3000/api/auth/callback/google`
 2. **Configure env vars**
-   - Set `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` in Netlify and `.env.local`.
+   - Set `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` in Cloud Run service env vars and `.env.local`.
    - Turn on `NEXT_PUBLIC_AUTH_ENABLED=true` when you want login enforced; leave false for the public placeholder.
    - Set `ADMIN_EMAILS` / `TEACHER_EMAILS` (comma-separated) to grant elevated roles; all others default to `student`.
 3. **Local login**
