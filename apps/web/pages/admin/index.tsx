@@ -701,7 +701,7 @@ function AdminPage() {
     {
       key: "builds",
       title: "BUILDS",
-      subtitle: "Netlify pipeline",
+      subtitle: "CI / Cloud Run deploys",
       status: buildStatus,
       bars: buildBars,
       barGradient: "from-emerald-200 to-emerald-500 dark:from-emerald-900/40 dark:to-emerald-400",
