@@ -562,8 +562,14 @@ function AdminPage() {
         className="px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
         value="admin"
         onChange={(e) => {
-          const target = e.target.value;
-          void router.push(`/${target}?preview=1&showPreviewNav=1`);
+          const value = e.target.value;
+          if (value === "student") {
+            void router.push("/student?preview=1&showPreviewNav=1");
+          } else if (value === "teacher") {
+            void router.push("/teacher?preview=1&showPreviewNav=1");
+          } else {
+            void router.push("/admin?preview=1&showPreviewNav=1");
+          }
         }}
       >
         <option value="student">Student</option>
