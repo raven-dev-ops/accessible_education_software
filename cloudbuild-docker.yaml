@@ -8,7 +8,7 @@ steps:
         "-f",
         "apps/web/Dockerfile",
         "-t",
-        "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-web:$COMMIT_SHA",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-web:latest",
         ".",
       ]
 
@@ -21,11 +21,10 @@ steps:
         "-f",
         "apps/ocr_service/Dockerfile",
         "-t",
-        "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-backend:$COMMIT_SHA",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-backend:latest",
         ".",
       ]
 
 images:
-  - "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-web:$COMMIT_SHA"
-  - "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-backend:$COMMIT_SHA"
-
+  - "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-web:latest"
+  - "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-backend:latest"
