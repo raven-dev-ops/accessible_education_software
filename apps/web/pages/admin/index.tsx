@@ -110,7 +110,7 @@ const healthStyles: Record<
 
 const getHealthStyle = (state: HealthState) => healthStyles[state] ?? healthStyles.unknown;
 
-const healthToValue = (state: HealthState) => {
+  const healthToValue = (state: HealthState) => {
   switch (state) {
     case "healthy":
       return 5;
@@ -123,7 +123,7 @@ const healthToValue = (state: HealthState) => {
   }
 };
 
-const createBarHeights = (values: number[]) => {
+  const createBarHeights = (values: number[]) => {
   const max = Math.max(...values, 1);
   return values.map((v) => {
     const pct = Math.round((v / max) * 100);
@@ -164,6 +164,7 @@ function AdminPage() {
   const [cloudSqlHealth, setCloudSqlHealth] = useState<HealthState>("unknown");
   const [ocrHealth, setOcrHealth] = useState<HealthState>("unknown");
   const [now, setNow] = useState(new Date());
+  const dbEnabled = Boolean(process.env.NEXT_PUBLIC_DB_ENABLED);
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -760,7 +761,7 @@ function AdminPage() {
               </div>
               <div className="flex flex-col items-end gap-2 text-right">
                 <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  Production view
+                  {dbEnabled ? "Production view" : "Demo view (no database)"}
                 </span>
                 <Link
                   href="/student"

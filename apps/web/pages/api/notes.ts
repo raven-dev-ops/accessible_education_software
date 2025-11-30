@@ -13,6 +13,7 @@ type NoteSummary = {
 };
 
 const allowSamples = process.env.ALLOW_SAMPLE_FALLBACKS === "true";
+const dbEnabled = Boolean(process.env.DATABASE_URL);
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,6 +23,13 @@ export default async function handler(
   if (!auth) return;
 
   try {
+    if (!dbEnabled) {
+      if (!allowSamples) {
+        return res.status(503).json({ error: "Notes unavailable (database disabled)." });
+      }
+      return res.status(200).json(fallbackNotes as NoteSummary[]);
+    }
+
     const notes = await prisma.note.findMany({
       include: {
         module: {

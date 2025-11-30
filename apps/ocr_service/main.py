@@ -2,7 +2,7 @@ import io
 import logging
 from typing import Any, List, Tuple
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import os
@@ -43,10 +43,25 @@ class LogicRequest(BaseModel):
 
   This is intentionally simple: you can extend it in-place
   as your project grows (e.g., add specific fields for
-  grading, normalization, or routing decisions).
-  """
-  payload: dict[str, Any] | None = None
-  tags: list[str] | None = None
+	  grading, normalization, or routing decisions).
+	  """
+	  payload: dict[str, Any] | None = None
+	  tags: list[str] | None = None
+
+
+def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
+    """Optional API key guard for heavy endpoints.
+
+    If OCR_SERVICE_API_KEY or BACKEND_API_KEY is set in the environment,
+    require that callers present a matching x-api-key header. If no key
+    is configured, the check is a no-op and all callers are allowed.
+    """
+    expected = os.environ.get("OCR_SERVICE_API_KEY") or os.environ.get("BACKEND_API_KEY")
+    if expected and x_api_key != expected:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API key",
+        )
 
 
 def run_ocr_on_image(image: "Image.Image") -> str:
@@ -96,7 +111,7 @@ def pdf_page_images(doc: "fitz.Document", dpi: int = 200) -> List[Tuple[int, "Im
     return images
 
 
-@app.post("/logic/echo")
+@app.post("/logic/echo", dependencies=[Depends(require_api_key)])
 async def logic_echo(req: LogicRequest) -> JSONResponse:
     """Stub endpoint for project-specific backend logic.
 
@@ -135,7 +150,7 @@ async def logic_health() -> dict:
     }
 
 
-@app.post("/ocr-file")
+@app.post("/ocr-file", dependencies=[Depends(require_api_key)])
 async def run_ocr(file: UploadFile = File(...)) -> JSONResponse:
     """
     OCR endpoint that accepts uploaded files (images or PDFs).
@@ -209,7 +224,7 @@ async def run_ocr(file: UploadFile = File(...)) -> JSONResponse:
     return JSONResponse(status_code=400, content={"ok": False, "message": "Unsupported content_type"})
 
 
-@app.post("/ocr-json")
+@app.post("/ocr-json", dependencies=[Depends(require_api_key)])
 async def run_ocr_json(req: OCRRequest) -> JSONResponse:
     """
     OCR endpoint for JSON payloads.

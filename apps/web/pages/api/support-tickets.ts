@@ -20,6 +20,8 @@ type SupportTicket = {
   module?: string | null;
 };
 
+const dbEnabled = Boolean(process.env.DATABASE_URL);
+
 const useCloudRun = process.env.USE_CLOUD_RUN_API === "true";
 const cloudRunBase = process.env.CLOUD_RUN_API_BASE_URL;
 const cloudRunApiKey = process.env.CLOUD_RUN_API_KEY;
@@ -132,34 +134,65 @@ export default async function handler(
         }
       }
 
-      const log = await prisma.log.create({
-        data: {
-          level: "support_ticket",
-          message: detail,
-          meta: {
-            score,
-            userEmail,
-            attachmentUrl,
-            scannedText,
-            correctedText,
-            fileName,
-            module: moduleId,
-          },
-        },
-      });
+      if (!dbEnabled) {
+        return res.status(201).json({
+          id: "demo-ticket",
+          detail,
+          createdAt: new Date().toISOString(),
+          score: score ?? null,
+          userEmail,
+          attachmentUrl,
+          scannedText,
+          correctedText,
+          fileName,
+          module: moduleId,
+        });
+      }
 
-      return res.status(201).json({
-        id: log.id,
-        detail: log.message,
-        createdAt: log.createdAt.toISOString(),
-        score: score ?? null,
-        userEmail,
-        attachmentUrl,
-        scannedText,
-        correctedText,
-        fileName,
-        module: moduleId,
-      });
+      try {
+        const log = await prisma.log.create({
+          data: {
+            level: "support_ticket",
+            message: detail,
+            meta: {
+              score,
+              userEmail,
+              attachmentUrl,
+              scannedText,
+              correctedText,
+              fileName,
+              module: moduleId,
+            },
+          },
+        });
+
+        return res.status(201).json({
+          id: log.id,
+          detail: log.message,
+          createdAt: log.createdAt.toISOString(),
+          score: score ?? null,
+          userEmail,
+          attachmentUrl,
+          scannedText,
+          correctedText,
+          fileName,
+          module: moduleId,
+        });
+      } catch (err) {
+        console.error("Failed to persist support ticket log; returning demo ticket only.", err);
+        return res.status(201).json({
+          id: "demo-ticket",
+          detail,
+          createdAt: new Date().toISOString(),
+          score: score ?? null,
+          userEmail,
+          attachmentUrl,
+          scannedText,
+          correctedText,
+          fileName,
+          module: moduleId,
+        });
+      }
     });
     return;
   }
@@ -188,26 +221,36 @@ export default async function handler(
       }
     }
 
-    const logs = await prisma.log.findMany({
-      where: { level: "support_ticket" },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    });
+    if (!dbEnabled) {
+      // In demo mode, there is no durable ticket history; return an empty list.
+      return res.status(200).json([]);
+    }
 
-    const mapped: SupportTicket[] = logs.map((log: any) => ({
-      id: log.id,
-      detail: log.message,
-      createdAt: log.createdAt.toISOString(),
-      score: (log.meta as any)?.score ?? null,
-      userEmail: (log.meta as any)?.userEmail ?? null,
-      attachmentUrl: (log.meta as any)?.attachmentUrl ?? null,
-      scannedText: (log.meta as any)?.scannedText ?? null,
-      correctedText: (log.meta as any)?.correctedText ?? null,
-      fileName: (log.meta as any)?.fileName ?? null,
-      module: (log.meta as any)?.module ?? null,
-    }));
+    try {
+      const logs = await prisma.log.findMany({
+        where: { level: "support_ticket" },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      });
 
-    return res.status(200).json(mapped);
+      const mapped: SupportTicket[] = logs.map((log: any) => ({
+        id: log.id,
+        detail: log.message,
+        createdAt: log.createdAt.toISOString(),
+        score: (log.meta as any)?.score ?? null,
+        userEmail: (log.meta as any)?.userEmail ?? null,
+        attachmentUrl: (log.meta as any)?.attachmentUrl ?? null,
+        scannedText: (log.meta as any)?.scannedText ?? null,
+        correctedText: (log.meta as any)?.correctedText ?? null,
+        fileName: (log.meta as any)?.fileName ?? null,
+        module: (log.meta as any)?.module ?? null,
+      }));
+
+      return res.status(200).json(mapped);
+    } catch (err) {
+      console.error("Failed to load support tickets from database; returning empty list.", err);
+      return res.status(200).json([]);
+    }
   }
 
   res.setHeader("Allow", ["GET", "POST"]);

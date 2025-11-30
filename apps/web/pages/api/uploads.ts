@@ -13,6 +13,7 @@ type UploadSummary = {
 };
 
 const allowSamples = process.env.ALLOW_SAMPLE_FALLBACKS === "true";
+const dbEnabled = Boolean(process.env.DATABASE_URL);
 const useCloudRun = process.env.USE_CLOUD_RUN_API === "true";
 const cloudRunBase = process.env.CLOUD_RUN_API_BASE_URL;
 const cloudRunApiKey = process.env.CLOUD_RUN_API_KEY;
@@ -39,6 +40,13 @@ export default async function handler(
         }
       }
       // fall through to Prisma / samples on failure
+    }
+
+    if (!dbEnabled) {
+      if (!allowSamples) {
+        return res.status(503).json({ error: "Uploads unavailable (database disabled)." });
+      }
+      return res.status(200).json(fallbackUploads as UploadSummary[]);
     }
 
     const uploads = await prisma.upload.findMany({
