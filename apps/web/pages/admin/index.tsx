@@ -74,6 +74,14 @@ const normalizeTickets = (raw: any[]): SupportTicket[] =>
 
 type HealthState = "unknown" | "healthy" | "degraded" | "down";
 
+type QaStateStatus = "unknown" | "pass" | "fail";
+
+type QaState = {
+  status: QaStateStatus;
+  lastRunAt?: string;
+  notes?: string;
+};
+
 const healthStyles: Record<
   HealthState,
   { bg: string; text: string; dot: string; border: string; label: string }
@@ -165,6 +173,7 @@ function AdminPage() {
   const [ocrHealth, setOcrHealth] = useState<HealthState>("unknown");
   const [now, setNow] = useState(new Date());
   const dbEnabled = Boolean(process.env.NEXT_PUBLIC_DB_ENABLED);
+  const [qaStatus, setQaStatus] = useState<QaState>({ status: "unknown" });
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -407,41 +416,52 @@ function AdminPage() {
     let cancelled = false;
 
     async function runHealthChecks() {
-      // Cloud Run + Cloud SQL via /api/status (if implemented later) or simply by checking that admin APIs responded.
-      // For now, we infer health from whether uploads/students loaded without error.
-      if (!cancelled) {
-        if (uploadsError || studentsError) {
-          setCloudRunHealth("degraded");
-          setCloudSqlHealth("degraded");
-        } else if (!uploadsLoading && !studentsLoading) {
-          setCloudRunHealth("healthy");
-          setCloudSqlHealth("healthy");
-        } else {
-          setCloudRunHealth("unknown");
-          setCloudSqlHealth("unknown");
-        }
-      }
-
-      // OCR service via /api/test-ocr
       try {
-        const res = await fetch("/api/test-ocr", { method: "POST" });
+        const res = await fetch("/api/status");
         if (!res.ok) {
-          if (!cancelled) setOcrHealth("degraded");
+          if (!cancelled) {
+            setCloudRunHealth("degraded");
+            setCloudSqlHealth("degraded");
+            setOcrHealth("degraded");
+          }
           return;
         }
-        const data = (await res.json()) as { ok?: boolean; ocrAvailable?: boolean };
+        const data = (await res.json()) as {
+          ok?: boolean;
+          dbEnabled?: boolean;
+          ocr?: "not_configured" | "available" | "unavailable" | "error";
+          qa?: { status?: "unknown" | "pass" | "fail"; lastRunAt?: string | null; notes?: string | null };
+        };
         if (!cancelled) {
-          if (data.ok && data.ocrAvailable) {
+          const appOk = data.ok !== false;
+          setCloudRunHealth(appOk ? "healthy" : "degraded");
+          setCloudSqlHealth(data.dbEnabled ? "healthy" : "degraded");
+
+          if (!data.ocr || data.ocr === "not_configured") {
+            setOcrHealth("unknown");
+          } else if (data.ocr === "available") {
             setOcrHealth("healthy");
-          } else if (data.ok && !data.ocrAvailable) {
+          } else if (data.ocr === "unavailable") {
             setOcrHealth("degraded");
           } else {
             setOcrHealth("degraded");
           }
+
+          if (data.qa) {
+            setQaStatus({
+              status: data.qa.status ?? "unknown",
+              lastRunAt: data.qa.lastRunAt ?? undefined,
+              notes: data.qa.notes ?? undefined,
+            });
+          }
         }
       } catch (err) {
-        console.error("OCR health check in admin dashboard failed:", err);
-        if (!cancelled) setOcrHealth("degraded");
+        console.error("Health check in admin dashboard failed:", err);
+        if (!cancelled) {
+          setCloudRunHealth("degraded");
+          setCloudSqlHealth("degraded");
+          setOcrHealth("degraded");
+        }
       }
     }
 
@@ -718,6 +738,21 @@ function AdminPage() {
         { label: "Avg OCR score", value: averageTicketScore != null ? `${averageTicketScore}%` : "--" },
         { label: "Flagged < 80%", value: lowScoreTickets },
         { label: "Sample tickets", value: tickets.length },
+        {
+          label: "QA status",
+          value:
+            qaStatus.status === "pass"
+              ? "Pass"
+              : qaStatus.status === "fail"
+              ? "Fail"
+              : "Unknown",
+        },
+        {
+          label: "Last QA run",
+          value: qaStatus.lastRunAt
+            ? new Date(qaStatus.lastRunAt).toLocaleString()
+            : "Not recorded",
+        },
       ],
     },
     {

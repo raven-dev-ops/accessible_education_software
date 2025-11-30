@@ -1,6 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { rateLimit } from "../../lib/rateLimiter";
 
+type QaStatus = {
+  status: "unknown" | "pass" | "fail";
+  lastRunAt?: string | null;
+  notes?: string | null;
+};
+
 type StatusResponse = {
   ok: boolean;
   app: "ok";
@@ -8,6 +14,7 @@ type StatusResponse = {
   ocr: "not_configured" | "available" | "unavailable" | "error";
   message?: string;
   timestamp: string;
+  qa: QaStatus;
 };
 
 export default async function handler(
@@ -30,6 +37,15 @@ export default async function handler(
 
   let ocrState: StatusResponse["ocr"] = "not_configured";
   let message: string | undefined;
+
+  const qaStatusEnv = (process.env.QA_STATUS || "unknown").toLowerCase();
+  const qaStatus: QaStatus["status"] =
+    qaStatusEnv === "pass" ? "pass" : qaStatusEnv === "fail" ? "fail" : "unknown";
+  const qa: QaStatus = {
+    status: qaStatus,
+    lastRunAt: process.env.QA_LAST_RUN_AT ?? null,
+    notes: process.env.QA_NOTES ?? null,
+  };
 
   if (!ocrServiceUrl) {
     ocrState = "not_configured";
@@ -67,6 +83,6 @@ export default async function handler(
     ocr: ocrState,
     message,
     timestamp: new Date().toISOString(),
+    qa,
   });
 }
-
