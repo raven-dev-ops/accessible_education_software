@@ -2,4 +2,5 @@ fastapi
 uvicorn[standard]
 pytesseract
 Pillow
-
+requests
+python-multipart

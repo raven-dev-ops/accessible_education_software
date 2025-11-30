@@ -1,4 +1,8 @@
-# Netlify production deploy checklist
+# Netlify production deploy checklist (legacy)
+
+The current production deployment uses Cloud Run for the frontend
+(`accessible-web` in `us-central1`). This document is kept for reference
+in case a Netlify-based deployment is needed again.
 
 Recommended Netlify settings for the Next.js app under `apps/web`:
 

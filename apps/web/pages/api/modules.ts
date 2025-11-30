@@ -45,7 +45,7 @@ export default async function handler(
     }
 
     const modules = await prisma.module.findMany({
-      include: { course: true, _count: { select: { tickets: true } } },
+      include: { course: true },
       orderBy: { createdAt: "asc" },
       take: 100,
     });
@@ -65,7 +65,7 @@ export default async function handler(
       submodulesCompleted: m.submodulesCompleted ?? undefined,
       submodulesTotal: m.submodulesTotal ?? undefined,
       ticketsOpen: m.ticketsOpen ?? undefined,
-      ticketsResolved: m.ticketsResolved ?? m._count?.tickets ?? undefined,
+      ticketsResolved: m.ticketsResolved ?? undefined,
       sampleEquation: m.sampleEquation ?? undefined,
     }));
 

@@ -16,7 +16,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 ## Table of Contents
 
 - [Features](#features)
-  - [Status (v1.0.1)](#status-v101)
+  - [Status (v1.1.0)](#status-v110)
 - [Roles](#roles)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -76,9 +76,9 @@ The system helps **students**, **teachers**, and **site admins** work with handw
   - Role-based routing (Student / Teacher / Admin) derived from email allowlists
 
 - **Monorepo architecture**
-  - **Next.js** frontend: lightweight, accessible UI (target deployment on Netlify)
-  - **Backend OCR service**: Python + Tesseract (planned deployment on Google Cloud / Heroku)
-  - **PostgreSQL** database: hosted on Google Cloud
+  - **Next.js** frontend: lightweight, accessible UI deployed to **Cloud Run** (`https://accessible-web-139864076628.us-central1.run.app/`)
+  - **Backend OCR service**: Python + Tesseract (deployable to Cloud Run as a separate backend service)
+  - **Object storage**: Cloud Storage bucket for attachments, exports, and backups
   - Shared utilities and types for consistency
 
 - **Accessibility-first UI**
@@ -89,12 +89,12 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 ---
 
-## Status (v1.0.1)
+## Status (v1.1.0)
 
-- Version **1.0.1**: Same MVP scope as 1.0.0 (Google OAuth via NextAuth; student/teacher/admin dashboards; Cloud SQL via Cloud Run API; Netlify deploy) plus TTS/AI playback polish (clean expand/collapse toggles, clearer descriptions, streamlined layout).
+- Version **1.1.0**: Same MVP scope as 1.0.0 (Google OAuth via NextAuth; student/teacher/admin dashboards) with UI polish from 1.0.1, now deployed as a Cloud Run frontend (`accessible-web`) with a Python backend (`accessible-backend`) and Cloud Storage as the only active storage layer (no Cloud SQL in the current cs-poc deployment).
 - Student dashboard: low-vision friendly layout, collapsible accessibility widget, TTS sample with voice/volume/rate controls and live word highlighting, Braille preview with liblouis/fallback, OCR MVP demo, and support tickets (including attachments when configured).
   - Teacher dashboard: sample profile, module-aware training checklist (per-equation upload/status/editable OCR text), support ticket review table (view/close/escalate, attachments), course material upload, and AI assistant placeholder.
-  - Admin dashboard: system overview cards (student/teacher/admin experience + Cloud SQL/Cloud Run/OCR health), sample students/uploads/modules, live/preview support tickets, and status cards wired to `/api/*` + `test-ocr`.
+  - Admin dashboard: system overview cards (student/teacher/admin experience + Cloud Run/backend/OCR health), sample students/uploads/modules, live/preview support tickets, and status cards wired to `/api/*` + `test-ocr`.
 
 ---
 
@@ -139,14 +139,14 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 - PyTesseract (Tesseract OCR)
 - Optionally Node/Express for additional APIs or orchestration
 
-**Database**
+**Storage & data**
 
-- PostgreSQL on Google Cloud (Cloud SQL)
+- Primary persistence: Google Cloud Storage (attachments, exports, backups)
 
 **Infrastructure / Deployment**
 
-- Frontend: Netlify (auto-deploy on main)
-- Backend: Google Cloud (Cloud Run / App Engine) or Heroku (planned)
+- Frontend: Google Cloud Run (`accessible-web` service in `us-central1`)
+- Backend OCR / logic services: Google Cloud Run (Python OCR service, optional Node/Express APIs)
 - Auth: Google OAuth client via NextAuth
 - Hybrid connectivity: HA VPN + Cloud Router (prod/nonprod shared VPCs)
 
@@ -345,10 +345,11 @@ Several Next.js API routes power the dashboards:
 - `POST /api/upload` - accepts a file upload and, if `OCR_SERVICE_URL` is configured, forwards the file to the Python OCR service `/ocr` endpoint. Returns basic file metadata and any OCR text received.
 - `POST /api/test-ocr` - calls the OCR service `/health` endpoint (when `OCR_SERVICE_URL` is set) and reports whether OCR is available; otherwise returns a stub message.
 
-### Cloud SQL and Cloud Run proxy
+### Cloud Run app and storage
 
-- Cloud SQL instance: `accessible-software-db` (private IP only) with database `appdb`, users `postgres` and `appuser`.
-- A small Cloud Run API (`cloud-run-api`) connects to Cloud SQL over private IP using the Cloud SQL Connector. It is protected by an `X-API-Key` header and intended to be called from CI/Netlify via HTTPS instead of direct DB access.
+- Frontend: `accessible-web` Cloud Run service in `us-central1` at `https://accessible-web-139864076628.us-central1.run.app`.
+- No relational database is currently provisioned; Next.js API routes fall back to bundled sample JSON for students/modules/notes when `DATABASE_URL` is unset.
+- Support ticket attachments (when enabled via `GCS_BUCKET` and `GCS_SA_KEY`) are stored in Cloud Storage and served via signed URLs.
 
 ### Hybrid connectivity (HA VPN)
 

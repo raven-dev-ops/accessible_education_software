@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - Cloud Run app + Python backend
+
+- Deploy the Next.js frontend as a Cloud Run service (`accessible-web` in `us-central1`) and update documentation to treat this as the primary production entrypoint.
+- Deploy the Python FastAPI service in `apps/ocr_service` as a Cloud Run backend (`accessible-backend`) exposing OCR endpoints plus generic logic endpoints (`/logic/health`, `/logic/echo`) for project-specific processing.
+- Remove Cloud SQL from the `cs-poc` deployment: clear `DATABASE_URL` in `apps/web/.env` so Next.js APIs run in demo/sample mode and rely only on Cloud Storage for durable data (attachments/exports); keep Prisma/DB docs as a future path.
+- Refresh README and docs (`docs/LEGAL.md`, `docs/NETLIFY.md`, `docs/README.md`, `docs/OCR_DOCKER.md`) to emphasise one frontend (Cloud Run), one backend (Cloud Run Python service), and Cloud Storage as the current storage layer; mark Netlify and Cloud Run SQL proxy as legacy/optional.
+- Bump versions to 1.1.0 to reflect the new deployment architecture without changing core user-facing features.
+
 ## [1.0.1] - UI polish (TTS/AI)
 
 - Cleaned up student dashboard TTS/AI sections: standalone expand/collapse toggles with proper arrows, concise descriptions under each heading, and streamlined layout (no nested containers).
