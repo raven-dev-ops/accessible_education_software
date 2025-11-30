@@ -211,7 +211,7 @@ export default async function handler(
         file.originalFilename || "upload.bin"
       );
 
-      const url = ocrServiceUrl.replace(/\/$/, "") + "/ocr";
+      const url = ocrServiceUrl.replace(/\/$/, "") + "/ocr-file";
       const response = await fetch(url, {
         method: "POST",
         body: formData,
