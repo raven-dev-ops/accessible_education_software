@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       base_url:
-        description: "Base URL to test (e.g., Netlify prod/preview)"
-        default: "https://accessibilitysoftware.netlify.app"
+        description: "Base URL to test (e.g., Cloud Run prod)"
+        default: "https://accessible-web-139864076628.us-central1.run.app"
         required: true
 
 permissions:
