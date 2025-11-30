@@ -74,6 +74,63 @@ const normalizeTickets = (raw: any[]): SupportTicket[] =>
 
 type HealthState = "unknown" | "healthy" | "degraded" | "down";
 
+const healthStyles: Record<
+  HealthState,
+  { bg: string; text: string; dot: string; border: string; label: string }
+> = {
+  healthy: {
+    label: "Healthy",
+    bg: "bg-emerald-100 dark:bg-emerald-900/40",
+    text: "text-emerald-700 dark:text-emerald-100",
+    dot: "bg-emerald-500",
+    border: "border border-emerald-200 dark:border-emerald-800",
+  },
+  degraded: {
+    label: "Attention",
+    bg: "bg-amber-100 dark:bg-amber-900/30",
+    text: "text-amber-800 dark:text-amber-100",
+    dot: "bg-amber-500",
+    border: "border border-amber-200 dark:border-amber-800",
+  },
+  down: {
+    label: "Down",
+    bg: "bg-red-100 dark:bg-red-900/30",
+    text: "text-red-800 dark:text-red-100",
+    dot: "bg-red-500",
+    border: "border border-red-200 dark:border-red-800",
+  },
+  unknown: {
+    label: "Checking",
+    bg: "bg-slate-100 dark:bg-slate-800",
+    text: "text-slate-700 dark:text-slate-200",
+    dot: "bg-slate-400",
+    border: "border border-slate-200 dark:border-slate-700",
+  },
+};
+
+const getHealthStyle = (state: HealthState) => healthStyles[state] ?? healthStyles.unknown;
+
+const healthToValue = (state: HealthState) => {
+  switch (state) {
+    case "healthy":
+      return 5;
+    case "degraded":
+      return 3;
+    case "down":
+      return 1;
+    default:
+      return 2;
+  }
+};
+
+const createBarHeights = (values: number[]) => {
+  const max = Math.max(...values, 1);
+  return values.map((v) => {
+    const pct = Math.round((v / max) * 100);
+    return Math.min(100, Math.max(16, pct));
+  });
+};
+
 
 function AdminPage() {
   const router = useRouter();
@@ -106,6 +163,7 @@ function AdminPage() {
   const [cloudRunHealth, setCloudRunHealth] = useState<HealthState>("unknown");
   const [cloudSqlHealth, setCloudSqlHealth] = useState<HealthState>("unknown");
   const [ocrHealth, setOcrHealth] = useState<HealthState>("unknown");
+  const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -396,6 +454,11 @@ function AdminPage() {
     };
   }, [unauthorized, studentsLoading, uploadsLoading, studentsError, uploadsError]);
 
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleTestOcr = async () => {
     setOcrLoading(true);
     setOcrMessage(null);
@@ -528,6 +591,72 @@ function AdminPage() {
     </>
   );
 
+  const formattedTimestamp = now.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+
+  const completedUploads = uploads.filter((u) => (u.status || "").toLowerCase() === "complete").length;
+  const processingUploads = uploads.filter((u) => {
+    const status = (u.status || "").toLowerCase();
+    return status && status !== "complete";
+  }).length;
+  const pdfUploads = uploads.filter((u) => (u.mimetype || "").includes("pdf")).length;
+  const lowScoreTickets = tickets.filter((t) => (t.score ?? 0) < 80).length;
+  const scoredTickets = tickets.filter((t) => typeof t.score === "number") as { score: number }[];
+  const averageTicketScore = scoredTickets.length
+    ? Math.round(scoredTickets.reduce((sum, t) => sum + (t.score ?? 0), 0) / scoredTickets.length)
+    : null;
+
+  const databaseBars = createBarHeights([
+    Math.max(students.length, 1),
+    Math.max(uploads.length, 1),
+    Math.max(tickets.length, 1),
+    Math.max(lowScoreTickets, 1),
+    Math.max(completedUploads, 1),
+  ]);
+
+  const buildDurationHistory = [12, 10, 11, 9, 13];
+  const buildBars = createBarHeights(buildDurationHistory);
+  const buildLatest = buildDurationHistory[buildDurationHistory.length - 1];
+  const buildLongest = Math.max(...buildDurationHistory);
+
+  const apiBars = createBarHeights([
+    Math.max(uploads.length, 1),
+    Math.max(processingUploads, 1),
+    Math.max(tickets.length, 1),
+    Math.max(completedUploads, 1),
+    Math.max(lowScoreTickets, 1),
+  ]);
+
+  const testsBars = createBarHeights([
+    averageTicketScore ?? 60,
+    Math.max(lowScoreTickets, 1),
+    Math.max(scoredTickets.length, 1),
+    Math.max(healthToValue(ocrHealth) * 10, 5),
+    Math.max(tickets.length || 1, 1),
+  ]);
+
+  const connectionHealth: HealthState =
+    cloudRunHealth === "down" || cloudSqlHealth === "down"
+      ? "down"
+      : cloudRunHealth === "degraded" || cloudSqlHealth === "degraded"
+      ? "degraded"
+      : cloudRunHealth === "healthy" && cloudSqlHealth === "healthy"
+      ? "healthy"
+      : "unknown";
+
+  const connectionBars = createBarHeights([
+    Math.max(healthToValue(cloudRunHealth), 1),
+    Math.max(healthToValue(cloudSqlHealth), 1),
+    Math.max(healthToValue(ocrHealth), 1),
+    authEnabled ? 4 : 2,
+    Math.max(pdfUploads || 1, 1),
+  ]);
+
+  const databaseStatus = getHealthStyle(cloudSqlHealth);
+  const apiStatus = getHealthStyle(cloudRunHealth);
+  const testStatus = getHealthStyle(ocrHealth);
+  const buildStatus = getHealthStyle("healthy");
+  const connectionStatus = getHealthStyle(connectionHealth);
+
   return (
     <Layout title="Admin Dashboard" secondaryNav={previewNav}>
       <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-6 transition-colors">
@@ -550,6 +679,26 @@ function AdminPage() {
                   </p>
                 </div>
               </div>
+              <div className="flex flex-col items-end gap-2 text-right">
+                <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  Production view
+                </span>
+                <Link
+                  href="/student"
+                  className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900"
+                >
+                  View as Student
+                </Link>
+                <Link
+                  href="/teacher"
+                  className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900"
+                >
+                  View as Teacher
+                </Link>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Opens the live dashboards without preview flags.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -568,194 +717,225 @@ function AdminPage() {
                   Experience & infrastructure health
                 </h2>
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-300">
+              <div className="flex flex-col items-start sm:items-end gap-2 text-xs text-slate-500 dark:text-slate-300">
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                   <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   Live preview of sample data
                 </span>
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <span className="h-2 w-2 rounded-full bg-sky-500" />
+                  {formattedTimestamp}
+                </span>
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3 mb-5">
-              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                    Student experience
-                  </p>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200 border border-emerald-100 dark:border-emerald-800">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    {studentsError ? "Attention" : "Healthy"}
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                      Database
+                    </p>
+                    <p className="text-sm text-slate-700 dark:text-slate-200">Cloud SQL posture</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${databaseStatus.bg} ${databaseStatus.text} ${databaseStatus.border}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${databaseStatus.dot}`} />
+                    {databaseStatus.label}
                   </span>
                 </div>
-                <p className="text-sm text-slate-700 dark:text-slate-200 mb-3">
-                  Sample student dashboard connectivity and data preview.
-                </p>
+                <div className="h-16 flex items-end gap-1" aria-hidden="true">
+                  {databaseBars.map((height, idx) => (
+                    <div
+                      key={`db-bar-${idx}`}
+                      className="flex-1 rounded-full bg-gradient-to-t from-blue-200 to-blue-500 dark:from-blue-900/40 dark:to-blue-400 transition-all"
+                      style={{ height: `${height}%` }}
+                    />
+                  ))}
+                </div>
                 <dl className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-300">Students loaded</dt>
+                    <dt className="text-slate-500 dark:text-slate-300">Students</dt>
                     <dd className="font-medium text-slate-900 dark:text-slate-100">{students.length}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-300">Open OCR tickets</dt>
-                    <dd className="font-medium text-slate-900 dark:text-slate-100">
-                      {tickets.filter((t) => (t.score ?? 0) < 80).length}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                    Teacher experience
-                  </p>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200 border border-emerald-100 dark:border-emerald-800">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Preview
-                  </span>
-                </div>
-                <p className="text-sm text-slate-700 dark:text-slate-200 mb-3">
-                  Demonstrates modules, training flows, and ticket review from the teacher dashboard.
-                </p>
-                <dl className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-300">Sample modules</dt>
-                    <dd className="font-medium text-slate-900 dark:text-slate-100">3</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-300">Training samples (mock)</dt>
-                    <dd className="font-medium text-slate-900 dark:text-slate-100">10</dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                    Admin experience
-                  </p>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border"
-                  >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        cloudRunHealth === "healthy"
-                          ? "bg-emerald-500"
-                          : cloudRunHealth === "degraded"
-                          ? "bg-amber-500"
-                          : cloudRunHealth === "down"
-                          ? "bg-red-500"
-                          : "bg-slate-400"
-                      }`}
-                    />
-                    {cloudRunHealth === "healthy"
-                      ? "Healthy"
-                      : cloudRunHealth === "degraded"
-                      ? "Attention"
-                      : cloudRunHealth === "down"
-                      ? "Down"
-                      : "Checking"}
-                  </span>
-                </div>
-                <p className="text-sm text-slate-700 dark:text-slate-200 mb-3">
-                  Overview of uploads, OCR quality, and support tickets across the system.
-                </p>
-                <dl className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-300">Total uploads (preview)</dt>
+                    <dt className="text-slate-500 dark:text-slate-300">Uploads stored</dt>
                     <dd className="font-medium text-slate-900 dark:text-slate-100">{uploads.length}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-300">Support tickets</dt>
+                    <dt className="text-slate-500 dark:text-slate-300">Tickets linked</dt>
                     <dd className="font-medium text-slate-900 dark:text-slate-100">{tickets.length}</dd>
                   </div>
                 </dl>
               </div>
-            </div>
 
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
-                <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">Cloud SQL (Postgres)</p>
-                <p className="text-sm text-slate-700 dark:text-slate-200 mb-1">
-                  Connection via Cloud Run API (preview).
-                </p>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="inline-flex items-center gap-1">
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        cloudSqlHealth === "healthy"
-                          ? "bg-emerald-500"
-                          : cloudSqlHealth === "degraded"
-                          ? "bg-amber-500"
-                          : cloudSqlHealth === "down"
-                          ? "bg-red-500"
-                          : "bg-slate-400"
-                      }`}
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                      Builds
+                    </p>
+                    <p className="text-sm text-slate-700 dark:text-slate-200">Netlify pipeline</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${buildStatus.bg} ${buildStatus.text} ${buildStatus.border}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${buildStatus.dot}`} />
+                    {buildStatus.label}
+                  </span>
+                </div>
+                <div className="h-16 flex items-end gap-1" aria-hidden="true">
+                  {buildBars.map((height, idx) => (
+                    <div
+                      key={`build-bar-${idx}`}
+                      className="flex-1 rounded-full bg-gradient-to-t from-emerald-200 to-emerald-500 dark:from-emerald-900/40 dark:to-emerald-400 transition-all"
+                      style={{ height: `${height}%` }}
                     />
-                    {cloudSqlHealth === "healthy"
-                      ? "Healthy"
-                      : cloudSqlHealth === "degraded"
-                      ? "Attention"
-                      : cloudSqlHealth === "down"
-                      ? "Down"
-                      : "Checking"}
-                  </span>
-                  <span className="text-slate-500 dark:text-slate-300">IAM + private connectivity</span>
+                  ))}
                 </div>
+                <dl className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Branch</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">main</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Last build</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{buildLatest} min</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Longest sample</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{buildLongest} min</dd>
+                  </div>
+                </dl>
               </div>
-              <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
-                <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">Cloud Run API</p>
-                <p className="text-sm text-slate-700 dark:text-slate-200 mb-1">
-                  Handles profile/db access and training endpoints.
-                </p>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="inline-flex items-center gap-1">
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        cloudRunHealth === "healthy"
-                          ? "bg-emerald-500"
-                          : cloudRunHealth === "degraded"
-                          ? "bg-amber-500"
-                          : cloudRunHealth === "down"
-                          ? "bg-red-500"
-                          : "bg-slate-400"
-                      }`}
+
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                      API
+                    </p>
+                    <p className="text-sm text-slate-700 dark:text-slate-200">Cloud Run endpoints</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${apiStatus.bg} ${apiStatus.text} ${apiStatus.border}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${apiStatus.dot}`} />
+                    {apiStatus.label}
+                  </span>
+                </div>
+                <div className="h-16 flex items-end gap-1" aria-hidden="true">
+                  {apiBars.map((height, idx) => (
+                    <div
+                      key={`api-bar-${idx}`}
+                      className="flex-1 rounded-full bg-gradient-to-t from-indigo-200 to-indigo-500 dark:from-indigo-900/40 dark:to-indigo-400 transition-all"
+                      style={{ height: `${height}%` }}
                     />
-                    {cloudRunHealth === "healthy"
-                      ? "Healthy"
-                      : cloudRunHealth === "degraded"
-                      ? "Attention"
-                      : cloudRunHealth === "down"
-                      ? "Down"
-                      : "Checking"}
-                  </span>
-                  <span className="text-slate-500 dark:text-slate-300">Rate-limited & API-key protected</span>
+                  ))}
                 </div>
+                <dl className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Uploads routed</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{uploads.length}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Processing</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{processingUploads}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Ticket webhooks</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{tickets.length}</dd>
+                  </div>
+                </dl>
               </div>
-              <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
-                <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">Netlify builds</p>
-                <p className="text-sm text-slate-700 dark:text-slate-200 mb-1">
-                  Next.js front end deployed from <span className="font-mono text-xs">main</span>.
-                </p>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="inline-flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Connected
+
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                      Tests
+                    </p>
+                    <p className="text-sm text-slate-700 dark:text-slate-200">OCR harness</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${testStatus.bg} ${testStatus.text} ${testStatus.border}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${testStatus.dot}`} />
+                    {testStatus.label}
                   </span>
-                  <span className="text-slate-500 dark:text-slate-300">Auto‑deploy on commit</span>
                 </div>
+                <div className="h-16 flex items-end gap-1" aria-hidden="true">
+                  {testsBars.map((height, idx) => (
+                    <div
+                      key={`test-bar-${idx}`}
+                      className="flex-1 rounded-full bg-gradient-to-t from-amber-200 to-amber-500 dark:from-amber-900/40 dark:to-amber-400 transition-all"
+                      style={{ height: `${height}%` }}
+                    />
+                  ))}
+                </div>
+                <dl className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Avg OCR score</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">
+                      {averageTicketScore != null ? `${averageTicketScore}%` : "--"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Flagged &lt; 80%</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{lowScoreTickets}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Sample tickets</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{tickets.length}</dd>
+                  </div>
+                </dl>
               </div>
-              <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
-                <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">Auth & OAuth</p>
-                <p className="text-sm text-slate-700 dark:text-slate-200 mb-1">
-                  Google OAuth + NextAuth with role-based dashboards.
-                </p>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="inline-flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Enabled
+
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                      Connections
+                    </p>
+                    <p className="text-sm text-slate-700 dark:text-slate-200">App & data layers</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${connectionStatus.bg} ${connectionStatus.text} ${connectionStatus.border}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${connectionStatus.dot}`} />
+                    {connectionStatus.label}
                   </span>
-                  <span className="text-slate-500 dark:text-slate-300">Preview logins only</span>
                 </div>
+                <div className="h-16 flex items-end gap-1" aria-hidden="true">
+                  {connectionBars.map((height, idx) => (
+                    <div
+                      key={`conn-bar-${idx}`}
+                      className="flex-1 rounded-full bg-gradient-to-t from-slate-200 to-slate-500 dark:from-slate-800 dark:to-slate-400 transition-all"
+                      style={{ height: `${height}%` }}
+                    />
+                  ))}
+                </div>
+                <dl className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Cloud Run</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{apiStatus.label}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Cloud SQL</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{databaseStatus.label}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">Auth</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">
+                      {authEnabled ? "Enabled" : "Disabled"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-300">PDF uploads</dt>
+                    <dd className="font-medium text-slate-900 dark:text-slate-100">{pdfUploads}</dd>
+                  </div>
+                </dl>
               </div>
             </div>
           </section>
@@ -916,22 +1096,22 @@ function AdminPage() {
                                 </span>
                               )}
                             </td>
-                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{m.course ?? "—"}</td>
+                            <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{m.course ?? "--"}</td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                              {typeof m.teacherProgress === "number" ? `${m.teacherProgress}%` : "—"}
+                              {typeof m.teacherProgress === "number" ? `${m.teacherProgress}%` : "--"}
                             </td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
-                              {typeof m.studentCompletion === "number" ? `${m.studentCompletion}%` : "—"}
+                              {typeof m.studentCompletion === "number" ? `${m.studentCompletion}%` : "--"}
                             </td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
                               {m.submodulesCompleted !== undefined && m.submodulesTotal !== undefined
                                 ? `${m.submodulesCompleted}/${m.submodulesTotal}`
-                                : "—"}
+                                : "--"}
                             </td>
                             <td className="px-3 py-2 text-slate-900 dark:text-slate-100">
                               {m.ticketsOpen !== undefined || m.ticketsResolved !== undefined
                                 ? `${m.ticketsOpen ?? 0} open / ${m.ticketsResolved ?? 0} resolved`
-                                : "—"}
+                                : "--"}
                             </td>
                           </tr>
                         ))}
@@ -1002,9 +1182,7 @@ function AdminPage() {
                 <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
                   OCR samples (mock)
                 </p>
-                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                  10
-                </p>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">10</p>
                 <p className="text-xs text-slate-500 dark:text-slate-300">
                   Initial batch submitted
                 </p>
@@ -1014,15 +1192,7 @@ function AdminPage() {
                   Accuracy (mock)
                 </p>
                 <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                  {(() => {
-                    const scored = tickets.filter((t) => typeof t.score === "number") as {
-                      score: number;
-                    }[];
-                    if (!scored.length) return "–";
-                    const avg =
-                      scored.reduce((sum, t) => sum + (t.score ?? 0), 0) / scored.length;
-                    return `${Math.round(avg)}%`;
-                  })()}
+                  {averageTicketScore != null ? `${averageTicketScore}%` : "--"}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-300">
                   Based on recent ticket scores
@@ -1036,7 +1206,7 @@ function AdminPage() {
                   {tickets.filter((t) => (t.score ?? 0) < 80).length}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-300">
-                  Student‑reported OCR issues
+                  Student-reported OCR issues
                 </p>
               </div>
             </div>
