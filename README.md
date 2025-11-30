@@ -76,9 +76,9 @@ The system helps **students**, **teachers**, and **site admins** work with handw
   - Role-based routing (Student / Teacher / Admin) derived from email allowlists
 
 - **Monorepo architecture**
-  - **Next.js** frontend: lightweight, accessible UI (target deployment on Netlify)
-  - **Backend OCR service**: Python + Tesseract (planned deployment on Google Cloud / Heroku)
-  - **PostgreSQL** database: hosted on Google Cloud
+  - **Next.js** frontend: lightweight, accessible UI deployed to **Cloud Run** (`https://accessible-web-139864076628.us-central1.run.app/`)
+  - **Backend OCR service**: Python + Tesseract (deployable to Cloud Run as a separate backend service)
+  - **Object storage**: Cloud Storage bucket for attachments, exports, and backups
   - Shared utilities and types for consistency
 
 - **Accessibility-first UI**
@@ -139,14 +139,14 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 - PyTesseract (Tesseract OCR)
 - Optionally Node/Express for additional APIs or orchestration
 
-**Database**
+**Storage & data**
 
-- PostgreSQL on Google Cloud (Cloud SQL)
+- Primary persistence: Google Cloud Storage (attachments, exports, backups)
 
 **Infrastructure / Deployment**
 
-- Frontend: Netlify (auto-deploy on main)
-- Backend: Google Cloud (Cloud Run / App Engine) or Heroku (planned)
+- Frontend: Google Cloud Run (`accessible-web` service in `us-central1`)
+- Backend OCR / logic services: Google Cloud Run (Python OCR service, optional Node/Express APIs)
 - Auth: Google OAuth client via NextAuth
 - Hybrid connectivity: HA VPN + Cloud Router (prod/nonprod shared VPCs)
 
@@ -345,10 +345,11 @@ Several Next.js API routes power the dashboards:
 - `POST /api/upload` - accepts a file upload and, if `OCR_SERVICE_URL` is configured, forwards the file to the Python OCR service `/ocr` endpoint. Returns basic file metadata and any OCR text received.
 - `POST /api/test-ocr` - calls the OCR service `/health` endpoint (when `OCR_SERVICE_URL` is set) and reports whether OCR is available; otherwise returns a stub message.
 
-### Cloud SQL and Cloud Run proxy
+### Cloud Run app and storage
 
-- Cloud SQL instance: `accessible-software-db` (private IP only) with database `appdb`, users `postgres` and `appuser`.
-- A small Cloud Run API (`cloud-run-api`) connects to Cloud SQL over private IP using the Cloud SQL Connector. It is protected by an `X-API-Key` header and intended to be called from CI/Netlify via HTTPS instead of direct DB access.
+- Frontend: `accessible-web` Cloud Run service in `us-central1` at `https://accessible-web-139864076628.us-central1.run.app`.
+- No relational database is currently provisioned; Next.js API routes fall back to bundled sample JSON for students/modules/notes when `DATABASE_URL` is unset.
+- Support ticket attachments (when enabled via `GCS_BUCKET` and `GCS_SA_KEY`) are stored in Cloud Storage and served via signed URLs.
 
 ### Hybrid connectivity (HA VPN)
 
