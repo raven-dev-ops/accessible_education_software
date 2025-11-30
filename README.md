@@ -148,6 +148,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 - Frontend: Netlify (auto-deploy on main)
 - Backend: Google Cloud (Cloud Run / App Engine) or Heroku (planned)
 - Auth: Google OAuth client via NextAuth
+- Hybrid connectivity: HA VPN + Cloud Router (prod/nonprod shared VPCs)
 
 ---
 
@@ -348,6 +349,35 @@ Several Next.js API routes power the dashboards:
 
 - Cloud SQL instance: `accessible-software-db` (private IP only) with database `appdb`, users `postgres` and `appuser`.
 - A small Cloud Run API (`cloud-run-api`) connects to Cloud SQL over private IP using the Cloud SQL Connector. It is protected by an `X-API-Key` header and intended to be called from CI/Netlify via HTTPS instead of direct DB access.
+
+### Hybrid connectivity (HA VPN)
+
+- VPCs/subnets (custom):
+  - `vpc-prod-shared`: `subnet-prod-1` (us-south1, 10.0.0.0/24), `subnet-prod-2` (us-west1, 172.16.0.0/24)
+  - `vpc-nonprod-shared`: `subnet-non-prod-1` (us-central1, 10.20.0.0/24), `subnet-non-prod-2` (us-east1, 10.20.1.0/24)
+- External VPN gateways (peer side):
+  - `codex-prod` interfaces: 34.174.57.86, 34.174.118.154, 136.118.94.166, 34.127.118.116
+  - `codex-nonprod` interfaces: 35.238.111.73, 34.172.154.25, 34.23.202.20, 34.26.50.139
+- HA VPN gateways (GCP side):
+  - Prod: `prod-us-south1-gateway` (if0 34.157.46.58, if1 34.157.174.136), `prod-us-west1-gateway` (if0 34.157.118.77, if1 35.220.53.232)
+  - Nonprod: `nonprod-us-central1-gateway` (if0 35.242.125.202, if1 34.153.243.133), `nonprod-us-east1-gateway` (if0 34.152.72.127, if1 34.177.46.140)
+- ASNs: prod Cloud ASN 65010 / peer ASN 65020; nonprod Cloud ASN 65030 / peer ASN 65040.
+- BGP /30s (GCP/peer):
+  - prod us-south1 tnl0 169.254.10.1/30 (peer .2); tnl1 169.254.10.5/30 (peer .6)
+  - prod us-west1 tnl0 169.254.11.1/30 (peer .2); tnl1 169.254.11.5/30 (peer .6)
+  - nonprod us-central1 tnl0 169.254.20.1/30 (peer .2); tnl1 169.254.20.5/30 (peer .6)
+  - nonprod us-east1 tnl0 169.254.21.1/30 (peer .2); tnl1 169.254.21.5/30 (peer .6)
+- PSKs are stored in `apps/web/.env` (gitignored). Use IKEv2.
+- What’s left on the peer side: set the peer devices to use the above interface IPs, ASNs, PSKs, and /30 link IPs, then advertise on-prem prefixes. BGP should form once the peer brings up the tunnels.
+
+#### Peer-side quick checklist (any vendor)
+
+1) Assign the public IPs above to the peer gateway interfaces (or NAT them to the VPN device).
+2) Create two tunnels per region; set IKEv2 and the matching PSK for each tunnel.
+3) Set peer ASN to 65020 (prod) or 65040 (nonprod); Cloud side is 65010/65030.
+4) Configure BGP neighbors with the /30 link IPs (GCP = `.1`/`.5`, peer = `.2`/`.6` as listed).
+5) Advertise on-prem prefixes; accept/allow GCP prefixes (e.g., 10.0.0.0/24, 172.16.0.0/24, 10.20.0.0/24, 10.20.1.0/24, and Cloud SQL 10.10.188.0/24 as needed).
+6) Enable keepalives/DPD and allow UDP 500/4500 (and ESP if not NAT-T).
 - Cloud Run URL: `https://cloud-run-api-139864076628.us-central1.run.app`
 - API key: set via the `API_KEY` environment variable on the service (see deploy notes below).
 - Serverless VPC connector: `serverless-sql-connector` (us-central1) to reach the private IP DB.
