@@ -342,8 +342,9 @@ Several Next.js API routes power the dashboards:
 - `GET /api/students` - returns a list of students for the admin dashboard. Uses the `User` table when the database is configured; otherwise falls back to `apps/web/data/sampleStudents.json`.
 - `GET /api/modules` - returns a list of modules for the teacher dashboard. Uses the `Module` and `Course` tables when available; otherwise falls back to `apps/web/data/sampleModules.json`.
 - `GET /api/notes` - returns "released materials" for the student dashboard. Uses the `Note`, `Module`, and `Course` tables when available; otherwise falls back to `apps/web/data/sampleNotes.json`.
-- `POST /api/upload` - accepts a file upload and, if `OCR_SERVICE_URL` is configured, forwards the file to the Python OCR service `/ocr` endpoint. Returns basic file metadata and any OCR text received.
+- `POST /api/upload` - accepts a file upload and, if `OCR_SERVICE_URL` is configured, forwards the file to the Python OCR service `/ocr-file` endpoint. Returns basic file metadata and any OCR text received.
 - `POST /api/test-ocr` - calls the OCR service `/health` endpoint (when `OCR_SERVICE_URL` is set) and reports whether OCR is available; otherwise returns a stub message.
+- `GET /api/status` - returns a summary of app/DB/OCR health (used by admin dashboards and for quick smoke checks).
 
 ### Cloud Run app and storage
 
