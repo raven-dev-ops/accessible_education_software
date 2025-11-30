@@ -1,0 +1,31 @@
+steps:
+  # Build web image
+  - name: gcr.io/cloud-builders/docker
+    id: build-web
+    args:
+      [
+        "build",
+        "-f",
+        "apps/web/Dockerfile",
+        "-t",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-web:$COMMIT_SHA",
+        ".",
+      ]
+
+  # Build backend (OCR/logic) image
+  - name: gcr.io/cloud-builders/docker
+    id: build-backend
+    args:
+      [
+        "build",
+        "-f",
+        "apps/ocr_service/Dockerfile",
+        "-t",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-backend:$COMMIT_SHA",
+        ".",
+      ]
+
+images:
+  - "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-web:$COMMIT_SHA"
+  - "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-backend:$COMMIT_SHA"
+

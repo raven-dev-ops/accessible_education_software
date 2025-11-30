@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accessible-web
+  namespace: accessible
+  labels:
+    app: accessible-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: accessible-web
+  template:
+    metadata:
+      labels:
+        app: accessible-web
+    spec:
+      containers:
+        - name: web
+          image: us-central1-docker.pkg.dev/cs-poc-kvjwpp97kjozemn894cmvvg/cloud-run-source-deploy/accessible-web:latest
+          ports:
+            - containerPort: 8080
+          env:
+            # These should ultimately come from ConfigMaps/Secrets.
+            - name: PORT
+              value: "8080"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: accessible-web
+  namespace: accessible
+  labels:
+    app: accessible-web
+spec:
+  type: LoadBalancer
+  selector:
+    app: accessible-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+
