@@ -39,14 +39,15 @@ class OCRRequest(BaseModel):
 
 
 class LogicRequest(BaseModel):
-  """Generic payload for custom backend logic.
+    """Generic payload for custom backend logic.
 
-  This is intentionally simple: you can extend it in-place
-  as your project grows (e.g., add specific fields for
-	  grading, normalization, or routing decisions).
-	  """
-	  payload: dict[str, Any] | None = None
-	  tags: list[str] | None = None
+    This is intentionally simple: you can extend it in-place
+    as your project grows (e.g., add specific fields for
+    grading, normalization, or routing decisions).
+    """
+
+    payload: dict[str, Any] | None = None
+    tags: list[str] | None = None
 
 
 def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
