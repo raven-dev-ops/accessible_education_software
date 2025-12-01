@@ -329,7 +329,7 @@ function TeacherPage() {
             setModules(sampleModules);
             setModulesError(null);
           } else {
-            setModulesError("Modules unavailable (samples disabled).");
+            setModulesError("Modules unavailable.");
           }
           setModulesLoading(false);
           return;
@@ -344,7 +344,7 @@ function TeacherPage() {
             setModulesError(null);
           } else {
             setModules([]);
-            setModulesError("No modules yet (samples disabled).");
+            setModulesError("No modules yet.");
           }
         }
       } catch (error) {
@@ -353,7 +353,7 @@ function TeacherPage() {
             setModules(sampleModules);
             setModulesError(null);
           } else {
-            setModulesError("Failed to load modules (samples disabled).");
+            setModulesError("Failed to load modules.");
           }
         }
       } finally {
@@ -463,6 +463,8 @@ function TeacherPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unauthorized, allowSamples]);
 
+  const effectiveModules = modules.length ? modules : allowSamples ? sampleModules : [];
+
   // Keep selectedModuleId aligned with the loaded module list
   useEffect(() => {
     if (modulesLoading || !modules.length) return;
@@ -499,7 +501,7 @@ function TeacherPage() {
     setChatInput("");
   };
 
-  const availableModules = modules.length ? modules : allowSamples ? sampleModules : [];
+  const availableModules = effectiveModules;
   const selectedModule =
     availableModules.find((m) => m.id === selectedModuleId) || availableModules[0];
 
@@ -600,12 +602,17 @@ function TeacherPage() {
               className="w-full border rounded px-3 py-2 bg-white dark:bg-slate-800"
               value={selectedModuleId}
               onChange={(e) => setSelectedModuleId(e.target.value)}
+              disabled={modulesLoading || (!effectiveModules.length && !allowSamples)}
             >
-              {(modules.length ? modules : allowSamples ? sampleModules : []).map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.title}
-                </option>
-              ))}
+              {effectiveModules.length > 0 ? (
+                effectiveModules.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.title}
+                  </option>
+                ))
+              ) : (
+                <option value="">No modules available</option>
+              )}
             </select>
           </label>
         </div>
