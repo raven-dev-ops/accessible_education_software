@@ -29,24 +29,23 @@ We will:
 
 ## Current security posture (MVP phase)
 
-At this stage:
+At this stage (current `cs-poc` deployment):
 
 - **Authentication & roles**
-  - Auth0 is used for authentication.
-  - Roles are derived only from trusted token claims (`roles` or a configured namespaced claim), and pages are guarded by role on the frontend.
+  - NextAuth with Google is used for authentication.
+  - Roles are derived from email allowlists (`ADMIN_EMAILS`, `TEACHER_EMAILS`) and pages are guarded by role on the frontend; key API routes also enforce server-side checks when auth is enabled.
 - **Secrets**
-  - All secrets (Auth0, database, OCR endpoints) are provided via environment variables and are never committed to the repository.
+  - All secrets (OAuth, optional database URL, OCR endpoints, API keys) are provided via environment variables and are never committed to the repository.
 - **Uploads & OCR**
   - File uploads are accepted via Next.js API routes and forwarded to the OCR service only when `OCR_SERVICE_URL` is configured.
-  - OCR results are currently returned to the caller and/or logged in development; persistence and access control will be tightened as we move toward production.
-- **Database**
-  - Prisma is used as an ORM for PostgreSQL.
-  - API routes that touch the database handle errors gracefully and fall back to mock data; no stack traces are returned to clients.
+  - OCR results are currently returned to the caller and/or logged in development; persistence is limited to Cloud Storage attachments/exports when a bucket is configured.
+- **Database / storage**
+  - Prisma and PostgreSQL are documented as an optional data layer; in the active `cs-poc` deployment **no relational database is configured** and Next.js API routes fall back to bundled sample JSON, with Cloud Storage as the only persistence for attachments/exports.
   - Runtime JavaScript/TypeScript dependencies are kept free of known vulnerabilities (`npm audit --omit=dev` reports 0 issues); any remaining advisories relate only to development tooling (for example, linting packages) and are tracked here and/or in Dependabot with appropriate dismissal reasons.
 
 Before any production deployment with real users or student data, we plan to:
 
 - Add stricter access control on API routes in addition to UI-level guards.
 - Review file upload limits and content validation.
-- Harden the OCR service deployment (network boundaries, authentication, and rate limiting).
+- Harden the OCR service and web deployments (network boundaries, authentication, and rate limiting) on GKE/Cloud Run.
 - Conduct a targeted security review, including dependency and configuration auditing.
