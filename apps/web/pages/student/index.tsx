@@ -1018,7 +1018,7 @@ function StudentPage() {
                     </option>
                   ))
                 ) : (
-                  <option value="Calculus I">Calculus I</option>
+                  <option value="">No modules available</option>
                 )}
               </select>
             </div>
