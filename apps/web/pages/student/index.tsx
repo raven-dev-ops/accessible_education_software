@@ -847,19 +847,35 @@ function StudentPage() {
     </label>
   ) : undefined;
 
+  const fromAdmin = router.query.fromAdmin === "1";
+
+  const secondaryNav = (
+    <>
+      {previewNav}
+      {fromAdmin && (
+        <Link
+          href="/admin"
+          className="px-3 py-2 rounded-lg bg-slate-200 text-slate-900 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+        >
+          Close view (back to Admin)
+        </Link>
+      )}
+    </>
+  );
+
   const displayName = session?.user?.name?.trim() || "Sample Student";
   const displayInitial = displayName ? displayName.charAt(0).toUpperCase() : "S";
 
   if (unauthorized) {
     return (
-      <Layout title="Student Dashboard" secondaryNav={previewNav}>
+      <Layout title="Student Dashboard" secondaryNav={secondaryNav}>
         <p role="alert">You do not have access to this page. Redirecting...</p>
       </Layout>
     );
   }
 
   return (
-    <Layout title="Student Dashboard" secondaryNav={previewNav}>
+    <Layout title="Student Dashboard" secondaryNav={secondaryNav}>
       <div
         className={`space-y-8 ${highContrast ? "bg-black text-yellow-100" : ""}`}
         style={{ fontSize: `${fontScale}rem`, lineHeight: 1.6 }}

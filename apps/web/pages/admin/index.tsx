@@ -850,18 +850,18 @@ function AdminPage() {
               </div>
               <div className="flex flex-col items-end gap-2 text-right">
                 <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  {dbEnabled ? "Production view" : "Demo view (no database)"}
+                  {dbEnabled ? "Production view" : "Admin view"}
                 </span>
                 {!preview ? (
                   <>
                     <Link
-                      href="/student"
+                      href="/student?fromAdmin=1"
                       className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900"
                     >
                       View as Student
                     </Link>
                     <Link
-                      href="/teacher"
+                      href="/teacher?fromAdmin=1"
                       className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900"
                     >
                       View as Teacher

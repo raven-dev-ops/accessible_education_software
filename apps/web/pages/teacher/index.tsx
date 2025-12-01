@@ -509,9 +509,25 @@ function TeacherPage() {
     </label>
   ) : undefined;
 
+  const fromAdmin = router.query.fromAdmin === "1";
+
+  const secondaryNav = (
+    <>
+      {previewNav}
+      {fromAdmin && (
+        <Link
+          href="/admin"
+          className="px-3 py-2 rounded-lg bg-slate-200 text-slate-900 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+        >
+          Close view (back to Admin)
+        </Link>
+      )}
+    </>
+  );
+
   return (
     <>
-    <Layout title="Teacher Dashboard" secondaryNav={previewNav}>
+    <Layout title="Teacher Dashboard" secondaryNav={secondaryNav}>
       <div className="space-y-8">
         <section
           aria-labelledby="teacher-hero"
