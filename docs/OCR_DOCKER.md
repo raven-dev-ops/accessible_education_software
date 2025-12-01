@@ -1,7 +1,9 @@
 # OCR service Docker packaging (baseline)
 
-This packages `apps/ocr_service` into a simple container for deployment on Cloud Run or similar. The service now
-exposes both OCR endpoints and generic Python logic endpoints, so it can serve as the main backend for the project.
+This packages `apps/ocr_service` into a simple container for deployment
+on Kubernetes (GKE) or Cloud Run. The service exposes both OCR
+endpoints and generic Python logic endpoints, so it can serve as the
+main backend for the project.
 
 ## Example Dockerfile
 ```Dockerfile

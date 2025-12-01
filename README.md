@@ -16,7 +16,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 ## Table of Contents
 
 - [Features](#features)
-  - [Status (v1.1.0)](#status-v110)
+  - [Status (v1.2.0)](#status-v120)
 - [Roles](#roles)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -76,9 +76,9 @@ The system helps **students**, **teachers**, and **site admins** work with handw
   - Role-based routing (Student / Teacher / Admin) derived from email allowlists
 
 - **Monorepo architecture**
-  - **Next.js** frontend: lightweight, accessible UI deployed to **Cloud Run** (`https://accessible-web-139864076628.us-central1.run.app/`)
-  - **Backend OCR service**: Python + Tesseract (deployable to Cloud Run as a separate backend service)
-  - **Object storage**: Cloud Storage bucket for attachments, exports, and backups
+  - **Next.js** frontend: lightweight, accessible UI in `apps/web`, built as a container image and deployed to either **GKE** (`accessible-web` Deployment/Service in `accessible-cluster`, `us-central1-a`) or **Cloud Run** (`accessible-web` in `us-central1`) depending on environment.
+  - **Backend OCR service**: Python + Tesseract in `apps/ocr_service`, packaged as a container for **GKE** (`accessible-backend` Deployment/Service) or Cloud Run when needed.
+  - **Object storage**: Cloud Storage bucket for attachments, exports, and backups (only active storage in the current `cs-poc` deployment).
   - Shared utilities and types for consistency
 
 - **Accessibility-first UI**
@@ -89,9 +89,9 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 ---
 
-## Status (v1.1.0)
+## Status (v1.2.0)
 
-- Version **1.1.0**: Same MVP scope as 1.0.0 (Google OAuth via NextAuth; student/teacher/admin dashboards) with UI polish from 1.0.1, now deployed as a Cloud Run frontend (`accessible-web`) with a Python backend (`accessible-backend`) and Cloud Storage as the only active storage layer (no Cloud SQL in the current cs-poc deployment).
+- Version **1.2.0**: Same MVP scope as 1.0.0 (Google OAuth via NextAuth; student/teacher/admin dashboards) with UI polish from 1.0.1, now fully containerized and deployed to GKE (`accessible-cluster` in `us-central1-a`) as `accessible-web` (Next.js frontend) and `accessible-backend` (Python OCR/logic) services. Cloud Storage remains the only active storage layer in the current `cs-poc` deployment; Cloud SQL and the `cloud-run-api` bridge are kept as documented, optional paths.
 - Student dashboard: low-vision friendly layout, collapsible accessibility widget, TTS sample with voice/volume/rate controls and live word highlighting, Braille preview with liblouis/fallback, OCR MVP demo, and support tickets (including attachments when configured).
   - Teacher dashboard: sample profile, module-aware training checklist (per-equation upload/status/editable OCR text), support ticket review table (view/close/escalate, attachments), course material upload, and AI assistant placeholder.
   - Admin dashboard: system overview cards (student/teacher/admin experience + Cloud Run/backend/OCR health), sample students/uploads/modules, live/preview support tickets, and status cards wired to `/api/*` + `test-ocr`.
@@ -145,8 +145,8 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 **Infrastructure / Deployment**
 
-- Frontend: Google Cloud Run (`accessible-web` service in `us-central1`)
-- Backend OCR / logic services: Google Cloud Run (Python OCR service, optional Node/Express APIs)
+- Primary runtime: Kubernetes (GKE) `accessible-cluster` in `us-central1-a` running the `accessible-web` (Next.js) and `accessible-backend` (Python OCR/logic) Deployments/Services.
+- Alternate runtime: Google Cloud Run (`accessible-web` and `accessible-backend` services in `us-central1`) using the same container images when a serverless target is preferred.
 - Auth: Google OAuth client via NextAuth
 - Hybrid connectivity: HA VPN + Cloud Router (prod/nonprod shared VPCs)
 
@@ -244,7 +244,7 @@ pip install -r apps/ocr_service/requirements.txt
 
 ### Environment variables
 
-Frontend (`apps/web/.env.local` for local, Cloud Run env vars for production):
+Frontend (`apps/web/.env.local` for local, Kubernetes/Cloud Run env vars for production):
 
 - `NEXTAUTH_URL` – site origin (e.g. `http://localhost:3000` or `https://accessible-web-139864076628.us-central1.run.app`).
 - `NEXTAUTH_SECRET` – random long secret for NextAuth session encryption.
@@ -261,7 +261,7 @@ Frontend (`apps/web/.env.local` for local, Cloud Run env vars for production):
 
 ### Run the apps
 
-Additional frontend env flags (set in `apps/web/.env.local` for local development, and in Netlify environment variables for the deployed web app):
+Additional frontend env flags (set in `apps/web/.env.local` for local development, and in your deployment environment for the deployed web app—GKE or Cloud Run):
 
 - `NEXT_PUBLIC_AUTH_ENABLED` - `true`/`1` enables Google login; `false`/unset shows the "Login – Coming Soon" placeholder.
 - `NEXT_PUBLIC_SHOW_STAGING_BANNER` - when enabled, displays a visible "Staging environment – for testing only" banner (use this on the staging Netlify site).
@@ -350,9 +350,10 @@ Several Next.js API routes power the dashboards:
 - `POST /api/test-ocr` - calls the OCR service `/health` endpoint (when `OCR_SERVICE_URL` is set) and reports whether OCR is available; otherwise returns a stub message.
 - `GET /api/status` - returns a summary of app/DB/OCR health (used by admin dashboards and for quick smoke checks).
 
-### Cloud Run app and storage
+### Runtime and storage
 
-- Frontend: `accessible-web` Cloud Run service in `us-central1` at `https://accessible-web-139864076628.us-central1.run.app`.
+- GKE: `accessible-cluster` in `us-central1-a` runs the `accessible-web` (LoadBalancer) and `accessible-backend` (ClusterIP) Deployments/Services using the container images built by `cloudbuild-docker.yaml`.
+- Cloud Run: `accessible-web` and `accessible-backend` services in `us-central1` remain available as an alternate serverless deployment target; they use the same container images but are no longer the primary path for the `cs-poc` environment.
 - No relational database is currently provisioned; Next.js API routes fall back to bundled sample JSON for students/modules/notes when `DATABASE_URL` is unset.
 - Support ticket attachments (when enabled via `GCS_BUCKET` and `GCS_SA_KEY`) are stored in Cloud Storage and served via signed URLs.
 

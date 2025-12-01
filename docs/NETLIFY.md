@@ -1,8 +1,11 @@
 # Netlify production deploy checklist (legacy)
 
-The current production deployment uses Cloud Run for the frontend
-(`accessible-web` in `us-central1`). This document is kept for reference
-in case a Netlify-based deployment is needed again.
+The current `cs-poc` deployment uses container images on GKE
+(`accessible-cluster` in `us-central1-a`, `accessible-web` Service) with
+Cloud Storage as the only active persistence layer. Cloud Run and
+Netlify are both considered legacy/alternate paths at this point. This
+document is kept for reference in case a Netlify-based deployment is
+needed again or for historical context.
 
 Recommended Netlify settings for the Next.js app under `apps/web`:
 

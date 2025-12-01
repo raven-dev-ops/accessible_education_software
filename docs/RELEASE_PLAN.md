@@ -1,21 +1,22 @@
-# Release plan (M10 / v1.0.0 target)
+# Release plan (container/Kubernetes releases)
 
 Pre-flight
-- CI green on main (`.github/workflows/ci.yml`).
-- Netlify env configured (see `docs/NETLIFY.md`); production branch enforcement on.
-- OCR/Cloud Run reachable from Netlify (or fallback behavior documented).
-- Secrets set for auth/DB/AI hooks; no secrets in client bundles.
+- CI green on main (`.github/workflows/ci.yml`, `post-deploy-smoke.yml`).
+- Cloud Build images green (`cloudbuild-docker.yaml`), pushing `accessible-web` and `accessible-backend` to Artifact Registry.
+- GKE manifests up to date (`k8s/namespace.yaml`, `k8s/*-config.yaml`, `k8s/*-deployment.yaml`) and apply cleanly to `accessible-cluster`.
+- Secrets set for auth/AI/infra hooks; no secrets in client bundles or repo.
 
 Cutting a release
-- Tag format: `vX.Y.Z` (or `vX.Y.Z-rcN` for candidates). Current: `v1.0.0`.
+- Tag format: `vX.Y.Z` (or `vX.Y.Z-rcN` for candidates). Current: `v1.2.0`.
 - Verify changelog entry and versions in `package.json` / `apps/web/package.json` if bumping.
-- Push tag → `release-and-package.yml` creates GitHub Release and publishes shared package to GH Packages.
+- Push tag; `release-and-package.yml` creates a GitHub Release and publishes the shared package to GitHub Packages.
 
 Post-release
-- Smoke test production: `/login`, `/student`, `/teacher`, `/admin`.
-- Check Netlify deploy logs for errors; confirm functions directory and publish dir are correct.
-- Monitor OCR/API logs (Cloud Run) for errors; roll back to previous tag if needed.
+- Smoke test production: `/login`, `/student`, `/teacher`, `/admin` on the live frontend (GKE LoadBalancer or Cloud Run URL).
+- Check Cloud Build logs for image builds and confirm new pods are running/Ready in `accessible-cluster` (`kubectl get pods -n accessible`).
+- Monitor OCR/API logs (GKE and/or Cloud Run) for errors; roll back to the previous tag if needed.
 
 Backlog capture
 - Track remaining items in `docs/BACKLOG.md` after feature freeze.
-- For client handover, prepare access list (Netlify, GitHub, Cloud Run, DB) and rotate any temporary secrets.
+- For client handover, prepare access list (GitHub, Cloud Build, GKE, Cloud Run, Cloud Storage, optional DB) and rotate any temporary secrets.
+

@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - Containerized GKE deployment
+
+- Containerize both the Next.js frontend (`apps/web`) and Python OCR/logic backend (`apps/ocr_service`) with dedicated Dockerfiles and a shared Cloud Build config (`cloudbuild-docker.yaml`) that pushes images to Artifact Registry.
+- Add Kubernetes manifests under `k8s/` (namespace, ConfigMaps/Secrets, Deployments, and Services) and deploy the app to a GKE cluster (`accessible-cluster` in `us-central1-a`) with `accessible-web` (LoadBalancer) and `accessible-backend` (ClusterIP) services.
+- Keep Cloud Storage as the only active persistence layer in the `cs-poc` deployment and treat Cloud SQL and the `apps/cloud-run-api` bridge as optional/legacy; docs now call this out explicitly.
+- Refresh README and docs (deployment sections, NETLIFY.md, OCR_DOCKER.md, RELEASE_PLAN.md) to describe the container/Kubernetes path as the primary deployment option, with Netlify/Cloud Run SQL proxy notes preserved for reference.
+
 ## [1.1.0] - Cloud Run app + Python backend
 
 - Deploy the Next.js frontend as a Cloud Run service (`accessible-web` in `us-central1`) and update documentation to treat this as the primary production entrypoint.
