@@ -50,6 +50,14 @@ optionally `bug` / `enhancement`.
   - `npm run test:ocr` (or `pytest` once tests exist).
 - CI will run tests/builds for PRs and block merges on failures.
 
+## Handling Dependabot alerts
+
+- When Dependabot opens an alert for a runtime dependency:
+  - Identify the manifest (`package.json`, `apps/*/requirements.txt`) and the patched version shown in the advisory.
+  - Bump the pinned version in that manifest to the first patched release and run the appropriate install/build locally to confirm it still works.
+  - Commit the change with a clear message (for example, `chore(math-inference): bump transformers to 4.53.0 for Dependabot advisory`) and let CI/Cloud Build rebuild images.
+- For dev-only tooling (linters, test runners), you can either bump versions or, if the impact is acceptable, document the advisory and dismissal reason in `SECURITY.md`.
+
 ## Accessibility first
 
 This project targets blind and low‑vision students. When in doubt:
