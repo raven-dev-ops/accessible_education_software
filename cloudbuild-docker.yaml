@@ -25,6 +25,20 @@ steps:
         ".",
       ]
 
+  # Build math inference image (DeepSeekMath 7B)
+  - name: gcr.io/cloud-builders/docker
+    id: build-math-inference
+    args:
+      [
+        "build",
+        "-f",
+        "apps/math_inference/Dockerfile",
+        "-t",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-math-inference:latest",
+        ".",
+      ]
+
 images:
   - "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-web:latest"
   - "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-backend:latest"
+  - "us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/accessible-math-inference:latest"

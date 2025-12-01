@@ -50,6 +50,20 @@ class LogicRequest(BaseModel):
     tags: list[str] | None = None
 
 
+class MathCleanupRequest(BaseModel):
+    text: str
+    prompt_hint: str | None = None
+    format: str | None = "latex"
+
+
+class MathCleanupResponse(BaseModel):
+    ok: bool
+    cleaned_text: str
+    latex: str | None = None
+    mathml: str | None = None
+    explanation: str | None = None
+
+
 def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
     """Optional API key guard for heavy endpoints.
 
@@ -89,6 +103,35 @@ def maybe_ai_verify(text: str) -> dict | None:
     except Exception:
         logger.exception("AI verification failed")
     return None
+
+
+def maybe_math_cleanup(text: str) -> MathCleanupResponse | None:
+    """Optional math cleanup via DeepSeekMath service.
+
+    When MATH_INFERENCE_URL is set, forward OCR text to the math-inference
+    service running in the cluster (or elsewhere) and return its structured
+    response. If the service is unavailable or returns an error, fall back
+    to the original OCR text.
+    """
+    base_url = os.environ.get("MATH_INFERENCE_URL")
+    if not base_url or not text.strip():
+        return None
+
+    url = base_url.rstrip("/") + "/v1/math-verify"
+    try:
+        resp = requests.post(
+            url,
+            json={"ocr_text": text, "prompt_hint": "calculus_ocr", "format": "latex"},
+            timeout=20,
+        )
+        if not resp.ok:
+            logger.warning("math-inference responded with %s: %s", resp.status_code, resp.text)
+            return None
+        data = resp.json()
+        return MathCleanupResponse(**data)
+    except Exception:
+        logger.exception("math-inference call failed")
+        return None
 
 def is_scanned_pdf(doc: "fitz.Document") -> bool:
     if doc is None or doc.page_count == 0:
@@ -214,7 +257,11 @@ async def run_ocr(file: UploadFile = File(...)) -> JSONResponse:
         try:
             image = Image.open(io.BytesIO(contents))
             text = run_ocr_on_image(image)
-            return JSONResponse(status_code=200, content={"ok": True, "type": "image", "text": text})
+            math = maybe_math_cleanup(text)
+            content: dict[str, Any] = {"ok": True, "type": "image", "text": text}
+            if math:
+                content["math"] = math.dict()
+            return JSONResponse(status_code=200, content=content)
         except Exception:
             logger.exception("OCR failed while processing uploaded image")
             return JSONResponse(

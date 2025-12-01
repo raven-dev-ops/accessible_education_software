@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accessible-math-inference
+  namespace: accessible
+  labels:
+    app: accessible-math-inference
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accessible-math-inference
+  template:
+    metadata:
+      labels:
+        app: accessible-math-inference
+    spec:
+      containers:
+        - name: math-inference
+          image: us-central1-docker.pkg.dev/cs-poc-kvjwpp97kjozemn894cmvvg/cloud-run-source-deploy/accessible-math-inference:latest
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          env:
+            - name: MATH_MODEL_ID
+              value: "deepseek-ai/deepseek-math-7b-instruct"
+            - name: MATH_MODEL_DEVICE
+              value: "cuda"
+      # Ensure this pod only schedules on GPU nodes (label your GPU node pool accordingly)
+      nodeSelector:
+        cloud.google.com/gke-accelerator: "nvidia-l4"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: math-inference
+  namespace: accessible
+  labels:
+    app: accessible-math-inference
+spec:
+  type: ClusterIP
+  selector:
+    app: accessible-math-inference
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+
