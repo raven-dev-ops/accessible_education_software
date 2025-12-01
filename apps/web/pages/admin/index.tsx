@@ -859,13 +859,25 @@ function AdminPage() {
                 {!preview ? (
                   <>
                     <Link
-                      href="/student?fromAdmin=1"
+                      href={{
+                        pathname: "/student",
+                        query: {
+                          fromAdmin: "1",
+                          samples: useSamples ? "1" : "0",
+                        },
+                      }}
                       className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900"
                     >
                       View as Student
                     </Link>
                     <Link
-                      href="/teacher?fromAdmin=1"
+                      href={{
+                        pathname: "/teacher",
+                        query: {
+                          fromAdmin: "1",
+                          samples: useSamples ? "1" : "0",
+                        },
+                      }}
                       className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900"
                     >
                       View as Teacher

@@ -187,7 +187,9 @@ function TeacherPage() {
   const { data: session, status } = useSession();
   const preview = router.query.preview === "1";
   const showPreviewNav = router.query.showPreviewNav === "1";
-  const allowSamples = preview || showPreviewNav || allowSampleEnv;
+  const samplesParam = router.query.samples;
+  const samplesFromAdminOff = samplesParam === "0";
+  const allowSamples = samplesFromAdminOff ? false : preview || showPreviewNav || allowSampleEnv;
   const [unauthorized, setUnauthorized] = useState(false);
   const [modules, setModules] = useState<ModuleSummary[]>([]);
   const [modulesLoading, setModulesLoading] = useState(true);

@@ -105,7 +105,9 @@ function StudentPage() {
   const { data: session, status } = useSession();
   const preview = router.query.preview === "1";
   const showPreviewNav = router.query.showPreviewNav === "1";
-  const allowSamples = preview || allowSampleEnv;
+  const samplesParam = router.query.samples;
+  const samplesFromAdminOff = samplesParam === "0";
+  const allowSamples = samplesFromAdminOff ? false : preview || allowSampleEnv;
   const [unauthorized, setUnauthorized] = useState(false);
   const [fontScale, setFontScale] = useState(1.05);
   const [highContrast, setHighContrast] = useState(false);
