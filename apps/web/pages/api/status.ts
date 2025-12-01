@@ -16,6 +16,7 @@ type StatusResponse = {
   dbEnabled: boolean;
   ocr: "not_configured" | "available" | "unavailable" | "error";
   storage: StorageStatus;
+  math: "not_configured" | "available" | "unavailable" | "error";
   message?: string;
   timestamp: string;
   qa: QaStatus;
@@ -39,9 +40,11 @@ export default async function handler(
   const ocrServiceUrl = process.env.OCR_SERVICE_URL;
   const ocrApiKey = process.env.OCR_SERVICE_API_KEY;
   const bucketName = process.env.GCS_BUCKET;
+  const mathInferenceUrl = process.env.MATH_INFERENCE_URL;
 
   let ocrState: StatusResponse["ocr"] = "not_configured";
   let storageState: StorageStatus = "not_configured";
+  let mathState: StatusResponse["math"] = "not_configured";
   let message: string | undefined;
 
   const qaStatusEnv = (process.env.QA_STATUS || "unknown").toLowerCase();
@@ -97,12 +100,35 @@ export default async function handler(
     }
   }
 
+  // Math inference (DeepSeekMath) health
+  if (!mathInferenceUrl) {
+    mathState = "not_configured";
+  } else {
+    try {
+      const url = mathInferenceUrl.replace(/\/$/, "") + "/health";
+      const response = await fetch(url);
+      if (!response.ok) {
+        mathState = "error";
+      } else {
+        const data = (await response.json()) as { status?: string; component?: string };
+        mathState =
+          data.status === "ok" && data.component === "math-inference"
+            ? "available"
+            : "unavailable";
+      }
+    } catch (err) {
+      console.error("Error calling math inference service from /api/status:", err);
+      mathState = "error";
+    }
+  }
+
   return res.status(200).json({
     ok: true,
     app: "ok",
     dbEnabled,
     ocr: ocrState,
     storage: storageState,
+    math: mathState,
     message,
     timestamp: new Date().toISOString(),
     qa,
