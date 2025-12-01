@@ -202,7 +202,7 @@ function TeacherPage() {
   const [modules, setModules] = useState<ModuleSummary[]>([]);
   const [modulesLoading, setModulesLoading] = useState(true);
   const [modulesError, setModulesError] = useState<string | null>(null);
-  const [selectedModuleId, setSelectedModuleId] = useState<string | number>("calc1");
+  const [selectedModuleId, setSelectedModuleId] = useState<string | number>("");
   const [ticketDescription, setTicketDescription] = useState("");
   const [ticketList, setTicketList] = useState<TeacherTicket[]>([]);
   const [ticketsLoading, setTicketsLoading] = useState(true);
@@ -462,6 +462,16 @@ function TeacherPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unauthorized, allowSamples]);
+
+  // Keep selectedModuleId aligned with the loaded module list
+  useEffect(() => {
+    if (modulesLoading || !modules.length) return;
+    setSelectedModuleId((current) => {
+      if (!current) return modules[0].id;
+      const exists = modules.some((m) => String(m.id) === String(current));
+      return exists ? current : modules[0].id;
+    });
+  }, [modules, modulesLoading]);
 
   if (unauthorized) {
     return (

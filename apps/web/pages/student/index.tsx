@@ -144,7 +144,7 @@ function StudentPage() {
   const [brailleError, setBrailleError] = useState<string | null>(null);
   const [brailleLoading, setBrailleLoading] = useState(false);
   const [widgetOpen, setWidgetOpen] = useState(true);
-  const [selectedModuleId, setSelectedModuleId] = useState<string>("Calculus I");
+  const [selectedModuleId, setSelectedModuleId] = useState<string>("");
   const [ticketDescription, setTicketDescription] = useState("");
   const [ticketList, setTicketList] = useState<
     { id: string; title: string; detail: string; createdAt: string }[]
@@ -325,6 +325,16 @@ function StudentPage() {
       cancelled = true;
     };
   }, [allowSamples]);
+
+  // Keep selectedModuleId aligned with the loaded module list
+  useEffect(() => {
+    if (modulesLoading || !modules.length) return;
+    setSelectedModuleId((current) => {
+      if (!current) return String(modules[0].id);
+      const exists = modules.some((m) => String(m.id) === String(current));
+      return exists ? current : String(modules[0].id);
+    });
+  }, [modules, modulesLoading]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
