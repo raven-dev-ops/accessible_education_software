@@ -2,7 +2,7 @@
 
 > AI-powered, accessible STEM note system that turns handwritten calculus notes into readable, listenable content for blind and low-vision students.
 
-`accessible-education-software` is an AI-assisted accessibility platform focused on college-level STEM courses, starting with **Calculus I** (see the content repo at https://github.com/raven-dev-ops/ocr_calculus_1).
+`accessible-education-software` is an AI-assisted accessibility platform focused on college-level STEM courses, starting with **Calculus I** and designed to extend to additional STEM modules (such as Linear Algebra and Physics).
 
 The system helps **students**, **teachers**, and **site admins** work with handwritten notes and course materials by:
 
