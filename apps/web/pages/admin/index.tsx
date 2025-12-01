@@ -629,9 +629,12 @@ function AdminPage() {
       <button
         type="button"
         onClick={() => setUseSamples((v) => !v)}
-        className="px-3 py-2 rounded border border-slate-300 dark:border-slate-700 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+        className="px-3 py-2 rounded-full border border-slate-300 dark:border-slate-700 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
       >
-        Samples: {useSamples ? "On" : "Off"}
+        Sample data:{" "}
+        <span className={useSamples ? "font-semibold text-emerald-600 dark:text-emerald-400" : "font-semibold"}>
+          {useSamples ? "On" : "Off"}
+        </span>
       </button>
     ) : null;
 
@@ -827,7 +830,7 @@ function AdminPage() {
   ];
 
   return (
-    <Layout title="Admin Dashboard" secondaryNav={previewNav}>
+    <Layout title="Admin Dashboard" secondaryNav={secondaryNav}>
       <main className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-6 transition-colors">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-md p-6 border border-slate-100 dark:border-slate-800">
@@ -927,17 +930,29 @@ function AdminPage() {
                       {section.status.label}
                     </span>
                   </div>
-                  <div className="relative h-20 flex items-end gap-1" aria-hidden="true">
-                    {section.bars.map((height, idx) => (
-                      <div
-                        key={`${section.key}-bar-${idx}`}
-                        className={`flex-1 rounded-full bg-gradient-to-t ${section.barGradient} transition-all`}
-                        style={{ height: `${height}%` }}
-                      />
-                    ))}
-                    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent dark:via-white/20" />
-                  </div>
-                  <div className={`h-1 w-full rounded-full bg-gradient-to-r ${section.sparkline}`} aria-hidden="true" />
+                  {section.bars.length > 0 && (
+                    <div className="mt-3 space-y-2" aria-hidden="true">
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                        <span>Composite health</span>
+                        <span>
+                          {Math.round(
+                            section.bars.reduce((sum, v) => sum + v, 0) / section.bars.length
+                          )}
+                          %
+                        </span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                        <div
+                          className={`h-2 rounded-full bg-gradient-to-r ${section.barGradient}`}
+                          style={{
+                            width: `${Math.round(
+                              section.bars.reduce((sum, v) => sum + v, 0) / section.bars.length
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                   <dl className="space-y-1 text-sm">
                     {section.stats.map((stat) => (
                       <div key={`${section.key}-${stat.label}`} className="flex justify-between">
