@@ -15,14 +15,14 @@ All notable changes to this project will be documented in this file.
 - Containerize both the Next.js frontend (`apps/web`) and Python OCR/logic backend (`apps/ocr_service`) with dedicated Dockerfiles and a shared Cloud Build config (`cloudbuild-docker.yaml`) that pushes images to Artifact Registry.
 - Add Kubernetes manifests under `k8s/` (namespace, ConfigMaps/Secrets, Deployments, and Services) and deploy the app to a GKE cluster (`accessible-cluster` in `us-central1-a`) with `accessible-web` (LoadBalancer) and `accessible-backend` (ClusterIP) services.
 - Keep Cloud Storage as the only active persistence layer in the `cs-poc` deployment and treat Cloud SQL and the `apps/cloud-run-api` bridge as optional/legacy; docs now call this out explicitly.
-- Refresh README and docs (deployment sections, NETLIFY.md, OCR_DOCKER.md, RELEASE_PLAN.md) to describe the container/Kubernetes path as the primary deployment option, with Netlify/Cloud Run SQL proxy notes preserved for reference.
+- Refresh README and docs (deployment sections, OCR_DOCKER.md, RELEASE_PLAN.md) to describe the container/Kubernetes path as the primary deployment option, with Cloud Run SQL proxy notes preserved for reference.
 
 ## [1.1.0] - Cloud Run app + Python backend
 
 - Deploy the Next.js frontend as a Cloud Run service (`accessible-web` in `us-central1`) and update documentation to treat this as the primary production entrypoint.
 - Deploy the Python FastAPI service in `apps/ocr_service` as a Cloud Run backend (`accessible-backend`) exposing OCR endpoints plus generic logic endpoints (`/logic/health`, `/logic/echo`) for project-specific processing.
 - Remove Cloud SQL from the `cs-poc` deployment: clear `DATABASE_URL` in `apps/web/.env` so Next.js APIs run in demo/sample mode and rely only on Cloud Storage for durable data (attachments/exports); keep Prisma/DB docs as a future path.
-- Refresh README and docs (`docs/LEGAL.md`, `docs/NETLIFY.md`, `docs/README.md`, `docs/OCR_DOCKER.md`) to emphasise one frontend (Cloud Run), one backend (Cloud Run Python service), and Cloud Storage as the current storage layer; mark Netlify and Cloud Run SQL proxy as legacy/optional.
+- Refresh README and docs (`docs/LEGAL.md`, `docs/README.md`, `docs/OCR_DOCKER.md`) to emphasise one frontend (Cloud Run), one backend (Cloud Run Python service), and Cloud Storage as the current storage layer; mark the Cloud Run SQL proxy as legacy/optional.
 - Bump versions to 1.1.0 to reflect the new deployment architecture without changing core user-facing features.
 
 ## [1.0.1] - UI polish (TTS/AI)
@@ -52,8 +52,8 @@ All notable changes to this project will be documented in this file.
 ## [0.2.0] - Day 5 auth swap
 
 - Replace Auth0 with NextAuth + Google provider (new `/api/auth/[...nextauth].ts`, email allowlists for admin/teacher roles, login/logout flows updated across pages/components).
-- Update env templates and Netlify guidance for NextAuth/Google (`NEXTAUTH_URL/SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `ADMIN_EMAILS`, `TEACHER_EMAILS`, `NEXT_PUBLIC_AUTH_ENABLED`).
-- Provision Cloud SQL Postgres instance (private IP) and document proxy requirement for Netlify access.
+- Update env templates for NextAuth/Google (`NEXTAUTH_URL/SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `ADMIN_EMAILS`, `TEACHER_EMAILS`, `NEXT_PUBLIC_AUTH_ENABLED`).
+- Provision Cloud SQL Postgres instance (private IP) and document proxy requirements.
 
 ## [0.1.5] - Day 4 data layer
 
@@ -82,8 +82,7 @@ All notable changes to this project will be documented in this file.
 ## [0.1.1] - Day 2 security & docs
 
 - Document security posture and CodeQL/code scanning setup in `README.md`.
-- Add `NEXT_PUBLIC_AUTH_ENABLED` flag and document how to keep the Netlify login page in "Coming Soon" mode until Auth0 is wired.
-- Update `.env.local.example` and `netlify.toml` with the new auth toggle and environment variable guidance.
+- Add `NEXT_PUBLIC_AUTH_ENABLED` flag and document how to keep the login page in "Coming Soon" mode until Auth is wired.
 - Mitigate the `glob` advisory in the dev toolchain (ESLint) while keeping runtime dependencies free of known vulnerabilities (`npm audit --omit=dev` clean).
 
 ## [0.1.0] - Day 2
@@ -102,9 +101,9 @@ All notable changes to this project will be documented in this file.
   - Live alerts for DB/Braille/ticket status; attachment previews in admin.
 - Backend:
   - OCR service handles text vs scanned PDFs (PyMuPDF + Tesseract) and optional AI verification hook.
-  - Cloud Run/Netlify guidance, rate-limited Cloud Run API, and Prisma-backed data models.
+  - Cloud Run guidance, rate-limited Cloud Run API, and Prisma-backed data models.
 - DevOps/Docs:
   - CI lint/builds web and syntax-checks OCR; release workflow publishes to GH Packages.
-  - Deploy/infra guides (Netlify, OCR Docker, release plan, onboarding, backlog).
+  - Deploy/infra guides (OCR Docker, release plan, onboarding, backlog).
 
 

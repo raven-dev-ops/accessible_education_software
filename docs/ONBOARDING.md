@@ -13,10 +13,8 @@
 4) CI/Release
    - CI: `.github/workflows/ci.yml` (lint/build web, OCR syntax check).
    - Release: tags trigger `release-and-package.yml` (GH Packages publish, release notes).
-5) Netlify
-   - See `docs/NETLIFY.md` for build/env settings; enforce production branch deploys.
-6) Access & roles
+5) Access & roles
    - Admin/teacher/student roles determined by email allowlists in env vars.
-7) Security
+6) Security
    - Keep secrets in env vars or secrets manager; avoid committing `.env`.
-   - Prefer Workload Identity/Cloud Run for DB access from Netlify instead of direct DB connections.
+   - Prefer Workload Identity/Cloud Run or GKE for backend access instead of direct DB connections from the client.

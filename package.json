@@ -37,7 +37,6 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
-    "@netlify/plugin-nextjs": "^5.15.1",
     "tmp": "0.2.5"
   }
 }

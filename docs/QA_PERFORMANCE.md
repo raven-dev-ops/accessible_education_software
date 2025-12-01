@@ -14,7 +14,7 @@
 - AI verify hook: set `AI_VERIFY_URL`/`AI_VERIFY_API_KEY` to exercise optional verification; ensure failures don’t break OCR response.
 
 ## Performance notes
-- Keep Netlify builds lean: base `apps/web`, publish `.next`, enable build cache if available.
+- Keep web builds lean: base `apps/web`, publish `.next`, enable build cache if available.
 - API calls: student/teacher/admin pages fallback to samples if API/DB unavailable; monitor `/api/notes`, `/api/students`, `/api/uploads`.
 - Consider adding Lighthouse/AXE in CI for perf/a11y budgets.
 

@@ -404,7 +404,7 @@ Several Next.js API routes power the dashboards:
 
 ### Workload Identity Federation (GitHub Actions)
 
-If you use Netlify as a frontend host, note that it cannot emit OIDC tokens; keyless access to Cloud Run is instead provided through GitHub Actions OIDC:
+If you use a non-GCP frontend host, note that it may not emit OIDC tokens; keyless access to Cloud Run is instead provided through GitHub Actions OIDC:
 
 - WIF pool/provider: `gh-pool` / `gh-provider` (issuer `https://token.actions.githubusercontent.com`) with condition `attribute.repository=='raven-dev-ops/accessible_education_software'`.
 - Service account for invocation: `cloud-run-invoker@cs-poc-kvjwpp97kjozemn894cmvvg.iam.gserviceaccount.com` (roles: `run.invoker`, `iam.workloadIdentityUser` bound to the GitHub repo).
@@ -489,7 +489,6 @@ The detailed day-by-day plan and milestone goals are reflected in GitHub milesto
 
 See also:
 - `docs/M4.md` for database schema and Braille prototype notes.
-- `docs/NETLIFY.md` for production Netlify settings.
 - `docs/OCR_DOCKER.md` for packaging the OCR service.
 - `docs/ACCESSIBILITY.md` for current accessibility posture and testing notes.
 - `docs/A11Y_AUDIT.md` for WCAG audit notes and next steps.

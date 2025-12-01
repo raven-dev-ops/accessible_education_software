@@ -1,7 +1,7 @@
 # Backlog (post-feature-freeze)
 
 Near-term
-- Wire real OCR endpoint/proxy to Netlify (via Cloud Run API) and remove sample fallbacks.
+- Wire real OCR endpoint/proxy end-to-end and remove sample fallbacks.
 - Add automated AXE/Pa11y checks and Lighthouse budget to CI.
 - Improve math speech rules (nemeth/MathML) and TTS voice selection persistence.
 - Attachment previews for admin/teacher tickets with inline thumbnails (done for admin; extend elsewhere).

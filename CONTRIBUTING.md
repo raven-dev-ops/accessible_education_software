@@ -25,7 +25,7 @@ We use a small, focused label set:
 - `frontend` – Next.js UI, dashboards, theming, client logic.
 - `backend-ocr` – Python OCR service, Tesseract, AI hooks.
 - `a11y` – Accessibility (WCAG, screen readers, Braille, keyboard flows).
-- `devops` – CI/CD, Netlify, Docker, release automation.
+- `devops` – CI/CD, GKE/Cloud Run, Docker, release automation.
 - `docs` – README, guides, onboarding, legal/policy docs.
 
 Default GitHub labels like `bug`, `enhancement` and `documentation` are
@@ -60,4 +60,3 @@ This project targets blind and low‑vision students. When in doubt:
 
 If you are unsure about an accessibility trade‑off, capture it in the
 relevant `a11y` issue and leave a note in the PR.
-
