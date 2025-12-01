@@ -43,6 +43,9 @@ At this stage (current `cs-poc` deployment):
   - Prisma and PostgreSQL are documented as an optional data layer; in the active `cs-poc` deployment **no relational database is configured** and Next.js API routes fall back to bundled sample JSON, with Cloud Storage as the only persistence for attachments/exports.
   - Runtime JavaScript/TypeScript dependencies are kept free of known vulnerabilities (`npm audit --omit=dev` reports 0 issues); any remaining advisories relate only to development tooling (for example, linting packages) and are tracked here and/or in Dependabot with appropriate dismissal reasons.
 
+- **Math inference (DeepSeekMath)**
+  - The math inference service (`apps/math_inference`) uses pinned versions of `transformers` and related libraries. When Dependabot reports security advisories (for example, ReDoS issues in specific `transformers` versions), the pinned version is updated to the first patched release (currently `transformers==4.53.0`), and the Docker image is rebuilt via Cloud Build. Future advisories for this service should be handled by bumping the pinned versions in `apps/math_inference/requirements.txt` and redeploying.
+
 Before any production deployment with real users or student data, we plan to:
 
 - Add stricter access control on API routes in addition to UI-level guards.
