@@ -166,11 +166,11 @@ At a high level:
   - Converts PDFs to images as needed
   - Runs OCR with Tesseract (via PyTesseract)
   - (Planned) Calls AI models to verify and improve OCR output
-  - Stores metadata and text in Postgres
+  - Can store metadata and text in Postgres when a database is configured; in the current `cs-poc` deployment, durable data is limited to Cloud Storage attachments/exports and API routes fall back to bundled sample JSON.
 
-- **PostgreSQL**
-  - Users, roles, and profiles
-  - Courses/modules (e.g. “Calculus I”)
+- **PostgreSQL (optional data layer)**
+  - When enabled, stores users, roles, and profiles
+  - Courses/modules (e.g. "Calculus I")
   - Notes and OCR outputs
   - Release schedules and logs
 
@@ -254,7 +254,7 @@ Frontend (`apps/web/.env.local` for local, Kubernetes/Cloud Run env vars for pro
 - `NEXT_PUBLIC_SHOW_STAGING_BANNER` – show a visible "staging" banner on that deploy.
 - `NEXT_PUBLIC_ENV_LABEL` – optional label shown on `/status` (e.g. `staging`, `prod-coming-soon`, `local`).
 - `OCR_SERVICE_URL` – base URL for the Python OCR service (e.g. `http://localhost:8000`).
-- `DATABASE_URL` – PostgreSQL connection string used by Prisma. Cloud SQL is private-IP only; use Cloud SQL Auth Proxy/connector from Netlify/functions or a reachable proxy endpoint.
+- `DATABASE_URL` - PostgreSQL connection string used by Prisma for optional relational storage (local Postgres or Cloud SQL via connector/proxy). In the current `cs-poc` deployment this is left unset so APIs run in demo/sample mode and Cloud Storage is the only active persistence layer.
 - `BRAILLE_ENGINE` (optional) – set to `liblouis` to enable server-side liblouis/Nemeth output for `/api/braille`; defaults to the fallback Grade 1 mapper.
 - `BRAILLE_LIBLOUIS_TABLE` (optional) – liblouis table to use (e.g. `nemeth`); defaults to `nemeth` when `BRAILLE_ENGINE=liblouis`.
 - `BRAILLE_LIBLOUIS_BIN` (optional) – path to the `lou_translate` binary if it is not on your PATH.
@@ -264,7 +264,7 @@ Frontend (`apps/web/.env.local` for local, Kubernetes/Cloud Run env vars for pro
 Additional frontend env flags (set in `apps/web/.env.local` for local development, and in your deployment environment for the deployed web app—GKE or Cloud Run):
 
 - `NEXT_PUBLIC_AUTH_ENABLED` - `true`/`1` enables Google login; `false`/unset shows the "Login – Coming Soon" placeholder.
-- `NEXT_PUBLIC_SHOW_STAGING_BANNER` - when enabled, displays a visible "Staging environment – for testing only" banner (use this on the staging Netlify site).
+- `NEXT_PUBLIC_SHOW_STAGING_BANNER` - when enabled, displays a visible "Staging environment – for testing only" banner (use this on any non-production environment).
 - `NEXT_PUBLIC_ENV_LABEL` - optional string used by `/status` to identify the environment (for example `staging`, `prod-coming-soon`, or `local`).
 
 Run the web app (Next.js dev server):
@@ -391,7 +391,7 @@ Several Next.js API routes power the dashboards:
 
 ### Workload Identity Federation (GitHub Actions)
 
-Netlify cannot emit OIDC tokens, so keyless access is provided through GitHub Actions OIDC:
+If you use Netlify as a frontend host, note that it cannot emit OIDC tokens; keyless access to Cloud Run is instead provided through GitHub Actions OIDC:
 
 - WIF pool/provider: `gh-pool` / `gh-provider` (issuer `https://token.actions.githubusercontent.com`) with condition `attribute.repository=='raven-dev-ops/accessible_education_software'`.
 - Service account for invocation: `cloud-run-invoker@cs-poc-kvjwpp97kjozemn894cmvvg.iam.gserviceaccount.com` (roles: `run.invoker`, `iam.workloadIdentityUser` bound to the GitHub repo).
@@ -439,7 +439,7 @@ Security is treated as a first-class concern even during the MVP phase:
 - GitHub CodeQL is configured via `.github/workflows/codeql.yml` to automatically scan the JavaScript/TypeScript (Next.js) and Python (OCR service) code for common vulnerabilities and coding errors on pushes, pull requests, and a weekly schedule.
 - Dependencies are monitored with `npm audit`; production dependencies are currently free of known vulnerabilities, and the `glob` advisory affecting a dev-only ESLint toolchain is mitigated by a top-level override in `package.json`.
 - Secrets such as OAuth credentials, database URLs, and OCR service endpoints are injected only via environment variables and are never committed to the repository.
-- The `NEXT_PUBLIC_AUTH_ENABLED` flag controls whether the deployed Netlify frontend uses the real Google login flow (`true`/`1`) or shows the "Login – Coming Soon" placeholder (`false`/unset), which should be used for public staging until auth wiring is ready.
+- The `NEXT_PUBLIC_AUTH_ENABLED` flag controls whether the deployed web frontend uses the real Google login flow (`true`/`1`) or shows the "Login - Coming Soon" placeholder (`false`/unset), which should be used for public staging until auth wiring is ready.
 
 Before any real student data is processed in production, the plan is to harden API-level authorization, tighten file upload limits and validation, and perform a focused configuration/dependency review as described in `SECURITY.md`.
 
@@ -501,7 +501,7 @@ This project is managed through GitHub milestones and small, focused issues:
   - `frontend` – dashboards, theming, Next.js UI.
   - `backend-ocr` – OCR service, Tesseract, AI hooks.
   - `a11y` – accessibility, screen readers, WCAG, Braille.
-  - `devops` – CI/CD, Netlify, Docker, release automation.
+  - `devops` - CI/CD, GKE/Cloud Run, Docker, release automation.
   - `docs` – README, guides, onboarding, legal docs.
   - Tagging a release like `v0.1.0` runs CI and publishes a tagged GitHub Release (see CI/CD overview below).
 
@@ -509,7 +509,7 @@ This project is managed through GitHub milestones and small, focused issues:
 
 - **CodeQL code scanning**: the `codeql.yml` workflow runs on pushes and pull requests targeting `main`, plus a weekly scheduled run. It analyzes the JavaScript/TypeScript (Next.js app) and Python (OCR service) code, installing dependencies first so the analyzers see the full project.
 - **Release & package**: the `release-and-package.yml` workflow runs when you push a tag matching `v*.*.*`. It runs `npm test` and `npm run build:web`, creates a GitHub Release for that tag, and publishes the shared package `@raven-dev-ops/accessible-education-software-shared` to GitHub Packages.
-- **Netlify deploys**: the web frontend is deployed via Netlify, which builds from `apps/web` using `npm run build` (as configured in `netlify.toml`). Updating `main` will typically trigger a new deploy for any Netlify site connected to this repository.
+- **Cloud Build / deploys**: container images for the web and backend (`cloudbuild-docker.yaml`) are built and pushed by Cloud Build. From there you can either roll out to GKE (`kubectl apply -f k8s/`) or update Cloud Run services that consume the same images.
 
   Even if you are not writing code, you can follow progress by watching which
   milestones and issues move toward completion over time.
