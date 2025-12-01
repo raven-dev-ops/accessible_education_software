@@ -3,5 +3,5 @@ uvicorn[standard]==0.30.0
 transformers==4.53.0
 accelerate==0.34.0
 bitsandbytes==0.43.1
-torch==2.3.0
+torch==2.9.1
 numpy==1.26.4
