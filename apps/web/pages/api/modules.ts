@@ -3,6 +3,13 @@ import { prisma } from "../../lib/db";
 import { requireRole } from "../../lib/apiAuth";
 import fallbackModules from "../../data/sampleModules.json";
 
+type SubmoduleSummary = {
+  id: string;
+  title: string;
+  equation?: string | null;
+  order?: number | null;
+};
+
 type ModuleSummary = {
   id: string | number;
   title: string;
@@ -14,6 +21,7 @@ type ModuleSummary = {
   ticketsOpen?: number;
   ticketsResolved?: number;
   sampleEquation?: string;
+  submodules?: SubmoduleSummary[];
 };
 
 const useCloudRun = process.env.USE_CLOUD_RUN_API === "true";
@@ -45,7 +53,12 @@ export default async function handler(
     }
 
     const modules = await prisma.module.findMany({
-      include: { course: true },
+      include: {
+        course: true,
+        submodules: {
+          orderBy: { order: "asc" },
+        },
+      },
       orderBy: { createdAt: "asc" },
       take: 100,
     });
@@ -67,6 +80,14 @@ export default async function handler(
       ticketsOpen: m.ticketsOpen ?? undefined,
       ticketsResolved: m.ticketsResolved ?? undefined,
       sampleEquation: m.sampleEquation ?? undefined,
+      submodules: Array.isArray(m.submodules)
+        ? m.submodules.map((s: any) => ({
+            id: s.id,
+            title: s.title,
+            equation: s.equation ?? null,
+            order: s.order ?? null,
+          }))
+        : undefined,
     }));
 
     return res.status(200).json(mapped);

@@ -5,6 +5,13 @@ import { useSession } from "next-auth/react";
 import { Layout } from "../../components/Layout";
 import { getRoleFromUser } from "../../lib/roleUtils";
 
+type SubmoduleSummary = {
+  id: string | number;
+  title: string;
+  equation?: string | null;
+  order?: number | null;
+};
+
 type ModuleSummary = {
   id: string | number;
   title: string;
@@ -16,6 +23,7 @@ type ModuleSummary = {
   ticketsOpen?: number;
   ticketsResolved?: number;
   sampleEquation?: string;
+  submodules?: SubmoduleSummary[];
 };
 
 type TeacherTicket = {
@@ -484,7 +492,29 @@ function TeacherPage() {
   const availableModules = modules.length ? modules : allowSamples ? sampleModules : [];
   const selectedModule =
     availableModules.find((m) => m.id === selectedModuleId) || availableModules[0];
-  const training = trainingSets[selectedModule?.id as string] ?? Object.values(trainingSets)[0];
+
+  const getTrainingForModule = (module: ModuleSummary | undefined): { title: string; equations: string[] } => {
+    if (!module) return { title: "Training set", equations: [] };
+
+    const taggedFromSubmodules =
+      module.submodules
+        ?.filter((s) => typeof s.equation === "string" && s.equation.toLowerCase().includes("(training)"))
+        .map((s) => s.equation!.replace(/\s*\(training\)\s*/i, "").trim()) ?? [];
+
+    if (taggedFromSubmodules.length) {
+      return { title: module.title, equations: taggedFromSubmodules };
+    }
+
+    // Fallback to legacy static training sets when samples are allowed
+    if (allowSamples) {
+      const legacy = trainingSets[module.id as string] ?? Object.values(trainingSets)[0];
+      return legacy;
+    }
+
+    return { title: module.title, equations: [] };
+  };
+
+  const training = getTrainingForModule(selectedModule);
   const modulesForDisplay = selectedModule ? [selectedModule] : availableModules;
 
   const previewNav = showPreviewNav ? (
@@ -686,173 +716,205 @@ function TeacherPage() {
           )}
         </section>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <section aria-labelledby="teacher-modules" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between mb-3">
-              <h2 id="teacher-modules" className="text-xl font-semibold">Your modules</h2>
-            </div>
-            {modulesLoading && <p>Loading modules</p>}
-            {modulesError && <p role="alert" className="text-red-700">{modulesError}</p>}
-            {!modulesLoading && (
-              <ul className="space-y-2 text-sm">
-                {modulesForDisplay.map((m) => {
-                  const eqs = trainingSets[m.id as string]?.equations?.length || 0;
-                  const passed = Object.entries(equationProgress).filter(
-                    ([key, val]) => key.startsWith(`${m.id}-`) && val.status === "pass"
-                  ).length;
-                  const pct = eqs ? Math.round((passed / eqs) * 100) : 0;
-                  const teacherPct = typeof m.teacherProgress === "number" ? m.teacherProgress : pct;
-                  const studentPct = typeof m.studentCompletion === "number" ? m.studentCompletion : undefined;
-                  return (
-                    <li key={m.id} className="flex flex-col gap-2 border rounded p-3 bg-slate-50 dark:bg-slate-800">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="font-medium">{m.title}</span>
-                          {m.course && <span className="ml-1 text-gray-600">({m.course})</span>}
-                        </div>
-                        <button
-                          type="button"
-                          className="px-3 py-1 rounded bg-blue-600 text-white text-xs"
-                          onClick={() => setSelectedModuleId(m.id)}
-                        >
-                          Select
-                        </button>
-                      </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-300">
-                        Training progress: {passed}/{eqs || 10} ({pct}%)
-                      </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-300">
-                        Teacher progress: {teacherPct}% | Student completion: {studentPct !== undefined ? `${studentPct}%` : "—"}
-                      </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-300">
-                        Submodules: {m.submodulesCompleted !== undefined && m.submodulesTotal !== undefined ? `${m.submodulesCompleted}/${m.submodulesTotal}` : "—"} | Tickets: {m.ticketsOpen ?? 0} open / {m.ticketsResolved ?? 0} resolved
-                      </div>
-                      <div className="w-full h-2 rounded bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                        <div
-                          className="h-full bg-emerald-500"
-                          style={{ width: `${teacherPct}%` }}
-                          aria-label={`Training progress ${teacherPct}%`}
-                        />
-                      </div>
-                      {m.sampleEquation && (
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Example: {m.sampleEquation}</div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-
-          <section aria-labelledby="teacher-training" className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800">
-          <h2 id="teacher-training" className="text-xl font-semibold mb-3">
-            Training: {training.title}
-          </h2>
-          <p className="text-sm mb-3">
-            Complete all 10 equations. Upload one handwritten image per equation. OCR scores above 80% are marked passing; you can edit the recognized text before saving.
-          </p>
-          <div className="space-y-3">
-            {training.equations.map((eq, idx) => {
-              const key = `${selectedModuleId}-${idx}`;
-              const progress = equationProgress[key] || {
-                status: "pending" as const,
-                score: null,
-                editableText: "",
-              };
-              const collapsed = eqCollapsed[key] ?? false;
-              return (
-                <div
-                  key={idx}
-                  className="border rounded p-3 bg-slate-50 dark:bg-slate-800 flex flex-col gap-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <button
-                      type="button"
-                      className="font-semibold text-sm text-left flex-1"
-                      onClick={() =>
-                        setEqCollapsed((prev) => ({
-                          ...prev,
-                          [key]: !collapsed,
-                        }))
-                      }
-                    >
-                      {collapsed ? "" : ""} {idx + 1}. {eq}
-                    </button>
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${
-                        progress.status === "pass"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : progress.status === "fail"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-slate-200 text-slate-700"
-                      }`}
-                    >
-                      {progress.status === "pass"
-                        ? `Pass (${progress.score ?? ""}%)`
-                        : progress.status === "fail"
-                        ? `Below 80% (${progress.score ?? ""}%)`
-                        : "Pending"}
-                    </span>
-                  </div>
-                  {!collapsed && (
-                    <>
-                      <div className="flex flex-wrap gap-2">
-                        <input type="file" accept=".pdf,image/*" className="text-sm" />
-                        <button
-                          type="button"
-                          className="px-3 py-2 rounded bg-blue-600 text-white text-xs"
-                          onClick={() => {
-                            const mockScore = 82;
-                            const mockText = `OCR result for ${eq}`;
-                            setEquationProgress((prev) => ({
-                              ...prev,
-                              [key]: {
-                                status: mockScore >= 80 ? "pass" : "fail",
-                                score: mockScore,
-                                editableText: mockText,
-                              },
-                            }));
-                          }}
-                        >
-                          Upload & OCR
-                        </button>
-                      </div>
-                      {progress.editableText !== undefined && (
-                        <label className="text-xs">
-                          <span className="block mb-1">Recognized text (edit before saving)</span>
-                          <textarea
-                            className="w-full border rounded p-2 text-sm"
-                            rows={3}
-                            value={progress.editableText}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setEquationProgress((prev) => ({
-                                ...prev,
-                                [key]: {
-                                  ...progress,
-                                  editableText: val,
-                                },
-                              }));
-                            }}
-                          />
-                        </label>
-                      )}
-                    </>
-                  )}
-                </div>
-              );
-            })}
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Checklist: {Object.values(equationProgress).filter((p) => p.status === "pass").length} / {training.equations.length} passed.
+        <section
+          aria-labelledby="teacher-modules-training"
+          className="p-5 rounded-2xl bg-white/90 dark:bg-slate-900/80 shadow border border-slate-200 dark:border-slate-800"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 id="teacher-modules-training" className="text-xl font-semibold">
+                Modules &amp; training
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Track module progress and attach handwritten training samples to equations tagged as training.
               </p>
-              <button type="button" className="px-4 py-2 rounded bg-emerald-600 text-white text-sm">
-                Save training to profile
-              </button>
             </div>
           </div>
-          </section>
-        </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <h3 className="text-sm font-semibold mb-2 text-slate-800 dark:text-slate-100">
+                Your modules
+              </h3>
+              {modulesLoading && <p>Loading modules...</p>}
+              {modulesError && (
+                <p role="alert" className="text-red-700">
+                  {modulesError}
+                </p>
+              )}
+              {!modulesLoading && (
+                <ul className="space-y-2 text-sm">
+                  {modulesForDisplay.map((m) => {
+                    const trainingForModule = getTrainingForModule(m);
+                    const eqs = trainingForModule.equations.length;
+                    const passed = Object.entries(equationProgress).filter(
+                      ([key, val]) => key.startsWith(`${m.id}-`) && val.status === "pass"
+                    ).length;
+                    const pct = eqs ? Math.round((passed / eqs) * 100) : 0;
+                    const teacherPct = typeof m.teacherProgress === "number" ? m.teacherProgress : pct;
+                    const studentPct = typeof m.studentCompletion === "number" ? m.studentCompletion : undefined;
+                    return (
+                      <li
+                        key={m.id}
+                        className="flex flex-col gap-2 border rounded p-3 bg-slate-50 dark:bg-slate-800"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="font-medium">{m.title}</span>
+                            {m.course && <span className="ml-1 text-gray-600">({m.course})</span>}
+                          </div>
+                          <button
+                            type="button"
+                            className="px-3 py-1 rounded bg-blue-600 text-white text-xs"
+                            onClick={() => setSelectedModuleId(m.id)}
+                          >
+                            Select
+                          </button>
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-300">
+                          Training progress: {passed}/{eqs || 10} ({pct}%)
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-300">
+                          Teacher progress: {teacherPct}% | Student completion:{" "}
+                          {studentPct !== undefined ? `${studentPct}%` : "—"}
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-300">
+                          Submodules:{" "}
+                          {m.submodulesCompleted !== undefined && m.submodulesTotal !== undefined
+                            ? `${m.submodulesCompleted}/${m.submodulesTotal}`
+                            : "—"}{" "}
+                          | Tickets: {m.ticketsOpen ?? 0} open / {m.ticketsResolved ?? 0} resolved
+                        </div>
+                        <div className="w-full h-2 rounded bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500"
+                            style={{ width: `${teacherPct}%` }}
+                            aria-label={`Training progress ${teacherPct}%`}
+                          />
+                        </div>
+                        {m.sampleEquation && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            Example: {m.sampleEquation}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
+            <div>
+              <h3 id="teacher-training" className="text-sm font-semibold mb-2 text-slate-800 dark:text-slate-100">
+                Training for {training.title}
+              </h3>
+              <p className="text-xs mb-3 text-slate-600 dark:text-slate-300">
+                Upload one handwritten example per equation tagged as training. OCR scores above 80% are marked as
+                passing; you can edit the recognized text before saving.
+              </p>
+              <div className="space-y-3">
+                {training.equations.map((eq, idx) => {
+                  const key = `${selectedModuleId}-${idx}`;
+                  const progress = equationProgress[key] || {
+                    status: "pending" as const,
+                    score: null,
+                    editableText: "",
+                  };
+                  const collapsed = eqCollapsed[key] ?? false;
+                  return (
+                    <div
+                      key={idx}
+                      className="border rounded p-3 bg-slate-50 dark:bg-slate-800 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          className="font-semibold text-sm text-left flex-1"
+                          onClick={() =>
+                            setEqCollapsed((prev) => ({
+                              ...prev,
+                              [key]: !collapsed,
+                            }))
+                          }
+                        >
+                          {collapsed ? "" : ""} {idx + 1}. {eq}
+                        </button>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            progress.status === "pass"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : progress.status === "fail"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {progress.status === "pass"
+                            ? `Pass (${progress.score ?? ""}%)`
+                            : progress.status === "fail"
+                            ? `Below 80% (${progress.score ?? ""}%)`
+                            : "Pending"}
+                        </span>
+                      </div>
+                      {!collapsed && (
+                        <>
+                          <div className="flex flex-wrap gap-2">
+                            <input type="file" accept=".pdf,image/*" className="text-sm" />
+                            <button
+                              type="button"
+                              className="px-3 py-2 rounded bg-blue-600 text-white text-xs"
+                              onClick={() => {
+                                const mockScore = 82;
+                                const mockText = `OCR result for ${eq}`;
+                                setEquationProgress((prev) => ({
+                                  ...prev,
+                                  [key]: {
+                                    status: mockScore >= 80 ? "pass" : "fail",
+                                    score: mockScore,
+                                    editableText: mockText,
+                                  },
+                                }));
+                              }}
+                            >
+                              Upload &amp; OCR
+                            </button>
+                          </div>
+                          {progress.editableText !== undefined && (
+                            <label className="text-xs">
+                              <span className="block mb-1">Recognized text (edit before saving)</span>
+                              <textarea
+                                className="w-full border rounded p-2 text-sm"
+                                rows={3}
+                                value={progress.editableText}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setEquationProgress((prev) => ({
+                                    ...prev,
+                                    [key]: {
+                                      ...progress,
+                                      editableText: val,
+                                    },
+                                  }));
+                                }}
+                              />
+                            </label>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Checklist: {Object.values(equationProgress).filter((p) => p.status === "pass").length} /{" "}
+                    {training.equations.length} passed.
+                  </p>
+                  <button type="button" className="px-4 py-2 rounded bg-emerald-600 text-white text-sm">
+                    Save training to profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section
           aria-labelledby="teacher-upload"
