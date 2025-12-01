@@ -178,7 +178,8 @@ function StudentPage() {
       return;
     }
 
-    if (preview) {
+    const fromAdmin = router.query.fromAdmin === "1";
+    if (preview || fromAdmin) {
       setUnauthorized(false);
       return;
     }
