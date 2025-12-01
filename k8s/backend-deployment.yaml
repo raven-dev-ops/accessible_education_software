@@ -20,6 +20,11 @@ spec:
           image: us-central1-docker.pkg.dev/cs-poc-kvjwpp97kjozemn894cmvvg/cloud-run-source-deploy/accessible-backend:latest
           ports:
             - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: accessible-backend-config
+            - secretRef:
+                name: accessible-backend-secrets
           env:
             - name: PORT
               value: "8000"
@@ -47,4 +52,3 @@ spec:
     - name: http
       port: 8000
       targetPort: 8000
-

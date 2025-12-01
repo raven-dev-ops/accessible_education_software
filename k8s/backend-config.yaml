@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: accessible-backend-config
+  namespace: accessible
+data:
+  # Optional AI verification endpoint
+  AI_VERIFY_URL: ""
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: accessible-backend-secrets
+  namespace: accessible
+type: Opaque
+stringData:
+  AI_VERIFY_API_KEY: ""
+  # Shared key with web for protecting OCR/logic endpoints
+  OCR_SERVICE_API_KEY: "CHANGE_ME_OCR_API_KEY"
+  BACKEND_API_KEY: ""
+

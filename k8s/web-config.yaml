@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: accessible-web-config
+  namespace: accessible
+data:
+  # Core URLs
+  NEXTAUTH_URL: "http://accessible-web" # replace with external URL once LoadBalancer is assigned
+  OCR_SERVICE_URL: "http://accessible-backend.accessible.svc.cluster.local:8000"
+
+  # Frontend feature flags
+  NEXT_PUBLIC_AUTH_ENABLED: "true"
+  NEXT_PUBLIC_SHOW_STAGING_BANNER: "false"
+  NEXT_PUBLIC_ENV_LABEL: "k8s"
+  NEXT_PUBLIC_DB_ENABLED: "false"
+
+  # Sample/demo flags
+  ALLOW_SAMPLE_FALLBACKS: "true"
+  NEXT_PUBLIC_ALLOW_SAMPLE_FALLBACKS: "true"
+
+  # QA metadata surfaced in /api/status and admin dashboard
+  QA_STATUS: "unknown"
+  QA_LAST_RUN_AT: ""
+  QA_NOTES: ""
+
+  # Storage
+  GCS_BUCKET: "CHANGE_ME_GCS_BUCKET"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: accessible-web-secrets
+  namespace: accessible
+type: Opaque
+stringData:
+  # NextAuth / Google OAuth
+  NEXTAUTH_SECRET: "CHANGE_ME_NEXTAUTH_SECRET"
+  GOOGLE_CLIENT_ID: "CHANGE_ME_GOOGLE_CLIENT_ID"
+  GOOGLE_CLIENT_SECRET: "CHANGE_ME_GOOGLE_CLIENT_SECRET"
+  GOOGLE_OAUTH_REDIRECT_URI: "CHANGE_ME_REDIRECT_URI"
+
+  # OCR + support tickets
+  OCR_SERVICE_API_KEY: "CHANGE_ME_OCR_API_KEY"
+  SUPPORT_TICKET_API_KEY: "CHANGE_ME_SUPPORT_TICKET_API_KEY"
+
+  # Optional DB (currently unused / demo)
+  DATABASE_URL: ""
+
+  # Optional GCS service account key (for signed URLs, if used)
+  GCS_SA_KEY: ""
+
