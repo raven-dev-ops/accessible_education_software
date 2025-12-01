@@ -176,6 +176,7 @@ function AdminPage() {
   const [qaStatus, setQaStatus] = useState<QaState>({ status: "unknown" });
   const [storageHealth, setStorageHealth] = useState<HealthState>("unknown");
   const [mathHealth, setMathHealth] = useState<HealthState>("unknown");
+  const [overviewOpen, setOverviewOpen] = useState(false);
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -888,7 +889,13 @@ function AdminPage() {
             className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5"
             aria-labelledby="admin-overview"
           >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between gap-3 mb-2 text-left"
+              aria-expanded={overviewOpen}
+              aria-controls="admin-overview-panel"
+              onClick={() => setOverviewOpen((open) => !open)}
+            >
               <div>
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
                   System overview
@@ -897,73 +904,90 @@ function AdminPage() {
                   Experience & infrastructure health
                 </h2>
               </div>
-              <div className="flex flex-col items-start sm:items-end gap-2 text-xs text-slate-500 dark:text-slate-300">
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  Live preview of sample data
-                </span>
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                  <span className="h-2 w-2 rounded-full bg-sky-500" />
-                  {formattedTimestamp}
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex flex-col items-end gap-1 text-xs text-slate-500 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    Live preview of sample data
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <span className="h-2 w-2 rounded-full bg-sky-500" />
+                    {formattedTimestamp}
+                  </span>
+                </div>
+                <span
+                  className={`inline-flex items-center justify-center h-8 w-8 rounded-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-100 transition-transform ${
+                    overviewOpen ? "rotate-90" : ""
+                  }`}
+                  aria-hidden="true"
+                >
+                  ▸
                 </span>
               </div>
-            </div>
+            </button>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-              {overviewSections.map((section) => (
-                <div
-                  key={section.key}
-                  className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4 flex flex-col gap-3"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1">
-                      <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                        {section.title}
-                      </p>
-                      <p className="text-sm text-slate-700 dark:text-slate-200">{section.subtitle}</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Updated {formattedTimestamp}</p>
-                    </div>
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${section.status.bg} ${section.status.text} ${section.status.border}`}
-                    >
-                      <span className={`h-1.5 w-1.5 rounded-full ${section.status.dot}`} />
-                      {section.status.label}
-                    </span>
-                  </div>
-                  {section.bars.length > 0 && (
-                    <div className="mt-3 space-y-2" aria-hidden="true">
-                      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                        <span>Composite health</span>
-                        <span>
-                          {Math.round(
-                            section.bars.reduce((sum, v) => sum + v, 0) / section.bars.length
-                          )}
-                          %
-                        </span>
+            {overviewOpen && (
+              <div
+                id="admin-overview-panel"
+                className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5"
+              >
+                {overviewSections.map((section) => (
+                  <div
+                    key={section.key}
+                    className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-4 flex flex-col gap-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                          {section.title}
+                        </p>
+                        <p className="text-sm text-slate-700 dark:text-slate-200">{section.subtitle}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Updated {formattedTimestamp}
+                        </p>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                        <div
-                          className={`h-2 rounded-full bg-gradient-to-r ${section.barGradient}`}
-                          style={{
-                            width: `${Math.round(
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${section.status.bg} ${section.status.text} ${section.status.border}`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${section.status.dot}`} />
+                        {section.status.label}
+                      </span>
+                    </div>
+                    {section.bars.length > 0 && (
+                      <div className="mt-3 space-y-2" aria-hidden="true">
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                          <span>Composite health</span>
+                          <span>
+                            {Math.round(
                               section.bars.reduce((sum, v) => sum + v, 0) / section.bars.length
-                            )}%`,
-                          }}
-                        />
+                            )}
+                            %
+                          </span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                          <div
+                            className={`h-2 rounded-full bg-gradient-to-r ${section.barGradient}`}
+                            style={{
+                              width: `${Math.round(
+                                section.bars.reduce((sum, v) => sum + v, 0) / section.bars.length
+                              )}%`,
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  <dl className="space-y-1 text-sm">
-                    {section.stats.map((stat) => (
-                      <div key={`${section.key}-${stat.label}`} className="flex justify-between">
-                        <dt className="text-slate-500 dark:text-slate-300">{stat.label}</dt>
-                        <dd className="font-medium text-slate-900 dark:text-slate-100">{stat.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              ))}
-            </div>
+                    )}
+                    <dl className="space-y-1 text-sm">
+                      {section.stats.map((stat) => (
+                        <div key={`${section.key}-${stat.label}`} className="flex justify-between">
+                          <dt className="text-slate-500 dark:text-slate-300">{stat.label}</dt>
+                          <dd className="font-medium text-slate-900 dark:text-slate-100">{stat.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <section
