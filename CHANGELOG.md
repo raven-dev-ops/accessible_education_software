@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - Math inference service (DeepSeekMath)
+
+- Add a dedicated math inference microservice under `apps/math_inference` that wraps a DeepSeekMath 7B model in a FastAPI/uvicorn container, exposing `/v1/math-verify` for OCR post-processing (cleaned math text, LaTeX/MathML, explanations).
+- Extend the GKE deployment with a GPU-backed `accessible-math-inference` Deployment/Service (`k8s/math-inference-deployment.yaml`) that runs on an L4 node pool with autoscaling, so a single GPU node can serve math reasoning for all students while costs remain bounded.
+- Wire the existing OCR backend (`apps/ocr_service`) to optionally call the math inference service for image uploads when `MATH_INFERENCE_URL` is configured (e.g. `http://math-inference.accessible.svc.cluster.local:8000`), returning a `math` block alongside raw OCR text without breaking existing behavior when the service is disabled.
+
 ## [1.2.0] - Containerized GKE deployment
 
 - Containerize both the Next.js frontend (`apps/web`) and Python OCR/logic backend (`apps/ocr_service`) with dedicated Dockerfiles and a shared Cloud Build config (`cloudbuild-docker.yaml`) that pushes images to Artifact Registry.

@@ -16,7 +16,7 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 ## Table of Contents
 
 - [Features](#features)
-  - [Status (v1.2.0)](#status-v120)
+  - [Status (v1.3.0)](#status-v130)
 - [Roles](#roles)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -89,9 +89,9 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 ---
 
-## Status (v1.2.0)
+## Status (v1.3.0)
 
-- Version **1.2.0**: Same MVP scope as 1.0.0 (Google OAuth via NextAuth; student/teacher/admin dashboards) with UI polish from 1.0.1, now fully containerized and deployed to GKE (`accessible-cluster` in `us-central1-a`) as `accessible-web` (Next.js frontend) and `accessible-backend` (Python OCR/logic) services. Cloud Storage remains the only active storage layer in the current `cs-poc` deployment; Cloud SQL and the `cloud-run-api` bridge are kept as documented, optional paths.
+- Version **1.3.0**: Same MVP scope as 1.0.0 (Google OAuth via NextAuth; student/teacher/admin dashboards) with UI polish from 1.0.1, now fully containerized and deployed to GKE (`accessible-cluster` in `us-central1-a`) as `accessible-web` (Next.js frontend) and `accessible-backend` (Python OCR/logic) services, plus an optional GPU-backed math inference microservice (`accessible-math-inference`) for DeepSeekMath 7B reasoning over OCR math output. Cloud Storage remains the only active storage layer in the current `cs-poc` deployment; Cloud SQL and the `cloud-run-api` bridge are kept as documented, optional paths.
 - Student dashboard: low-vision friendly layout, collapsible accessibility widget, TTS sample with voice/volume/rate controls and live word highlighting, Braille preview with liblouis/fallback, OCR MVP demo, and support tickets (including attachments when configured).
   - Teacher dashboard: sample profile, module-aware training checklist (per-equation upload/status/editable OCR text), support ticket review table (view/close/escalate, attachments), course material upload, and AI assistant placeholder.
   - Admin dashboard: system overview cards (student/teacher/admin experience + Cloud Run/backend/OCR health), sample students/uploads/modules, live/preview support tickets, and status cards wired to `/api/*` + `test-ocr`.
@@ -135,9 +135,9 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 **Backend**
 
-- Python service (FastAPI/Flask-style) for OCR
-- PyTesseract (Tesseract OCR)
-- Optionally Node/Express for additional APIs or orchestration
+- Python service (FastAPI) for OCR/logic (`apps/ocr_service`, `accessible-backend`)
+- PyTesseract (Tesseract OCR) + PyMuPDF for PDFs
+- Optional DeepSeekMath 7B math reasoning service (`apps/math_inference`, `accessible-math-inference`)
 
 **Storage & data**
 
@@ -145,7 +145,10 @@ The system helps **students**, **teachers**, and **site admins** work with handw
 
 **Infrastructure / Deployment**
 
-- Primary runtime: Kubernetes (GKE) `accessible-cluster` in `us-central1-a` running the `accessible-web` (Next.js) and `accessible-backend` (Python OCR/logic) Deployments/Services.
+- Primary runtime: Kubernetes (GKE) `accessible-cluster` in `us-central1-a` running:
+  - `accessible-web` (Next.js) Deployment/Service (LoadBalancer)
+  - `accessible-backend` (Python OCR/logic) Deployment/Service (ClusterIP)
+  - `accessible-math-inference` (DeepSeekMath 7B) Deployment/Service (ClusterIP) on a GPU node pool (L4), when enabled
 - Alternate runtime: Google Cloud Run (`accessible-web` and `accessible-backend` services in `us-central1`) using the same container images when a serverless target is preferred.
 - Auth: Google OAuth client via NextAuth
 - Hybrid connectivity: HA VPN + Cloud Router (prod/nonprod shared VPCs)
@@ -190,9 +193,12 @@ accessible-education-software/
       components/       # Shared layout and UI components
       data/             # Mock data for Day 2 (e.g. sampleStudents.json)
       lib/              # Frontend utilities (e.g. role and API auth helpers, TTS)
-    ocr_service/        # Python FastAPI OCR skeleton (PyTesseract)
-      main.py           # FastAPI app with /health and /ocr endpoints
+    ocr_service/        # Python FastAPI OCR/logic service (PyTesseract + PyMuPDF)
+      main.py           # FastAPI app with /health, /ocr-file, /ocr-json, /logic endpoints
       sample_ocr_test.py
+      requirements.txt
+    math_inference/     # DeepSeekMath-backed math reasoning service
+      main.py           # FastAPI app with /health and /v1/math-verify
       requirements.txt
   packages/
     shared/             # Shared utilities and future types
@@ -253,7 +259,7 @@ Frontend (`apps/web/.env.local` for local, Kubernetes/Cloud Run env vars for pro
 - `NEXT_PUBLIC_AUTH_ENABLED` – `true` to require Google login; `false` shows the "Coming Soon" placeholder.
 - `NEXT_PUBLIC_SHOW_STAGING_BANNER` – show a visible "staging" banner on that deploy.
 - `NEXT_PUBLIC_ENV_LABEL` – optional label shown on `/status` (e.g. `staging`, `prod-coming-soon`, `local`).
-- `OCR_SERVICE_URL` – base URL for the Python OCR service (e.g. `http://localhost:8000`).
+- `OCR_SERVICE_URL` - base URL for the Python OCR service (e.g. `http://localhost:8000`).
 - `DATABASE_URL` - PostgreSQL connection string used by Prisma for optional relational storage (local Postgres or Cloud SQL via connector/proxy). In the current `cs-poc` deployment this is left unset so APIs run in demo/sample mode and Cloud Storage is the only active persistence layer.
 - `BRAILLE_ENGINE` (optional) – set to `liblouis` to enable server-side liblouis/Nemeth output for `/api/braille`; defaults to the fallback Grade 1 mapper.
 - `BRAILLE_LIBLOUIS_TABLE` (optional) – liblouis table to use (e.g. `nemeth`); defaults to `nemeth` when `BRAILLE_ENGINE=liblouis`.
@@ -261,7 +267,7 @@ Frontend (`apps/web/.env.local` for local, Kubernetes/Cloud Run env vars for pro
 
 ### Run the apps
 
-Additional frontend env flags (set in `apps/web/.env.local` for local development, and in your deployment environment for the deployed web app—GKE or Cloud Run):
+Additional frontend env flags (set in `apps/web/.env.local` for local development, and in your deployment environment for the deployed web app-GKE or Cloud Run):
 
 - `NEXT_PUBLIC_AUTH_ENABLED` - `true`/`1` enables Google login; `false`/unset shows the "Login – Coming Soon" placeholder.
 - `NEXT_PUBLIC_SHOW_STAGING_BANNER` - when enabled, displays a visible "Staging environment – for testing only" banner (use this on any non-production environment).
@@ -278,6 +284,13 @@ Run the OCR service locally:
 ```bash
 npm run dev:ocr
 ```
+
+Backend OCR/logic (`apps/ocr_service`) also supports:
+
+- `AI_VERIFY_URL` / `AI_VERIFY_API_KEY` – optional external AI verification hook for OCR text.
+- `MATH_INFERENCE_URL` – optional URL of the math reasoning service (for example, `http://math-inference.accessible.svc.cluster.local:8000` when running in-cluster). When set, image OCR responses include a `math` block from DeepSeekMath 7B cleanup.
+
+The math inference service (`apps/math_inference`) is typically run only in GPU-capable environments (for example, an L4-backed node pool on GKE). For local experimentation you can set `MATH_MODEL_DEVICE=cpu`, but performance will be limited.
 
 Run a simple OCR smoke test:
 

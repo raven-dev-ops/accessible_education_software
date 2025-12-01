@@ -6,6 +6,8 @@ metadata:
 data:
   # Optional AI verification endpoint
   AI_VERIFY_URL: ""
+  # Optional math reasoning service (DeepSeekMath 7B) inside the cluster
+  MATH_INFERENCE_URL: "http://math-inference.accessible.svc.cluster.local:8000"
 
 ---
 apiVersion: v1
@@ -19,4 +21,3 @@ stringData:
   # Shared key with web for protecting OCR/logic endpoints
   OCR_SERVICE_API_KEY: "CHANGE_ME_OCR_API_KEY"
   BACKEND_API_KEY: ""
-
