@@ -598,6 +598,11 @@ function TeacherPage() {
         <div className="flex justify-end">
           <label className="w-full max-w-xs text-sm text-slate-700 dark:text-slate-200">
             <span className="block mb-1">Select module</span>
+            {modulesError && (
+              <p className="text-xs text-red-600 dark:text-red-300 mb-1" role="alert">
+                {modulesError}
+              </p>
+            )}
             <select
               className="w-full border rounded px-3 py-2 bg-white dark:bg-slate-800"
               value={selectedModuleId}
