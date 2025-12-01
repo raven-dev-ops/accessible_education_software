@@ -660,6 +660,11 @@ function AdminPage() {
     ? Math.round(scoredTickets.reduce((sum, t) => sum + (t.score ?? 0), 0) / scoredTickets.length)
     : null;
 
+  const ocrSamplesCount = useSamples ? 10 : tickets.length;
+  const ocrSamplesLabel = useSamples ? "OCR samples (mock)" : "OCR samples";
+  const ocrSamplesSubtitle = useSamples ? "Initial batch submitted" : "Based on live OCR tickets";
+  const ocrAccuracyLabel = useSamples ? "Accuracy (mock)" : "Accuracy";
+
   const databaseBars = createBarHeights([
     Math.max(students.length, 1),
     Math.max(uploads.length, 1),
@@ -1244,16 +1249,14 @@ function AdminPage() {
             <div className="grid gap-6 md:grid-cols-3 mb-4">
               <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
                 <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
-                  OCR samples (mock)
+                  {ocrSamplesLabel}
                 </p>
-                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">10</p>
-                <p className="text-xs text-slate-500 dark:text-slate-300">
-                  Initial batch submitted
-                </p>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{ocrSamplesCount}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">{ocrSamplesSubtitle}</p>
               </div>
               <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 p-3">
                 <p className="text-xs uppercase text-slate-500 dark:text-slate-300 mb-1">
-                  Accuracy (mock)
+                  {ocrAccuracyLabel}
                 </p>
                 <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
                   {averageTicketScore != null ? `${averageTicketScore}%` : "--"}
