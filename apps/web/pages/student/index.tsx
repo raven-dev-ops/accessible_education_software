@@ -30,6 +30,12 @@ type PreviousUpload = {
   history?: UploadHistoryEntry[];
 };
 
+type ModuleSummary = {
+  id: string | number;
+  title: string;
+  course?: string;
+};
+
 const authEnabled =
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_AUTH_ENABLED === "1";
@@ -166,6 +172,9 @@ function StudentPage() {
   const [ttsOpen, setTtsOpen] = useState(false);
   const [aiTtsOpen, setAiTtsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [modules, setModules] = useState<ModuleSummary[]>([]);
+  const [modulesLoading, setModulesLoading] = useState(true);
+  const [modulesError, setModulesError] = useState<string | null>(null);
 
   const announce = (message: string, tone: "info" | "success" | "error" = "info") =>
     setLiveAlert({ message, tone });
@@ -243,6 +252,79 @@ function StudentPage() {
       // ignore
     }
   }, [preview, session?.user?.email]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadModules() {
+      // Student view should use the same modules list as teacher/admin when available,
+      // with a fallback to sample modules when samples are allowed.
+      try {
+        const res = await fetch("/api/modules");
+        if (!res.ok) {
+          if (allowSamples) {
+            const sampleKeys = Object.keys(moduleSamples);
+            setModules(
+              sampleKeys.map((key) => ({
+                id: key,
+                title: key,
+              }))
+            );
+            setModulesError(null);
+          } else {
+            setModules([]);
+            setModulesError("Modules unavailable.");
+          }
+          setModulesLoading(false);
+          return;
+        }
+        const data = (await res.json()) as ModuleSummary[];
+        if (!cancelled) {
+          if (Array.isArray(data) && data.length) {
+            setModules(data);
+            setModulesError(null);
+          } else if (allowSamples) {
+            const sampleKeys = Object.keys(moduleSamples);
+            setModules(
+              sampleKeys.map((key) => ({
+                id: key,
+                title: key,
+              }))
+            );
+            setModulesError(null);
+          } else {
+            setModules([]);
+            setModulesError("No modules yet.");
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          if (allowSamples) {
+            const sampleKeys = Object.keys(moduleSamples);
+            setModules(
+              sampleKeys.map((key) => ({
+                id: key,
+                title: key,
+              }))
+            );
+            setModulesError(null);
+          } else {
+            setModulesError("Failed to load modules.");
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setModulesLoading(false);
+        }
+      }
+    }
+
+    void loadModules();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [allowSamples]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -908,16 +990,26 @@ function StudentPage() {
               <label className="block text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
                 Select module
               </label>
+              {modulesError && (
+                <p className="text-xs text-red-600 dark:text-red-300 mb-1" role="alert">
+                  {modulesError}
+                </p>
+              )}
               <select
                 className="w-full border rounded px-3 py-2 text-lg bg-white dark:bg-slate-800"
                 value={selectedModuleId}
                 onChange={(e) => setSelectedModuleId(e.target.value)}
+                disabled={modulesLoading || (!modules.length && !allowSamples)}
               >
-                <option value="Calculus I">Calculus I</option>
-                <option value="Calculus II">Calculus II</option>
-                <option value="Linear Algebra">Linear Algebra</option>
-                <option value="Physics">Physics</option>
-                <option value="Statistics">Statistics</option>
+                {modules.length > 0 ? (
+                  modules.map((m) => (
+                    <option key={m.id} value={String(m.id)}>
+                      {m.title}
+                    </option>
+                  ))
+                ) : (
+                  <option value="Calculus I">Calculus I</option>
+                )}
               </select>
             </div>
           </div>
