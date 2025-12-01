@@ -32,7 +32,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ModuleSummary[] | { error: string }>
 ) {
-  const auth = await requireRole(req, res, ["teacher", "admin"]);
+  const auth = await requireRole(req, res, ["teacher", "admin", "student"]);
   if (!auth) return;
 
   try {
