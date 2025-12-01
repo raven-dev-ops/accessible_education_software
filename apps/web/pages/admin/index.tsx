@@ -906,10 +906,12 @@ function AdminPage() {
               </div>
               <div className="flex items-center gap-3">
                 <div className="hidden sm:flex flex-col items-end gap-1 text-xs text-slate-500 dark:text-slate-300">
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    Live preview of sample data
-                  </span>
+                  {useSamples && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      Live preview of sample data
+                    </span>
+                  )}
                   <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                     <span className="h-2 w-2 rounded-full bg-sky-500" />
                     {formattedTimestamp}
